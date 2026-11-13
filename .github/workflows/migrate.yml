@@ -1,0 +1,28 @@
+name: migrate
+
+# Schema changes run with the owner role, only when migrations change on main.
+# The scheduled collector uses a separate least-privilege role (ADR 0004).
+on:
+  push:
+    branches: [main]
+    paths: ['db/migrations/**']
+  workflow_dispatch:
+
+concurrency:
+  group: collect   # never migrate while a collect run is writing
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_MIGRATE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run migrate
