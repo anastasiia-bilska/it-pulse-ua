@@ -1,0 +1,50 @@
+name: dashboard
+
+# Rebuilds the public dashboard (aggregates only) after every extract run and publishes it to
+# GitHub Pages (ADR 0011). The daily schedule keeps the freshness banner honest even if extraction
+# stops running altogether.
+on:
+  workflow_run:
+    workflows: [extract]
+    types: [completed]
+  schedule:
+    - cron: '45 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: dashboard
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Read-only access is enough to compute aggregates.
+      DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run dashboard
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
