@@ -26,6 +26,7 @@
     "@types/pg": "^8.23.1",
     "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-perfectionist": "5.13.0",
     "eslint-plugin-unicorn": "79.0.0",
     "globals": "17.14.0",
     "jiti": "2.7.0",

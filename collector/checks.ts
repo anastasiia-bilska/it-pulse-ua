@@ -6,6 +6,33 @@ const GAP_STREAK = 3;
 /** Alert when the last 24h brought less than this share of a typical day. */
 const VOLUME_DROP_RATIO = 0.5;
 
+// Feeds whose last GAP_STREAK successful fetches all had a gap.
+const PERSISTENT_GAPS_SQL = `
+  select feed
+  from (
+    select feed, gap, row_number() over (partition by feed order by id desc) as recency
+    from fetch_log
+    where status = 200 and feed = any($1)
+  ) as recent_fetches
+  where recency <= $2
+  group by feed
+  having count(*) = $2 and bool_and(gap)
+  order by feed`;
+
+// New content versions per 24h window: window 0 is the last 24h, windows 1..7 the days before.
+const DAILY_NEW_ITEMS_SQL = `
+  select count(raw_item.id)::int as new_items
+  from generate_series(0, 7) as days_ago
+  left join raw_item
+    on raw_item.first_seen >  now() - (days_ago + 1) * interval '1 day'
+   and raw_item.first_seen <= now() - days_ago * interval '1 day'
+  group by days_ago
+  order by days_ago`;
+
+const WEEK_OF_HISTORY_SQL = `
+  select coalesce(min(first_seen) < now() - interval '8 days', false) as has_history
+  from raw_item`;
+
 /** Data checks after a run. Any problem turns the healthchecks.io ping into /fail. */
 export async function findProblems(db: pg.Client, summary: Summary): Promise<string[]> {
   const problems = [
@@ -25,19 +52,6 @@ function failedFeedsProblem(failedFeeds: string[]): string | undefined {
 
 // ---- coverage gaps -----------------------------------------------------------------------------
 
-// Feeds whose last GAP_STREAK successful fetches all had a gap.
-const PERSISTENT_GAPS_SQL = `
-  select feed
-  from (
-    select feed, gap, row_number() over (partition by feed order by id desc) as recency
-    from fetch_log
-    where status = 200 and feed = any($1)
-  ) as recent_fetches
-  where recency <= $2
-  group by feed
-  having count(*) = $2 and bool_and(gap)
-  order by feed`;
-
 /** A single gap means a busy feed outran one poll. A streak means the poll interval is too slow. */
 async function persistentGapsProblem(
   db: pg.Client,
@@ -55,20 +69,6 @@ async function persistentGapsProblem(
 }
 
 // ---- volume drop -------------------------------------------------------------------------------
-
-// New content versions per 24h window: window 0 is the last 24h, windows 1..7 the days before.
-const DAILY_NEW_ITEMS_SQL = `
-  select count(raw_item.id)::int as new_items
-  from generate_series(0, 7) as days_ago
-  left join raw_item
-    on raw_item.first_seen >  now() - (days_ago + 1) * interval '1 day'
-   and raw_item.first_seen <= now() - days_ago * interval '1 day'
-  group by days_ago
-  order by days_ago`;
-
-const WEEK_OF_HISTORY_SQL = `
-  select coalesce(min(first_seen) < now() - interval '8 days', false) as has_history
-  from raw_item`;
 
 /** A drop usually means a feed changed its format or we got blocked. */
 async function volumeDropProblem(db: pg.Client): Promise<string | undefined> {

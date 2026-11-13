@@ -9,12 +9,7 @@ import { findProblems } from './checks.ts';
 import { collectAll, type Feed, type Options, type Summary } from './ingest.ts';
 import { migrate } from './migrate.ts';
 
-const ADMIN_URL = process.env.TEST_DATABASE_URL;
-if (!ADMIN_URL) {
-  throw new Error('TEST_DATABASE_URL is required (superuser; schema public is wiped)');
-}
-
-// ---- synthetic feed server ---------------------------------------------------------------------
+// ---- types -------------------------------------------------------------------------------------
 
 interface Reply {
   status: number;
@@ -22,11 +17,43 @@ interface Reply {
   headers?: Record<string, string>;
 }
 
+// ---- constants ---------------------------------------------------------------------------------
+
+const ADMIN_URL = process.env.TEST_DATABASE_URL;
+if (!ADMIN_URL) {
+  throw new Error('TEST_DATABASE_URL is required (superuser; schema public is wiped)');
+}
+
+/** Base pubDate of the synthetic vacancies (unix seconds). */
+const T0 = 1_800_000_000;
+
+const TEST_OPTIONS: Options = { userAgent: 'it-pulse-ua-test', delayMs: 0, retryBaseMs: 5 };
+
+// Mirror production: the role is created outside migrations with Neon's read_only access.
+const RESET_SQL = `
+  drop schema if exists public cascade; create schema public;
+  drop role if exists collector; create role collector login password 'collector';
+  grant usage on schema public to collector;
+  alter default privileges in schema public grant select on tables to collector;`;
+
+// ---- shared state (set up in before(), like one long-lived deployment) -------------------------
+
 /** Replies per path: each request takes the next one, the last one repeats. */
 const routes = new Map<string, Reply[]>();
 const hits = new Map<string, number>();
 let server: Server;
 let baseUrl = '';
+let admin: pg.Client;
+let collector: pg.Client;
+
+// ---- synthetic feed server ---------------------------------------------------------------------
+
+function respond(request: IncomingMessage, response: ServerResponse): void {
+  const path = request.url ?? '/';
+  hits.set(path, (hits.get(path) ?? 0) + 1);
+  const reply = nextReply(path);
+  response.writeHead(reply.status, reply.headers).end(reply.body ?? '');
+}
 
 function nextReply(path: string): Reply {
   const queue = routes.get(path);
@@ -36,27 +63,26 @@ function nextReply(path: string): Reply {
   return queue.length > 1 ? queue.shift()! : queue[0];
 }
 
-function respond(request: IncomingMessage, response: ServerResponse): void {
-  const path = request.url ?? '/';
-  hits.set(path, (hits.get(path) ?? 0) + 1);
-  const reply = nextReply(path);
-  response.writeHead(reply.status, reply.headers).end(reply.body ?? '');
+function ok(body: string): Reply[] {
+  return [{ status: 200, body }];
 }
 
-const ok = (body: string): Reply[] => [{ status: 200, body }];
+function feeds(): Feed[] {
+  return [
+    { source: 'dou', feed: 'dou:A', url: `${baseUrl}/a` },
+    { source: 'dou', feed: 'dou:B', url: `${baseUrl}/b` },
+    { source: 'djinni', feed: 'djinni:all', url: `${baseUrl}/dj` },
+  ];
+}
 
 // ---- synthetic RSS (never real vacancy text) ---------------------------------------------------
 
-const T0 = 1_800_000_000;
-
-const escapeXml = (text: string): string =>
-  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-
-const rfc822 = (unixSeconds: number): string => new Date(unixSeconds * 1000).toUTCString();
-
-const rss = (items: string[]): string =>
-  `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>t</title>` +
-  `${items.join('')}</channel></rss>`;
+function rss(items: string[]): string {
+  return (
+    `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>t</title>` +
+    `${items.join('')}</channel></rss>`
+  );
+}
 
 function douItem(id: number, bumpedAt: number, title = `Synthetic role ${id}`): string {
   const page = `${baseUrl}/companies/acme/vacancies/${id}/`;
@@ -77,21 +103,23 @@ function djinniItem(id: number, categories: string[]): string {
 }
 
 /** Items never seen before, so the oldest one of the fetch is unknown: a gap. */
-const freshDouBatch = (ids: number[]): string => rss(ids.map((id) => douItem(id, T0 + id * 100)));
+function freshDouBatch(ids: number[]): string {
+  return rss(ids.map((id) => douItem(id, T0 + id * 100)));
+}
 
-const feeds = (): Feed[] => [
-  { source: 'dou', feed: 'dou:A', url: `${baseUrl}/a` },
-  { source: 'dou', feed: 'dou:B', url: `${baseUrl}/b` },
-  { source: 'djinni', feed: 'djinni:all', url: `${baseUrl}/dj` },
-];
-const testOptions: Options = { userAgent: 'it-pulse-ua-test', delayMs: 0, retryBaseMs: 5 };
+function escapeXml(text: string): string {
+  return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
+function rfc822(unixSeconds: number): string {
+  return new Date(unixSeconds * 1000).toUTCString();
+}
 
 // ---- database ----------------------------------------------------------------------------------
 
-let admin: pg.Client;
-let collector: pg.Client;
-
-const collect = (): Promise<Summary> => collectAll(collector, feeds(), testOptions);
+function collect(): Promise<Summary> {
+  return collectAll(collector, feeds(), TEST_OPTIONS);
+}
 
 async function queryOne<Row extends pg.QueryResultRow>(sql: string): Promise<Row> {
   const { rows } = await admin.query<Row>(sql);
@@ -111,13 +139,6 @@ async function hasProblem(summary: Summary, prefix: string): Promise<boolean> {
 function quiet(): void {
   // migrations log nothing in tests
 }
-
-// Mirror production: the role is created outside migrations with Neon's read_only access.
-const RESET_SQL = `
-  drop schema if exists public cascade; create schema public;
-  drop role if exists collector; create role collector login password 'collector';
-  grant usage on schema public to collector;
-  alter default privileges in schema public grant select on tables to collector;`;
 
 before(async () => {
   server = createServer(respond);

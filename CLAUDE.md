@@ -6,8 +6,22 @@ the reviewer. Why these tools: [ADR 0006](docs/adr/0006-code-style-and-linting.m
 
 ## Code reads like a book
 
-- **Top-down, like a newspaper.** A file starts with its public entry point. The helpers it calls
-  come below, in the order they are called. A reader stops once they know enough.
+- **Fixed file layout**, in this order, with a `// ---- section ----` comment before each block:
+  1. imports;
+  2. types (interfaces and type aliases);
+  3. constants (numbers, SQL, configured parsers);
+  4. module state, if any (tests only, set in `before()`);
+  5. functions;
+  6. the entry-point code, in a CLI file.
+
+  Never put a type or a constant between functions. ESLint enforces types-before-functions
+  (`perfectionist/sort-modules`) and function declarations (`func-style`); constants are checked in
+  review.
+
+- **Functions top-down, like a newspaper.** The public entry point comes first. The helpers it
+  calls come below, in the order they are called. A reader stops once they know enough.
+- **Functions are declared with `function`**, not as arrow-function constants, so the constants
+  block holds only values. Arrows are for inline callbacks.
 - **One level of abstraction per function.** `collectFeed` reads as a story (fetch → parse →
   store → log). The SQL and HTTP details live one level down, in small named functions.
 - **Names tell the intent.** Write `hasGap`, `insertContentVersion`, `PERSISTENT_GAPS_SQL`, not
