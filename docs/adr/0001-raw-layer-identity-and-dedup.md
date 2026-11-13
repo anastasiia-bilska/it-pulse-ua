@@ -8,6 +8,7 @@
 RSS feeds repeat entries. On DOU, a vacancy that gets "bumped" comes back as a new entry, and its guid changes with each bump: `…/vacancies/379802/?1794495304`, where the `?ts` part is the bump time. In a morning snapshot of the general DOU feed, 34 of 50 entries were bumps of older vacancies. About 8% of DOU vacancies (91 of 1101) appear in two category feeds at once. On Djinni, the guid is a URL whose slug changes when the title is edited.
 
 We want three things at once:
+
 - re-run extraction over the full history whenever the prompt improves (evals depend on this);
 - avoid paying for extraction again on a bump that changed nothing;
 - keep bump frequency as a signal, since it shows roles that are hard to fill.

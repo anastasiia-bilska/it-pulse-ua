@@ -6,6 +6,7 @@
 ## Context
 
 The pipeline runs unattended on a cron, and its history can't be rebuilt (ADR 0002). The failures that hurt most here are silent ones:
+
 - a feed changes format;
 - we get blocked;
 - GitHub disables the schedule after 60 days of repo inactivity;
@@ -29,6 +30,7 @@ Guards come in four layers. Each one is added together with the stage it protect
    - the collector role being unable to delete or rewrite rows.
 
    Fixtures are synthetic only.
+
 2. **Eval harnesses** (added with each AI stage), gating PRs that change prompts or models:
    - extraction on 150 hand-labelled vacancies;
    - skill-resolution precision;
@@ -37,12 +39,14 @@ Guards come in four layers. Each one is added together with the stage it protect
    - podcast scripts where every number must trace back to SQL.
 
    Results go to Langfuse datasets.
+
 3. **Data checks after each run** (`checks.ts`):
    - failed feeds;
    - coverage gaps, alerting only when the same feed gapped on its last 3 successful fetches (a single gap is logged, not alerted);
    - a volume drop: new items in 24h below 50% of the median of the previous 7 windows, checked once there are 8 days of history.
 
    Extraction-quality and quota checks (Neon, Gemini, ElevenLabs at 80%) come with their stages.
+
 4. **Alerts via healthchecks.io → Telegram.** The collector pings at the end of each run:
    - a success ping is a heartbeat, and a missing ping (2h period plus 1h grace) raises an alert, which also covers a cron that never started;
    - any problem from the data checks, or a crash, pings `/fail` with a counts-only summary.

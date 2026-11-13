@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: collect   # never migrate while a collect run is writing
+  group: collect # never migrate while a collect run is writing
   cancel-in-progress: false
 
 jobs:

@@ -9,30 +9,40 @@ export interface Payload {
   categories: string[];
 }
 
-// DOU guid: https://jobs.dou.ua/companies/acme/vacancies/379802/?1794495304  (?ts = bump time)
-// Djinni guid: https://djinni.co/jobs/837440-some-title-slug/                 (slug changes on edit)
-const ID_RE: Record<Source, RegExp> = {
+// DOU guid:    https://jobs.dou.ua/companies/acme/vacancies/379802/?1794495304  (?ts = bump time)
+// Djinni guid: https://djinni.co/jobs/837440-some-title-slug/                  (slug changes on edit)
+const VACANCY_ID_PATTERN: Record<Source, RegExp> = {
   dou: /\/vacancies\/(\d+)\//,
   djinni: /\/jobs\/(\d+)(?:-|\/|$)/,
 };
 
 export function externalId(source: Source, guid: string): string {
-  const m = guid.match(ID_RE[source]);
-  if (!m) throw new Error(`no vacancy id in ${source} guid: ${guid}`);
-  return m[1];
+  const vacancyId = VACANCY_ID_PATTERN[source].exec(guid)?.[1];
+  if (vacancyId === undefined) {
+    throw new Error(`no vacancy id in ${source} guid: ${guid}`);
+  }
+  return vacancyId;
 }
 
 export function cleanLink(link: string): string {
-  const u = new URL(link);
-  u.search = '';
-  u.hash = '';
-  return u.toString();
+  const url = new URL(link);
+  url.search = '';
+  url.hash = '';
+  return url.href;
 }
 
-const norm = (s: string) => s.normalize('NFC').replace(/\s+/g, ' ').trim();
+function normalizeText(text: string): string {
+  return text.normalize('NFC').replaceAll(/\s+/g, ' ').trim();
+}
 
-// Excludes pubDate, guid and source feed: bumps and multi-category listings must not create new versions.
-export function contentHash(p: Payload): string {
-  const parts = [p.title, p.description, cleanLink(p.link), ...[...p.categories].sort()].map(norm);
-  return createHash('sha256').update(parts.join('\n')).digest('hex');
+/**
+ * Identifies a content version of a vacancy. Leaves out pubDate, guid and the feed on purpose:
+ * bumps and multi-category listings must not look like edits (ADR 0001).
+ */
+export function contentHash(payload: Payload): string {
+  // Default sort = UTF-16 code-unit order. Changing it would re-version every stored vacancy.
+  const categories = payload.categories.toSorted();
+  const parts = [payload.title, payload.description, cleanLink(payload.link), ...categories];
+  const canonical = parts.map((part) => normalizeText(part)).join('\n');
+  return createHash('sha256').update(canonical).digest('hex');
 }

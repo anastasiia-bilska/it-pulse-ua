@@ -8,6 +8,7 @@
 The collector runs every 2 hours from GitHub Actions in a public repository and needs a Postgres connection string. The raw layer is append-only and can't be rebuilt, because RSS has no history (ADR 0001, 0002). A leaked owner credential could drop or truncate everything collected so far.
 
 Options for where the secret lives:
+
 - GitHub Actions secrets;
 - 1Password via a service account;
 - Doppler or Infisical;
