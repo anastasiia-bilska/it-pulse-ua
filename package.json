@@ -17,6 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "extract": "node --env-file-if-exists=.env src/extractor/extract.ts",
+    "eval": "node --env-file-if-exists=.env src/evaluation/run-eval.ts",
     "eval:dataset": "node --env-file-if-exists=.env src/evaluation/build-dataset.ts",
     "dashboard": "node --env-file-if-exists=.env src/dashboard/build-dashboard.ts"
   },

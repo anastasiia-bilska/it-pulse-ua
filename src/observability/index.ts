@@ -9,7 +9,9 @@ export {
 } from './langfuse.ts';
 export {
   ensureDataset,
+  fetchDatasetItems,
   upsertDatasetItems,
   type DatasetItem,
   type LangfuseCredentials,
+  type StoredDatasetItem,
 } from './langfuse-datasets.ts';

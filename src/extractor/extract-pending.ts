@@ -2,7 +2,7 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import type pg from 'pg';
 import type { Tracer } from '../observability/index.ts';
-import { checkEvidence, type RiskyField } from './evidence.ts';
+import { checkEvidence, type CheckedFields, type RiskyField } from './evidence.ts';
 import { extractedFieldsSchema, type ExtractedFields } from './fields.ts';
 import { generateJson, QuotaExhaustedError, type GeminiConfig, type Generation } from './gemini.ts';
 import { EXTRACTOR_VERSION, PROMPT_HASH, RESPONSE_SCHEMA, SYSTEM_INSTRUCTION } from './prompt.ts';
@@ -55,6 +55,21 @@ interface ModelAnswer {
   generation: Generation;
 }
 
+interface CheckedAnswer {
+  checked: CheckedFields;
+  generation: Generation;
+}
+
+/** What one model call needs: the model, and how long to wait out a 429. */
+export type ModelCallOptions = Pick<ExtractionOptions, 'gemini' | 'quotaWaitMs'>;
+
+// ---- constants ---------------------------------------------------------------------------------
+
+/** 4 s between calls keeps us at 15 requests per minute. */
+export const REQUEST_INTERVAL_MS = 4000;
+/** A per-minute quota window resets within a minute. */
+export const QUOTA_WAIT_MS = 60_000;
+
 // ---- functions ---------------------------------------------------------------------------------
 
 export async function extractPending(
@@ -104,20 +119,18 @@ async function tryExtract(
   vacancy: PendingVacancy,
   options: ExtractionOptions,
 ): Promise<Outcome> {
-  const text = vacancyText(vacancy.payload);
   try {
-    const answer = await askModelWithOneRetry(text, options);
-    const checked = checkEvidence(tidyFields(answer.fields), text);
+    const { checked, generation } = await askAndCheck(vacancyText(vacancy.payload), options);
     await saveExtraction(db, {
       rawItemId: vacancy.rawItemId,
       version: EXTRACTOR_VERSION,
       model: options.gemini.model,
       promptHash: PROMPT_HASH,
-      generation: answer.generation,
+      generation,
       fields: checked.fields,
       evidence: checked.evidence,
     });
-    return { kind: 'saved', dropped: checked.dropped, generation: answer.generation };
+    return { kind: 'saved', dropped: checked.dropped, generation };
   } catch (error) {
     if (error instanceof QuotaExhaustedError) {
       return { kind: 'quota' };
@@ -156,11 +169,25 @@ function traceAttempt(tracer: Tracer, attempt: Attempt, outcome: Outcome): void 
   });
 }
 
-/** A 429 waits out the per-minute window first; any other error is retried at once. */
-async function askModelWithOneRetry(
+/**
+ * The current prompt and model on one vacancy text: tidy, evidence-checked fields, exactly what a
+ * run would store. The eval harness scores this (ADR 0012). Throws like `askModel`.
+ */
+export async function extractFields(
   text: string,
-  options: ExtractionOptions,
-): Promise<ModelAnswer> {
+  options: ModelCallOptions,
+): Promise<ExtractedFields> {
+  const { checked } = await askAndCheck(text, options);
+  return checked.fields;
+}
+
+async function askAndCheck(text: string, options: ModelCallOptions): Promise<CheckedAnswer> {
+  const answer = await askModelWithOneRetry(text, options);
+  return { checked: checkEvidence(tidyFields(answer.fields), text), generation: answer.generation };
+}
+
+/** A 429 waits out the per-minute window first; any other error is retried at once. */
+async function askModelWithOneRetry(text: string, options: ModelCallOptions): Promise<ModelAnswer> {
   try {
     return await askModel(text, options.gemini);
   } catch (error) {
