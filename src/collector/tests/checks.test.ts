@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { median } from './checks.ts';
+import { median } from '../checks.ts';
 
 test('median of odd, even and empty lists', () => {
   assert.equal(median([5, 1, 3]), 3);

@@ -1,5 +1,5 @@
 import type pg from 'pg';
-import { runScheduledJob } from '../shared/scheduled-job.ts';
+import { runScheduledJob } from '../shared/index.ts';
 import { findProblems } from './checks.ts';
 import { collectAll, type Feed, type Summary } from './ingest.ts';
 

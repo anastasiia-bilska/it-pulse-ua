@@ -8,9 +8,9 @@
   "scripts": {
     "migrate": "node --env-file-if-exists=.env src/db/migrate.ts",
     "collect": "node --env-file-if-exists=.env src/collector/collect.ts",
-    "test": "node --test 'src/**/*.test.ts'",
+    "test": "node --test 'src/**/tests/*.test.ts'",
     "typecheck": "tsc",
-    "test:integration": "node --test --test-concurrency=1 'src/**/*.itest.ts'",
+    "test:integration": "node --test --test-concurrency=1 'src/**/tests/*.itest.ts'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

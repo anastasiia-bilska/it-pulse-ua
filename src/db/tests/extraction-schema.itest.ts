@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import pg from 'pg';
-import { connectAs, resetDatabase, testDatabaseUrl } from './test-database.ts';
+import { connectAs, resetDatabase, testDatabaseUrl } from '../testing.ts';
 
 // ---- types -------------------------------------------------------------------------------------
 

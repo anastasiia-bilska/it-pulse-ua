@@ -27,6 +27,19 @@ export default defineConfig(
       'max-params': ['error', 3],
       'no-nested-ternary': 'error',
       eqeqeq: 'error',
+      // Modular architecture: other modules are reached only through their public API,
+      // `index.ts` (tests may also use `testing.ts`). See CLAUDE.md.
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: String.raw`^\.\./(?:\.\./)?[^./][^/]*/(?!index\.ts$|testing\.ts$)[^/]+$`,
+              message: 'Import another module through its index.ts (or testing.ts in tests).',
+            },
+          ],
+        },
+      ],
       // Named functions are declarations; arrows are for inline callbacks only.
       'func-style': ['error', 'declaration'],
       // File layout: types first, then functions (constants by convention, see CLAUDE.md).
