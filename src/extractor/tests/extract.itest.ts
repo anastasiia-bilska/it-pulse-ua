@@ -5,6 +5,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from 'node:net';
 import { after, before, test } from 'node:test';
 import pg from 'pg';
+import type { GenerationTrace, Tracer } from '../../observability/index.ts';
 import { connectAs, resetDatabase, testDatabaseUrl } from '../../db/testing.ts';
 import { findRunProblems } from '../checks.ts';
 import { extractPending, type ExtractionOptions, type RunReport } from '../extract-pending.ts';
@@ -63,7 +64,7 @@ const VALID_ANSWER: ExtractedFields = {
 const DESCRIPTION =
   '<p>We build a fintech product. Salary $4000-5000.</p><p>3+ years, English Upper-Intermediate.</p>';
 
-const FAST: Omit<ExtractionOptions, 'gemini'> = {
+const FAST: Omit<ExtractionOptions, 'gemini' | 'tracer'> = {
   limit: 50,
   requestIntervalMs: 0,
   quotaWaitMs: 0,
@@ -74,6 +75,7 @@ const FAST: Omit<ExtractionOptions, 'gemini'> = {
 /** Behaviour per case name; a vacancy title carries its case name. */
 const behaviours = new Map<string, FakeBehaviour>();
 const requests: InteractionRequest[] = [];
+const traces: GenerationTrace[] = [];
 let server: Server;
 let baseUrl = '';
 let admin: pg.Client;
@@ -118,7 +120,18 @@ function run(): Promise<RunReport> {
   return extractPending(extractor, {
     ...FAST,
     gemini: { apiKey: 'test-key', model: 'gemini-test', baseUrl },
+    tracer: recordingTracer(),
   });
+}
+
+/** Keeps traces in memory so the scenarios can inspect them. */
+function recordingTracer(): Tracer {
+  return {
+    recordGeneration: (trace) => {
+      traces.push(trace);
+    },
+    flush: () => Promise.resolve(),
+  };
 }
 
 // ---- database ----------------------------------------------------------------------------------
@@ -199,6 +212,14 @@ test('requests carry the key, disable server-side storage and send a Gemini-styl
 
   assert.equal(request.store, false);
   assert.ok(!JSON.stringify(request.response_format.schema).includes('anyOf'));
+});
+
+test('each model call is traced with its outcome, usage and version', () => {
+  const trace = traces.at(-1)!;
+
+  assert.equal(trace.metadata.outcome, 'saved');
+  assert.deepEqual(trace.usage, { input: 900, output: 120 });
+  assert.ok(trace.tags.includes('v1'));
 });
 
 test('an extracted vacancy leaves the queue', async () => {

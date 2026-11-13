@@ -84,9 +84,11 @@ const RECORD_FAILURE_SQL = `
       last_error = excluded.last_error,
       last_attempt_at = now()`;
 
+// started_at comes from the runner's clock, finished_at from the database's. least() keeps a small
+// clock skew from breaking the started_at <= finished_at constraint.
 const INSERT_JOB_RUN_SQL = `
   insert into job_run (job, started_at, status, processed, failed, backlog)
-  values ('extract', $1, $2, $3, $4, $5)`;
+  values ('extract', least($1::timestamptz, now()), $2, $3, $4, $5)`;
 
 const RECENT_BACKLOGS_SQL = `
   select backlog from job_run where job = 'extract' order by id desc limit $1`;
