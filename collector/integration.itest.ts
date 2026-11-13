@@ -7,7 +7,7 @@ import { after, before, test } from 'node:test';
 import pg from 'pg';
 import { findProblems } from './checks.ts';
 import { collectAll, type Feed, type Options, type Summary } from './ingest.ts';
-import { migrate } from './migrate.ts';
+import { connectAs, resetDatabase, testDatabaseUrl } from './test-database.ts';
 
 // ---- types -------------------------------------------------------------------------------------
 
@@ -19,22 +19,12 @@ interface Reply {
 
 // ---- constants ---------------------------------------------------------------------------------
 
-const ADMIN_URL = process.env.TEST_DATABASE_URL;
-if (!ADMIN_URL) {
-  throw new Error('TEST_DATABASE_URL is required (superuser; schema public is wiped)');
-}
+const ADMIN_URL = testDatabaseUrl();
 
 /** Base pubDate of the synthetic vacancies (unix seconds). */
 const T0 = 1_800_000_000;
 
 const TEST_OPTIONS: Options = { userAgent: 'it-pulse-ua-test', delayMs: 0, retryBaseMs: 5 };
-
-// Mirror production: the role is created outside migrations with Neon's read_only access.
-const RESET_SQL = `
-  drop schema if exists public cascade; create schema public;
-  drop role if exists collector; create role collector login password 'collector';
-  grant usage on schema public to collector;
-  alter default privileges in schema public grant select on tables to collector;`;
 
 // ---- shared state (set up in before(), like one long-lived deployment) -------------------------
 
@@ -136,10 +126,6 @@ async function hasProblem(summary: Summary, prefix: string): Promise<boolean> {
   return problems.some((problem) => problem.startsWith(prefix));
 }
 
-function quiet(): void {
-  // migrations log nothing in tests
-}
-
 before(async () => {
   server = createServer(respond);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -147,14 +133,8 @@ before(async () => {
 
   admin = new pg.Client({ connectionString: ADMIN_URL });
   await admin.connect();
-  await admin.query(RESET_SQL);
-  await migrate(ADMIN_URL, quiet);
-
-  const collectorUrl = new URL(ADMIN_URL);
-  collectorUrl.username = 'collector';
-  collectorUrl.password = 'collector';
-  collector = new pg.Client({ connectionString: collectorUrl.href });
-  await collector.connect();
+  await resetDatabase(admin, ADMIN_URL);
+  collector = await connectAs('collector', ADMIN_URL);
 });
 
 after(async () => {
