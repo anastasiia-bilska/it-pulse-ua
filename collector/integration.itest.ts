@@ -122,15 +122,19 @@ test('edited vacancy produces a new raw version', async () => {
   assert.equal(Number((await one(`select count(*) as n from raw_item where external_id = '2'`)).n), 2);
 });
 
-test('gap is flagged when the oldest item of a fetch was never seen', async () => {
-  routes.set('/a', ok(rss([dou(20, T0 + 2000), dou(21, T0 + 2100), dou(22, T0 + 2200)])));
-  const s = await collectAll(collector, feeds(), opts);
-  assert.deepEqual(s.gapFeeds, ['dou:A']);
-  assert.ok((await findProblems(admin, s)).some((p) => p.startsWith('coverage gaps')));
+test('a one-off gap is logged; only the same feed gapping 3 runs in a row alerts', async () => {
+  const gapProblem = async (s: Awaited<ReturnType<typeof collectAll>>) =>
+    (await findProblems(admin, s)).some((p) => p.startsWith('coverage gaps'));
+  for (const [i, ids] of [[20, 21, 22], [30, 31, 32], [40, 41, 42]].entries()) {
+    routes.set('/a', ok(rss(ids.map((id) => dou(id, T0 + id * 100)))));
+    const s = await collectAll(collector, feeds(), opts);
+    assert.deepEqual(s.gapFeeds, ['dou:A'], `run ${i + 1} gapped`);
+    assert.equal(await gapProblem(s), i === 2, `alert only on run 3, run ${i + 1}`);
+  }
 });
 
 test('429 is retried, persistent 500 and broken XML fail only their feed', async () => {
-  const sameA = rss([dou(20, T0 + 2000), dou(21, T0 + 2100), dou(22, T0 + 2200)]);
+  const sameA = rss([40, 41, 42].map((id) => dou(id, T0 + id * 100)));
   routes.set('/a', [{ status: 429, headers: { 'retry-after': '0' } }, { status: 200, body: sameA }]);
   routes.set('/b', [{ status: 500 }]);
   routes.set('/dj', ok('<rss><channel><item><title>broken'));
