@@ -1,0 +1,36 @@
+name: extract
+
+on:
+  # After every collect run, whatever its outcome: an LLM outage must never block collection,
+  # and a partly failed collect still leaves vacancies to extract (ADR 0007).
+  workflow_run:
+    workflows: [collect]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Max vacancies this run (default 300)
+        required: false
+
+concurrency:
+  group: extract
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    # 300 vacancies at 15 requests per minute is ~20 min, plus a possible quota wait.
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_EXTRACT_URL }}
+      EXTRACT_LIMIT: ${{ inputs.limit || '300' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run extract
