@@ -2,6 +2,7 @@
 import type pg from 'pg';
 import { tracerFromEnvironment } from '../observability/index.ts';
 import { runScheduledJob } from '../shared/index.ts';
+import { resolveSkills } from '../taxonomy/index.ts';
 import { findRunProblems } from './checks.ts';
 import { extractPending, type RunReport } from './extract-pending.ts';
 import { GEMINI_BASE_URL } from './gemini.ts';
@@ -34,6 +35,8 @@ async function extract(db: pg.Client): Promise<string[]> {
     tracer,
   });
   await tracer.flush();
+  // New skill names go to the triage queue (ADR 0009).
+  const unknownSkills = await resolveSkills(db);
   await recordJobRun(db, {
     startedAt,
     status: report.stoppedByQuota ? 'quota_exhausted' : 'ok',
@@ -41,7 +44,7 @@ async function extract(db: pg.Client): Promise<string[]> {
     failed: report.failed,
     backlog: report.backlog,
   });
-  console.log(summaryLine(report));
+  console.log(`${summaryLine(report)} unknown_skills=${unknownSkills}`);
   return findRunProblems(db, report);
 }
 

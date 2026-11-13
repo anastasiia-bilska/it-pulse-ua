@@ -1,11 +1,12 @@
 name: migrate
 
-# Schema changes run with the owner role, only when migrations change on main.
+# Schema changes and reference data (the skill dictionary) run with the owner role, only when
+# they change on main.
 # The scheduled collector uses a separate least-privilege role (ADR 0004).
 on:
   push:
     branches: [main]
-    paths: ['db/migrations/**']
+    paths: ['db/migrations/**', 'db/seed/**']
   workflow_dispatch:
 
 concurrency:
@@ -26,3 +27,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run migrate
+      # Idempotent: adds new skills and aliases from db/seed/skills.json (ADR 0009).
+      - run: npm run seed:skills
