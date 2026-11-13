@@ -1,6 +1,7 @@
 // LLM traces to Langfuse Cloud (EU) over OTLP/HTTP JSON (ADR 0010). Spans are buffered during a run
 // and sent in one go at the end. Tracing is best-effort: it never fails the job that traces.
 import { randomBytes } from 'node:crypto';
+import type { LangfuseCredentials } from './langfuse-datasets.ts';
 
 // ---- types -------------------------------------------------------------------------------------
 
@@ -24,12 +25,6 @@ export interface Tracer {
   recordGeneration: (trace: GenerationTrace) => void;
   /** Sends everything buffered; resolves even if Langfuse is down. */
   flush: () => Promise<void>;
-}
-
-interface LangfuseConfig {
-  publicKey: string;
-  secretKey: string;
-  baseUrl: string;
 }
 
 interface OtlpAttribute {
@@ -73,19 +68,19 @@ const NO_TRACING: Tracer = {
 
 /** Without both keys (local runs, tests) tracing is silently off. */
 export function tracerFromEnvironment(): Tracer {
-  const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
-  const secretKey = process.env.LANGFUSE_SECRET_KEY;
-  if (!publicKey || !secretKey) {
-    return NO_TRACING;
-  }
-  return createLangfuseTracer({
-    publicKey,
-    secretKey,
-    baseUrl: process.env.LANGFUSE_BASE_URL ?? LANGFUSE_EU_URL,
-  });
+  const credentials = langfuseCredentialsFromEnvironment();
+  return credentials ? createLangfuseTracer(credentials) : NO_TRACING;
 }
 
-export function createLangfuseTracer(config: LangfuseConfig): Tracer {
+/** Both keys or nothing; the host defaults to the EU region. */
+export function langfuseCredentialsFromEnvironment(): LangfuseCredentials | undefined {
+  const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
+  const secretKey = process.env.LANGFUSE_SECRET_KEY;
+  const baseUrl = process.env.LANGFUSE_BASE_URL ?? LANGFUSE_EU_URL;
+  return publicKey && secretKey ? { publicKey, secretKey, baseUrl } : undefined;
+}
+
+export function createLangfuseTracer(config: LangfuseCredentials): Tracer {
   const buffered: OtlpSpan[] = [];
   return {
     recordGeneration: (trace) => {
@@ -101,7 +96,7 @@ export function createLangfuseTracer(config: LangfuseConfig): Tracer {
 }
 
 /** Counts only in the log: a span carries vacancy text, and Actions logs are public. */
-async function sendSpans(config: LangfuseConfig, spans: OtlpSpan[]): Promise<void> {
+async function sendSpans(config: LangfuseCredentials, spans: OtlpSpan[]): Promise<void> {
   const credentials = Buffer.from(`${config.publicKey}:${config.secretKey}`).toString('base64');
   try {
     const response = await fetch(`${config.baseUrl}${OTLP_TRACES_PATH}`, {

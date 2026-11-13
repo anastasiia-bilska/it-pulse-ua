@@ -1,0 +1,25 @@
+name: eval-dataset
+
+# Builds the 150-vacancy extraction eval set and uploads it to a Langfuse dataset (ADR 0007).
+# Manual only: run once the extraction queue has drained, so the sample covers the population.
+# Item ids are stable, so a re-run updates items instead of duplicating them.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Read-only access is enough: the extractor role can read every table and view.
+      DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run eval:dataset
