@@ -7,7 +7,7 @@ import { after, before, test } from 'node:test';
 import pg from 'pg';
 import { findProblems } from './checks.ts';
 import { collectAll, type Feed, type Options, type Summary } from './ingest.ts';
-import { connectAs, resetDatabase, testDatabaseUrl } from './test-database.ts';
+import { connectAs, resetDatabase, testDatabaseUrl } from '../db/test-database.ts';
 
 // ---- types -------------------------------------------------------------------------------------
 

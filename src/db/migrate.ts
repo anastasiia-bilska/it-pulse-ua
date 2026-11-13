@@ -3,7 +3,7 @@ import path from 'node:path';
 import pg from 'pg';
 import { inTransaction } from './db.ts';
 
-const MIGRATIONS_DIRECTORY = new URL('../db/migrations/', import.meta.url);
+const MIGRATIONS_DIRECTORY = new URL('../../db/migrations/', import.meta.url);
 
 const CREATE_LEDGER_SQL = `
   create table if not exists schema_migrations (
