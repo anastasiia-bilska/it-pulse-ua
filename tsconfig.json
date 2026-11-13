@@ -7,10 +7,14 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["collector"]
+  "include": ["collector", "eslint.config.ts"]
 }

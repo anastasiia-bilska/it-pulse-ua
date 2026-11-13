@@ -1,163 +1,274 @@
-// Integration: real Postgres (TEST_DATABASE_URL, superuser, DESTROYS schema public) +
-// local HTTP server serving synthetic RSS. Collector runs as the least-privilege role.
-import { test, before, after } from 'node:test';
+// Integration: real Postgres (TEST_DATABASE_URL, superuser, DESTROYS schema public) plus a local
+// HTTP server serving synthetic RSS. The collector runs as the least-privilege role.
 import assert from 'node:assert/strict';
-import { createServer, type Server } from 'node:http';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { after, before, test } from 'node:test';
 import pg from 'pg';
-import { migrate } from './migrate.ts';
-import { collectAll, type Feed, type Options } from './ingest.ts';
 import { findProblems } from './checks.ts';
+import { collectAll, type Feed, type Options, type Summary } from './ingest.ts';
+import { migrate } from './migrate.ts';
+
+// ---- types -------------------------------------------------------------------------------------
+
+interface Reply {
+  status: number;
+  body?: string;
+  headers?: Record<string, string>;
+}
+
+// ---- constants ---------------------------------------------------------------------------------
 
 const ADMIN_URL = process.env.TEST_DATABASE_URL;
-if (!ADMIN_URL) throw new Error('TEST_DATABASE_URL is required (superuser; schema public is wiped)');
+if (!ADMIN_URL) {
+  throw new Error('TEST_DATABASE_URL is required (superuser; schema public is wiped)');
+}
 
-// ---- synthetic feed server ---------------------------------------------------------------
-type Route = { status: number; body?: string; headers?: Record<string, string> }[];
-const routes = new Map<string, Route>(); // each request shifts one response; last one sticks
+/** Base pubDate of the synthetic vacancies (unix seconds). */
+const T0 = 1_800_000_000;
+
+const TEST_OPTIONS: Options = { userAgent: 'it-pulse-ua-test', delayMs: 0, retryBaseMs: 5 };
+
+// Mirror production: the role is created outside migrations with Neon's read_only access.
+const RESET_SQL = `
+  drop schema if exists public cascade; create schema public;
+  drop role if exists collector; create role collector login password 'collector';
+  grant usage on schema public to collector;
+  alter default privileges in schema public grant select on tables to collector;`;
+
+// ---- shared state (set up in before(), like one long-lived deployment) -------------------------
+
+/** Replies per path: each request takes the next one, the last one repeats. */
+const routes = new Map<string, Reply[]>();
 const hits = new Map<string, number>();
 let server: Server;
-let base = '';
-
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const rss = (items: string[]) =>
-  `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>t</title>${items.join('')}</channel></rss>`;
-const dou = (id: number, ts: number, title = `Synthetic role ${id}`) =>
-  `<item><title>${esc(title)}</title><link>${base}/companies/acme/vacancies/${id}/?utm_source=jobsrss</link>` +
-  `<description>${esc('<p>Synthetic description</p>')}</description><pubDate>${new Date(ts * 1000).toUTCString()}</pubDate>` +
-  `<guid>${base}/companies/acme/vacancies/${id}/?${ts}</guid></item>`;
-const djinni = (id: number, ts: number, cats: string[]) =>
-  `<item><title>Synthetic ${id}</title><link>${base}/jobs/${id}-synthetic-slug/</link><description>d</description>` +
-  `<pubDate>${new Date(ts * 1000).toUTCString()}</pubDate><guid>${base}/jobs/${id}-synthetic-slug/</guid>` +
-  cats.map((c) => `<category>${c}</category>`).join('') + `</item>`;
-const ok = (body: string): Route => [{ status: 200, body }];
-
-const feeds = (): Feed[] => [
-  { source: 'dou', feed: 'dou:A', url: `${base}/a` },
-  { source: 'dou', feed: 'dou:B', url: `${base}/b` },
-  { source: 'djinni', feed: 'djinni:all', url: `${base}/dj` },
-];
-const opts: Options = { userAgent: 'it-pulse-ua-test', delayMs: 0, retryBaseMs: 5 };
-
-// ---- db helpers ---------------------------------------------------------------------------
+let baseUrl = '';
 let admin: pg.Client;
 let collector: pg.Client;
-const one = async (sql: string, args: unknown[] = []) => (await admin.query(sql, args)).rows[0];
-const count = async (table: string) => Number((await one(`select count(*) as n from ${table}`)).n);
+
+// ---- synthetic feed server ---------------------------------------------------------------------
+
+function respond(request: IncomingMessage, response: ServerResponse): void {
+  const path = request.url ?? '/';
+  hits.set(path, (hits.get(path) ?? 0) + 1);
+  const reply = nextReply(path);
+  response.writeHead(reply.status, reply.headers).end(reply.body ?? '');
+}
+
+function nextReply(path: string): Reply {
+  const queue = routes.get(path);
+  if (!queue?.[0]) {
+    return { status: 404 };
+  }
+  return queue.length > 1 ? queue.shift()! : queue[0];
+}
+
+function ok(body: string): Reply[] {
+  return [{ status: 200, body }];
+}
+
+function feeds(): Feed[] {
+  return [
+    { source: 'dou', feed: 'dou:A', url: `${baseUrl}/a` },
+    { source: 'dou', feed: 'dou:B', url: `${baseUrl}/b` },
+    { source: 'djinni', feed: 'djinni:all', url: `${baseUrl}/dj` },
+  ];
+}
+
+// ---- synthetic RSS (never real vacancy text) ---------------------------------------------------
+
+function rss(items: string[]): string {
+  return (
+    `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>t</title>` +
+    `${items.join('')}</channel></rss>`
+  );
+}
+
+function douItem(id: number, bumpedAt: number, title = `Synthetic role ${id}`): string {
+  const page = `${baseUrl}/companies/acme/vacancies/${id}/`;
+  return (
+    `<item><title>${escapeXml(title)}</title><link>${page}?utm_source=jobsrss</link>` +
+    `<description>${escapeXml('<p>Synthetic description</p>')}</description>` +
+    `<pubDate>${rfc822(bumpedAt)}</pubDate><guid>${page}?${bumpedAt}</guid></item>`
+  );
+}
+
+function djinniItem(id: number, categories: string[]): string {
+  const page = `${baseUrl}/jobs/${id}-synthetic-slug/`;
+  const categoryTags = categories.map((category) => `<category>${category}</category>`).join('');
+  return (
+    `<item><title>Synthetic ${id}</title><link>${page}</link><description>d</description>` +
+    `<pubDate>${rfc822(T0)}</pubDate><guid>${page}</guid>${categoryTags}</item>`
+  );
+}
+
+/** Items never seen before, so the oldest one of the fetch is unknown: a gap. */
+function freshDouBatch(ids: number[]): string {
+  return rss(ids.map((id) => douItem(id, T0 + id * 100)));
+}
+
+function escapeXml(text: string): string {
+  return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
+function rfc822(unixSeconds: number): string {
+  return new Date(unixSeconds * 1000).toUTCString();
+}
+
+// ---- database ----------------------------------------------------------------------------------
+
+function collect(): Promise<Summary> {
+  return collectAll(collector, feeds(), TEST_OPTIONS);
+}
+
+async function queryOne<Row extends pg.QueryResultRow>(sql: string): Promise<Row> {
+  const { rows } = await admin.query<Row>(sql);
+  return rows[0]!;
+}
+
+/** `count('raw_item')`, or with a filter: `count("raw_item where external_id = '2'")`. */
+async function count(rowsOf: string): Promise<number> {
+  return Number((await queryOne<{ count: string }>(`select count(*) from ${rowsOf}`)).count);
+}
+
+async function hasProblem(summary: Summary, prefix: string): Promise<boolean> {
+  const problems = await findProblems(admin, summary);
+  return problems.some((problem) => problem.startsWith(prefix));
+}
+
+function quiet(): void {
+  // migrations log nothing in tests
+}
 
 before(async () => {
-  server = createServer((req, res) => {
-    const path = req.url ?? '/';
-    hits.set(path, (hits.get(path) ?? 0) + 1);
-    const queue = routes.get(path);
-    const r = queue ? (queue.length > 1 ? queue.shift()! : queue[0]) : { status: 404 };
-    res.writeHead(r.status, r.headers).end(r.body ?? '');
-  });
-  await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
-  base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  server = createServer(respond);
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 
   admin = new pg.Client({ connectionString: ADMIN_URL });
   await admin.connect();
-  // Mirror production: role created outside migrations with Neon's read_only access.
-  await admin.query(`
-    drop schema if exists public cascade; create schema public;
-    drop role if exists collector; create role collector login password 'collector';
-    grant usage on schema public to collector;
-    alter default privileges in schema public grant select on tables to collector;`);
-  await migrate(ADMIN_URL, () => {});
+  await admin.query(RESET_SQL);
+  await migrate(ADMIN_URL, quiet);
 
-  const url = new URL(ADMIN_URL);
-  url.username = 'collector';
-  url.password = 'collector';
-  collector = new pg.Client({ connectionString: url.toString() });
+  const collectorUrl = new URL(ADMIN_URL);
+  collectorUrl.username = 'collector';
+  collectorUrl.password = 'collector';
+  collector = new pg.Client({ connectionString: collectorUrl.href });
   await collector.connect();
 });
 
 after(async () => {
-  await collector?.end();
-  await admin?.end();
-  server?.close();
+  await collector.end();
+  await admin.end();
+  server.close();
 });
 
-// Tests run in order and share state, like consecutive cron runs.
-const T0 = 1_800_000_000;
+// ---- scenarios: they run in order and share state, like consecutive cron runs -----------------
 
 test('first run stores each vacancy once, merges multi-category listings', async () => {
-  routes.set('/a', ok(rss([dou(1, T0), dou(2, T0 + 60), dou(3, T0 + 120)])));
-  routes.set('/b', ok(rss([dou(3, T0 + 120), dou(4, T0 + 180)])));
-  routes.set('/dj', ok(rss([djinni(10, T0, ['Python', 'AI/ML']), djinni(11, T0, [])])));
+  routes.set('/a', ok(rss([douItem(1, T0), douItem(2, T0 + 60), douItem(3, T0 + 120)])));
+  routes.set('/b', ok(rss([douItem(3, T0 + 120), douItem(4, T0 + 180)])));
+  routes.set('/dj', ok(rss([djinniItem(10, ['Python', 'AI/ML']), djinniItem(11, [])])));
 
-  const s = await collectAll(collector, feeds(), opts);
-  assert.deepEqual(s.failedFeeds, []);
-  assert.deepEqual(s.gapFeeds, [], 'no gap on the very first fetch');
-  assert.equal(s.newItems, 6);
+  const summary = await collect();
+
+  assert.deepEqual(summary.failedFeeds, []);
+  assert.deepEqual(summary.gapFeeds, [], 'no gap on the very first fetch');
+  assert.equal(summary.newItems, 6);
   assert.equal(await count('raw_item'), 6);
-  const v3 = await one(`select feeds from vacancy where source = 'dou' and external_id = '3'`);
-  assert.deepEqual([...v3.feeds].sort(), ['dou:A', 'dou:B']);
-  const v10 = await one(`select payload from raw_item where source = 'djinni' and external_id = '10'`);
-  assert.deepEqual(v10.payload.categories, ['Python', 'AI/ML']);
+  const vacancy3 = await queryOne<{ feeds: string[] }>(
+    `select feeds from vacancy where source = 'dou' and external_id = '3'`,
+  );
+  assert.deepEqual(vacancy3.feeds.toSorted(), ['dou:A', 'dou:B']);
+  const vacancy10 = await queryOne<{ payload: { categories: string[] } }>(
+    `select payload from raw_item where source = 'djinni' and external_id = '10'`,
+  );
+  assert.deepEqual(vacancy10.payload.categories, ['Python', 'AI/ML']);
 });
 
 test('identical second run is idempotent', async () => {
-  const sightings = await count('sighting');
-  const s = await collectAll(collector, feeds(), opts);
-  assert.equal(s.newItems, 0);
-  assert.deepEqual(s.gapFeeds, []);
+  const sightingsBefore = await count('sighting');
+
+  const summary = await collect();
+
+  assert.equal(summary.newItems, 0);
+  assert.deepEqual(summary.gapFeeds, []);
   assert.equal(await count('raw_item'), 6);
-  assert.equal(await count('sighting'), sightings);
+  assert.equal(await count('sighting'), sightingsBefore);
 });
 
 test('bump: new guid timestamp adds a sighting, not a content version', async () => {
-  routes.set('/a', ok(rss([dou(1, T0 + 999), dou(2, T0 + 60), dou(3, T0 + 120)])));
-  const s = await collectAll(collector, feeds(), opts);
-  assert.equal(s.newItems, 0);
+  routes.set('/a', ok(rss([douItem(1, T0 + 999), douItem(2, T0 + 60), douItem(3, T0 + 120)])));
+
+  const summary = await collect();
+
+  assert.equal(summary.newItems, 0);
   assert.equal(await count('raw_item'), 6);
-  assert.equal(Number((await one(`select bumps from vacancy where external_id = '1'`)).bumps), 1);
+  const vacancy1 = await queryOne<{ bumps: string }>(
+    `select bumps from vacancy where external_id = '1'`,
+  );
+  assert.equal(Number(vacancy1.bumps), 1);
 });
 
 test('edited vacancy produces a new raw version', async () => {
-  routes.set('/a', ok(rss([dou(1, T0 + 999), dou(2, T0 + 60, 'Synthetic role 2 (edited)'), dou(3, T0 + 120)])));
-  const s = await collectAll(collector, feeds(), opts);
-  assert.equal(s.newItems, 1);
-  assert.equal(Number((await one(`select count(*) as n from raw_item where external_id = '2'`)).n), 2);
+  const edited = douItem(2, T0 + 60, 'Synthetic role 2 (edited)');
+  routes.set('/a', ok(rss([douItem(1, T0 + 999), edited, douItem(3, T0 + 120)])));
+
+  const summary = await collect();
+
+  assert.equal(summary.newItems, 1);
+  assert.equal(await count(`raw_item where external_id = '2'`), 2);
 });
 
 test('a one-off gap is logged; only the same feed gapping 3 runs in a row alerts', async () => {
-  const gapProblem = async (s: Awaited<ReturnType<typeof collectAll>>) =>
-    (await findProblems(admin, s)).some((p) => p.startsWith('coverage gaps'));
-  for (const [i, ids] of [[20, 21, 22], [30, 31, 32], [40, 41, 42]].entries()) {
-    routes.set('/a', ok(rss(ids.map((id) => dou(id, T0 + id * 100)))));
-    const s = await collectAll(collector, feeds(), opts);
-    assert.deepEqual(s.gapFeeds, ['dou:A'], `run ${i + 1} gapped`);
-    assert.equal(await gapProblem(s), i === 2, `alert only on run 3, run ${i + 1}`);
+  const batches = [
+    [20, 21, 22],
+    [30, 31, 32],
+    [40, 41, 42],
+  ];
+  for (const [index, ids] of batches.entries()) {
+    const run = index + 1;
+    routes.set('/a', ok(freshDouBatch(ids)));
+
+    const summary = await collect();
+
+    assert.deepEqual(summary.gapFeeds, ['dou:A'], `run ${run} gapped`);
+    assert.equal(await hasProblem(summary, 'coverage gaps'), run === 3, `run ${run}`);
   }
 });
 
 test('429 is retried, persistent 500 and broken XML fail only their feed', async () => {
-  const sameA = rss([40, 41, 42].map((id) => dou(id, T0 + id * 100)));
-  routes.set('/a', [{ status: 429, headers: { 'retry-after': '0' } }, { status: 200, body: sameA }]);
+  routes.set('/a', [
+    { status: 429, headers: { 'retry-after': '0' } },
+    { status: 200, body: freshDouBatch([40, 41, 42]) },
+  ]);
   routes.set('/b', [{ status: 500 }]);
   routes.set('/dj', ok('<rss><channel><item><title>broken'));
   hits.clear();
-  const before = await count('raw_item');
+  const rawItemsBefore = await count('raw_item');
 
-  const s = await collectAll(collector, feeds(), opts);
+  const summary = await collect();
+
   assert.equal(hits.get('/a'), 2, '429 retried once');
   assert.equal(hits.get('/b'), 4, '500 retried 3 times then given up');
-  assert.deepEqual(s.failedFeeds.sort(), ['djinni:all', 'dou:B']);
-  assert.equal(await count('raw_item'), before, 'broken feed wrote nothing');
-  assert.equal((await one(`select status from fetch_log where feed = 'dou:B' order by id desc limit 1`)).status, 500);
-  assert.ok((await findProblems(admin, s)).some((p) => p.startsWith('failed feeds (2)')));
+  assert.deepEqual(summary.failedFeeds.toSorted(), ['djinni:all', 'dou:B']);
+  assert.equal(await count('raw_item'), rawItemsBefore, 'broken feed wrote nothing');
+  const lastFetchOfB = await queryOne<{ status: number }>(
+    `select status from fetch_log where feed = 'dou:B' order by id desc limit 1`,
+  );
+  assert.equal(lastFetchOfB.status, 500);
+  assert.ok(await hasProblem(summary, 'failed feeds (2)'));
 });
 
 test('collector role cannot destroy or rewrite history', async () => {
-  for (const sql of [
+  const destructiveStatements = [
     'delete from raw_item',
     'truncate sighting',
     'drop table fetch_log',
     `update raw_item set payload = '{}'`,
     `update sighting set pub_date = now()`,
-  ]) {
+  ];
+  for (const sql of destructiveStatements) {
     await assert.rejects(collector.query(sql), /permission denied|must be owner/, sql);
   }
 });

@@ -10,15 +10,28 @@
     "collect": "node --env-file-if-exists=.env collector/collect.ts",
     "test": "node --test collector/*.test.ts",
     "typecheck": "tsc",
-    "test:integration": "node --test --test-concurrency=1 collector/*.itest.ts"
+    "test:integration": "node --test --test-concurrency=1 collector/*.itest.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "fast-xml-parser": "^5.12.0",
     "pg": "^8.23.1"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
-    "typescript": "^7.0.2"
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-perfectionist": "5.13.0",
+    "eslint-plugin-unicorn": "79.0.0",
+    "globals": "17.14.0",
+    "jiti": "2.7.0",
+    "prettier": "3.10.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2"
   }
 }

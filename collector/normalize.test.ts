@@ -11,8 +11,14 @@ const base = {
 };
 
 test('dou id ignores bump timestamp', () => {
-  assert.equal(externalId('dou', 'https://jobs.dou.ua/companies/acme/vacancies/111/?1794495304'), '111');
-  assert.equal(externalId('dou', 'https://jobs.dou.ua/companies/acme/vacancies/111/?1794499999'), '111');
+  assert.equal(
+    externalId('dou', 'https://jobs.dou.ua/companies/acme/vacancies/111/?1794495304'),
+    '111',
+  );
+  assert.equal(
+    externalId('dou', 'https://jobs.dou.ua/companies/acme/vacancies/111/?1794499999'),
+    '111',
+  );
 });
 
 test('djinni id ignores slug', () => {
@@ -23,17 +29,36 @@ test('djinni id ignores slug', () => {
 
 test('hash ignores utm, whitespace and category order', () => {
   const h = contentHash(base);
-  assert.equal(contentHash({ ...base, link: 'https://jobs.dou.ua/companies/acme/vacancies/111/' }), h);
+  assert.equal(
+    contentHash({ ...base, link: 'https://jobs.dou.ua/companies/acme/vacancies/111/' }),
+    h,
+  );
   assert.equal(contentHash({ ...base, description: '<p>Synthetic text</p>\n' }), h);
   const c = { ...base, categories: ['Python', 'AI/ML'] };
   assert.equal(contentHash({ ...c, categories: ['AI/ML', 'Python'] }), contentHash(c));
 });
 
 test('hash changes when content changes', () => {
-  assert.notEqual(contentHash({ ...base, title: 'Senior Test Engineer в Acme' }), contentHash(base));
+  assert.notEqual(
+    contentHash({ ...base, title: 'Senior Test Engineer в Acme' }),
+    contentHash(base),
+  );
   assert.notEqual(contentHash({ ...base, categories: ['Python'] }), contentHash(base));
 });
 
 test('cleanLink strips query', () => {
   assert.equal(cleanLink(base.link), 'https://jobs.dou.ua/companies/acme/vacancies/111/');
+});
+
+test('hash of a stored vacancy never changes (golden value: changing it re-versions history)', () => {
+  const payload = {
+    title: 'Synthetic  Role',
+    description: '<p>x</p>\n y',
+    link: 'https://jobs.dou.ua/companies/acme/vacancies/1/?utm_source=jobsrss#a',
+    categories: ['Python', 'AI/ML', 'ai', 'Бекенд', 'Back End'],
+  };
+  assert.equal(
+    contentHash(payload),
+    '5d58e2458110bde8233bbfc9c2de605597070d8f829f094a83b1b6ce1cfb6f34',
+  );
 });
