@@ -1,0 +1,29 @@
+name: collect
+
+on:
+  # Every 2h: DOU's busiest category feed spans ~38h, Djinni ~15h. Retune from fetch_log gaps.
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      COLLECTOR_UA: it-pulse-ua-collector/0.1 (non-commercial research; ${{ github.server_url }}/${{ github.repository }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run migrate
+      - run: npm run collect
