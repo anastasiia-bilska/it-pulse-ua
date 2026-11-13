@@ -52,8 +52,8 @@ with zero labels and say so.
 - **The PR gate.** `.github/workflows/eval.yml` runs on `workflow_dispatch` and on every pull
   request that touches `src/extractor/**`. It uploads the report as an artifact.
   - The run exits non-zero when overall accuracy is below `MIN_ACCURACY`.
-  - With no labelled items, or without Langfuse keys, it prints one line and exits 0 before it
-    reads the Gemini key.
+  - Without Langfuse keys, without the dataset, or with no labelled items, it prints a skip line
+    that names the reason and exits 0 before it reads the Gemini key.
   - It is not a required check yet.
   - **TODO:** `MIN_ACCURACY` starts at 0, which means no gate. Set the real threshold after the
     first labelled baseline. Then make the `eval` job a required check.

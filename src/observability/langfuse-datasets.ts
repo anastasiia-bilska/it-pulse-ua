@@ -75,11 +75,11 @@ export async function upsertDatasetItems(
   }
 }
 
-/** Every item of the dataset, page by page. A dataset that doesn't exist yet has no items. */
+/** Every item of the dataset, page by page; `undefined` when the dataset doesn't exist. */
 export async function fetchDatasetItems(
   credentials: LangfuseCredentials,
   datasetName: string,
-): Promise<StoredDatasetItem[]> {
+): Promise<StoredDatasetItem[] | undefined> {
   const items: StoredDatasetItem[] = [];
   for (let page = 1; ; page++) {
     const query = new URLSearchParams({
@@ -90,7 +90,7 @@ export async function fetchDatasetItems(
     const response = await request(credentials, `${DATASET_ITEMS_PATH}?${query.toString()}`);
     if (response.status === HTTP_NOT_FOUND) {
       await response.body?.cancel();
-      return items;
+      return undefined;
     }
     await assertOk(response, 'list dataset items');
     const { data, meta } = itemsPageSchema.parse(await response.json());

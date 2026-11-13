@@ -69,6 +69,10 @@ async function runEval(): Promise<void> {
     return;
   }
   const stored = await fetchDatasetItems(credentials, DATASET_NAME);
+  if (!stored) {
+    console.log(`eval skipped: dataset ${DATASET_NAME} not found (run eval-dataset first)`);
+    return;
+  }
   const items = stored.map((item) => toEvalItem(item));
   if (items.every((item) => item.expected === null)) {
     console.log(`eval skipped: no labelled items yet (items=${items.length})`);

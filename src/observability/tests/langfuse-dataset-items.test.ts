@@ -71,7 +71,7 @@ test('every page of items is fetched, with Basic auth and the dataset name', asy
   const items = await fetchDatasetItems(credentials, DATASET);
 
   assert.deepEqual(
-    items.map((item) => item.id),
+    items?.map((item) => item.id),
     STORED_ITEMS.map((item) => item.id),
   );
   assert.ok(requestedUrls.length > 1);
@@ -79,8 +79,8 @@ test('every page of items is fetched, with Basic auth and the dataset name', asy
   assert.equal(authorizations[0], `Basic ${Buffer.from('pk:sk').toString('base64')}`);
 });
 
-test('a dataset that does not exist yet has no items', async () => {
+test('a dataset that does not exist is told apart from an empty one', async () => {
   const items = await fetchDatasetItems(credentials, 'missing');
 
-  assert.deepEqual(items, []);
+  assert.equal(items, undefined);
 });
