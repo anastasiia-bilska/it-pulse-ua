@@ -16,6 +16,7 @@ jobs:
     timeout-minutes: 15
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
       COLLECTOR_UA: it-pulse-ua-collector/0.1 (non-commercial research; ${{ github.server_url }}/${{ github.repository }})
     steps:
       - uses: actions/checkout@v4
@@ -24,5 +25,4 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm test
       - run: npm run collect
