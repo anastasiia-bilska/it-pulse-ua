@@ -2,31 +2,36 @@
 
 _AI-аналітика українського IT-ринку вакансій: що наймають, скільки платять і куди рухається ринок._
 
+**Live dashboard: <https://anastasiia-bilska.github.io/it-pulse-ua/>**
+
 ## What and why
 
 IT Pulse UA collects public vacancies from DOU and Djinni, turns them into structured facts with an
 LLM, and will answer questions about the Ukrainian IT job market with numbers you can trace back to
 SQL. RSS feeds keep no history, so collection shipped first and runs every two hours. Trends build
 up from the day it started. It is a portfolio project for AI Engineer roles, and it is **in
-progress**: the collector runs in production today, extraction is being built, and the rest is
-planned.
+progress**: collection, extraction and a public dashboard run in production. The eval set is being
+labelled, and the agent is planned.
 
 ## Status
 
-| Area                                                                             | Status      |
-| -------------------------------------------------------------------------------- | ----------- |
-| RSS collection: 59 DOU category feeds plus the Djinni feed, every 2h             | Done        |
-| Append-only raw layer, dedup by vacancy id plus content hash, bumps, gaps        | Done        |
-| Least-privilege `collector` role, separate `migrate` workflow                    | Done        |
-| Guards: CI, post-run data checks, healthchecks.io heartbeat with Telegram alerts | Done        |
-| Extraction schema: tables, CHECK constraints, `extractor` role, freshness views  | Done        |
-| LLM extraction with Gemini, evidence-quote checks, retry queue                   | In progress |
-| Skill taxonomy (ADR 0009): alias dictionary, automated triage, human override    | In progress |
-| Langfuse traces and eval datasets; eval harness on 150 labelled vacancies        | Planned     |
-| Dashboard with a freshness banner                                                | Planned     |
-| «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10        | Planned     |
-| Weekly audio digest (ElevenLabs)                                                 | Planned     |
-| Wave 2: CV match, MCP server                                                     | Planned     |
+| Area                                                                                     | Status      |
+| ---------------------------------------------------------------------------------------- | ----------- |
+| RSS collection: 59 DOU category feeds plus the Djinni feed, every 2h                     | Done        |
+| Append-only raw layer, dedup by vacancy id plus content hash, bumps, gaps                | Done        |
+| Least-privilege `collector` role, separate `migrate` workflow                            | Done        |
+| Guards: CI, post-run data checks, healthchecks.io heartbeat with Telegram alerts         | Done        |
+| Extraction schema: tables, CHECK constraints, `extractor` role, freshness views          | Done        |
+| LLM extraction with Gemini, evidence-quote checks, retry queue                           | Done        |
+| Langfuse traces for every model call (ADR 0010)                                          | Done        |
+| Skill taxonomy (ADR 0009): alias dictionary, automated triage, human override            | Done        |
+| Public dashboard on GitHub Pages with a freshness banner (ADR 0011)                      | Done        |
+| Eval set builder: 150 stratified vacancies to a Langfuse dataset, 30 for blind labelling | Done        |
+| Eval harness and PR gate (ADR 0012)                                                      | Done        |
+| Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
+| «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10                | Planned     |
+| Weekly audio digest (ElevenLabs)                                                         | Planned     |
+| Wave 2: CV match, MCP server                                                             | Planned     |
 
 ## Architecture
 
@@ -39,7 +44,8 @@ flowchart LR
 
   subgraph GHA["GitHub Actions"]
     COL["collect<br/>cron every 2h"]
-    EXT["extract<br/>after each collect<br/>(in progress)"]
+    EXT["extract<br/>after each collect"]
+    DASH["dashboard<br/>after each extract"]
   end
 
   subgraph Neon["Neon Postgres"]
@@ -49,6 +55,8 @@ flowchart LR
   end
 
   GEM["Gemini<br/>structured output"]
+  LF["Langfuse<br/>traces, eval set"]
+  PAGES["GitHub Pages<br/>public dashboard"]
   HC["healthchecks.io"] --> TG["Telegram alerts"]
 
   DOU --> COL
@@ -57,10 +65,13 @@ flowchart LR
   COL -- "heartbeat / fail" --> HC
   RAW --> EXT
   EXT <--> GEM
+  EXT -- "traces" --> LF
   EXT -- "extractor role: append, no DELETE or DDL" --> EX
   RAW --> VIEWS
   EX --> VIEWS
-  VIEWS -.-> PLAN["dashboard, agent, audio digest<br/>(planned)"]
+  VIEWS --> DASH
+  DASH -- "aggregates only" --> PAGES
+  VIEWS -.-> PLAN["agent, audio digest<br/>(planned)"]
 ```
 
 ## Pipeline
@@ -78,14 +89,17 @@ flowchart LR
 3. **Check and alert** ([ADR 0005](docs/adr/0005-guards-tests-monitoring-alerts.md)). After each
    run, data checks look for failed feeds, gaps on 3 runs in a row and a volume drop. The run pings
    healthchecks.io: a missing heartbeat or a `/fail` ping reaches Telegram.
-4. **Extract** ([ADR 0007](docs/adr/0007-llm-extraction.md), in progress). Gemini
+4. **Extract** ([ADR 0007](docs/adr/0007-llm-extraction.md)). Gemini
    `gemini-3.5-flash-lite` through the Interactions API returns structured output: role,
    seniority, salary, work format, English, experience, company type, domain and skills. Each field
    is NULL when the vacancy doesn't state it. The queue is every raw version without an extraction
    for the current `extractor_version`, at most 300 per run, with retries and a dead letter after 3
-   attempts.
-5. **Serve** (planned). The dashboard and the agent read only `vacancy_current` and
-   `pipeline_status`, and show how fresh the data is.
+   attempts. Skill names are normalized through the taxonomy
+   ([ADR 0009](docs/adr/0009-skill-taxonomy.md)), and every model call is traced in Langfuse
+   ([ADR 0010](docs/adr/0010-langfuse-tracing.md)).
+5. **Serve** ([ADR 0011](docs/adr/0011-public-dashboard.md)). After each extract run a static
+   dashboard is rebuilt from `vacancy_current` and `pipeline_status`: aggregates only, every share
+   with its n, and a banner when the data is stale. The agent (planned) reads the same views.
 
 ## Engineering practices
 
@@ -103,9 +117,12 @@ flowchart LR
   experience, English and domain need a verbatim evidence quote, and code checks it is a substring
   of the vacancy text. If it isn't, the field is dropped and counted. The model version is pinned,
   temperature is 0, and there is no fallback model.
-- **Evals** (planned). Any prompt or model change bumps `extractor_version` and must pass an eval
-  gate on 150 hand-labelled vacancies, 30 of them labelled blind to measure anchoring bias. Traces
-  and datasets go to Langfuse.
+- **Evals** ([ADR 0012](docs/adr/0012-eval-harness.md)). `npm run eval` scores the current prompt
+  and model against the labelled eval set: per-field accuracy, salary and locations as a whole,
+  skills precision, recall and F1. Accuracy is reported apart for the 30 blind and the 120
+  prelabelled items: the gap measures anchoring bias. Any pull request that touches the extractor
+  runs it. The set is still being labelled, so there is no baseline and no threshold yet, and the
+  run skips until labels exist.
 - **Readability rules** ([CLAUDE.md](CLAUDE.md), [ADR 0006](docs/adr/0006-code-style-and-linting.md)).
   Code reads top-down, with a fixed file layout, intent-revealing names and small functions. ESLint
   enforces the mechanical part. The same rules bind human and AI contributors.
@@ -165,6 +182,11 @@ npm run test:integration  # Postgres plus a fake RSS server
 src/
   collector/     RSS fetch, normalize, dedup, data checks; collect.ts is the CLI
   db/            migration runner, test helpers
+  extractor/     Gemini extraction, evidence checks, queue; extract.ts is the CLI
+  taxonomy/      skill aliases and triage
+  observability/ Langfuse traces and datasets
+  evaluation/    eval set sampling, scoring; run-eval.ts is the eval CLI
+  dashboard/     public aggregates for GitHub Pages
   shared/        scheduled-job runner: DB connection, healthchecks.io pings
   <module>/tests/  *.test.ts (unit), *.itest.ts (integration)
 db/migrations/   plain SQL, applied in order
@@ -173,6 +195,9 @@ docs/adr/        architecture decision records
   ci.yml         required check on every PR
   collect.yml    cron every 2h, collector role
   migrate.yml    on migration changes, owner role
+  extract.yml    after each collect, extractor role
+  dashboard.yml  after each extract and daily, publishes to Pages
+  eval.yml       eval gate on extractor PRs, or manual
 CLAUDE.md        engineering rules for people and AI agents
 ```
 
@@ -188,4 +213,7 @@ CLAUDE.md        engineering rules for people and AI agents
 | [0006](docs/adr/0006-code-style-and-linting.md)          | Code style: ESLint, Prettier and written engineering rules  |
 | [0007](docs/adr/0007-llm-extraction.md)                  | LLM extraction of structured vacancy fields                 |
 | [0008](docs/adr/0008-modular-layout.md)                  | Modular layout with tests in tests/ subfolders              |
-| 0009                                                     | Skill taxonomy (in progress)                                |
+| [0009](docs/adr/0009-skill-taxonomy.md)                  | Skill taxonomy: aliases, candidates, append-only decisions  |
+| [0010](docs/adr/0010-langfuse-tracing.md)                | LLM traces in Langfuse over OTLP, without an SDK            |
+| [0011](docs/adr/0011-public-dashboard.md)                | Public dashboard: static aggregates on GitHub Pages         |
+| [0012](docs/adr/0012-eval-harness.md)                    | Extraction eval harness and the PR eval gate                |

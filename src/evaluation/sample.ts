@@ -31,6 +31,8 @@ interface HardCaseQuota {
 
 // ---- constants ---------------------------------------------------------------------------------
 
+/** The Langfuse dataset that holds the eval set. */
+export const DATASET_NAME = 'extraction-eval-v1';
 export const SAMPLE_SIZE = 150;
 export const BLIND_SIZE = 30;
 const SEED = 'eval-set-v1';

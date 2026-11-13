@@ -4,7 +4,12 @@ import { tracerFromEnvironment } from '../observability/index.ts';
 import { runScheduledJob } from '../shared/index.ts';
 import { resolveSkills } from '../taxonomy/index.ts';
 import { findRunProblems } from './checks.ts';
-import { extractPending, type RunReport } from './extract-pending.ts';
+import {
+  extractPending,
+  QUOTA_WAIT_MS,
+  REQUEST_INTERVAL_MS,
+  type RunReport,
+} from './extract-pending.ts';
 import { GEMINI_BASE_URL } from './gemini.ts';
 import { MODEL } from './prompt.ts';
 import { recordJobRun } from './repository.ts';
@@ -13,10 +18,6 @@ import { recordJobRun } from './repository.ts';
 
 /** ADR 0007: protects the free-tier quota. EXTRACT_LIMIT overrides it for a trial run. */
 const DEFAULT_LIMIT = 300;
-/** 4 s between calls keeps us at 15 requests per minute. */
-const REQUEST_INTERVAL_MS = 4000;
-/** A per-minute quota window resets within a minute. */
-const QUOTA_WAIT_MS = 60_000;
 
 // ---- functions ---------------------------------------------------------------------------------
 

@@ -10,5 +10,13 @@ export {
   WORK_FORMATS,
   type ExtractedFields,
 } from './fields.ts';
-export { EXTRACTOR_VERSION, MODEL } from './prompt.ts';
+export {
+  extractFields,
+  QUOTA_WAIT_MS,
+  REQUEST_INTERVAL_MS,
+  type ModelCallOptions,
+} from './extract-pending.ts';
+export { extractedFieldsSchema } from './fields.ts';
+export { GEMINI_BASE_URL, QuotaExhaustedError } from './gemini.ts';
+export { EXTRACTOR_VERSION, MODEL, PROMPT_HASH } from './prompt.ts';
 export { vacancyText } from './vacancy-text.ts';

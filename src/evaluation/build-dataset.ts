@@ -1,7 +1,7 @@
 // CLI: builds the extraction eval set and uploads it to a Langfuse dataset (ADR 0007).
 // Run once the queue has drained, so the sample is drawn from the whole population.
 import pg from 'pg';
-import { EXTRACTOR_VERSION, vacancyText, type ExtractedFields } from '../extractor/index.ts';
+import { EXTRACTOR_VERSION, vacancyText } from '../extractor/index.ts';
 import {
   ensureDataset,
   langfuseCredentialsFromEnvironment,
@@ -9,15 +9,10 @@ import {
   type DatasetItem,
   type LangfuseCredentials,
 } from '../observability/index.ts';
-import { sampleEvalSet, type Candidate, type SampledVacancy } from './sample.ts';
+import { DATASET_NAME, sampleEvalSet, type Candidate, type SampledVacancy } from './sample.ts';
+import type { ExpectedFields } from './score.ts';
 
 // ---- types -------------------------------------------------------------------------------------
-
-/** The model's answer without its quotes: what a label must match. */
-type ExpectedFields = Omit<
-  ExtractedFields,
-  'salary_quote' | 'english_quote' | 'experience_quote' | 'domain_quote'
->;
 
 interface CandidateRow extends ExpectedFields {
   raw_item_id: string;
@@ -26,8 +21,6 @@ interface CandidateRow extends ExpectedFields {
 }
 
 // ---- constants ---------------------------------------------------------------------------------
-
-export const DATASET_NAME = 'extraction-eval-v1';
 
 const DATASET_DESCRIPTION =
   '150 vacancies for extraction eval (ADR 0007). Blind items: label from scratch. ' +

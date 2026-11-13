@@ -1,0 +1,41 @@
+name: eval
+
+# Extraction eval (ADR 0012): the current prompt and model against the labelled eval set.
+# On a pull request that touches the extractor it is the eval gate for prompt and model changes.
+# Until items are labelled it prints a skip line and exits 0, without calling the model.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['src/extractor/**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    # 150 items at 15 requests per minute is ~10 min, plus possible quota waits.
+    timeout-minutes: 30
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run eval
+      # Aggregates only: the artifact of a public repository is public.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: dist/eval/report.json
+          if-no-files-found: ignore
