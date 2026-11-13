@@ -1,5 +1,6 @@
 // CLI entry point of the scheduled extraction job (GitHub Actions, after each collect run).
 import type pg from 'pg';
+import { tracerFromEnvironment } from '../observability/index.ts';
 import { runScheduledJob } from '../shared/index.ts';
 import { findRunProblems } from './checks.ts';
 import { extractPending, type RunReport } from './extract-pending.ts';
@@ -20,6 +21,7 @@ const QUOTA_WAIT_MS = 60_000;
 
 async function extract(db: pg.Client): Promise<string[]> {
   const startedAt = new Date();
+  const tracer = tracerFromEnvironment();
   const report = await extractPending(db, {
     gemini: {
       apiKey: requiredEnvironment('GEMINI_API_KEY'),
@@ -29,7 +31,9 @@ async function extract(db: pg.Client): Promise<string[]> {
     limit: runLimit(),
     requestIntervalMs: REQUEST_INTERVAL_MS,
     quotaWaitMs: QUOTA_WAIT_MS,
+    tracer,
   });
+  await tracer.flush();
   await recordJobRun(db, {
     startedAt,
     status: report.stoppedByQuota ? 'quota_exhausted' : 'ok',

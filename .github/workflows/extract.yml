@@ -25,6 +25,8 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_EXTRACT_URL }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
       EXTRACT_LIMIT: ${{ inputs.limit || '300' }}
     steps:
       - uses: actions/checkout@v4
