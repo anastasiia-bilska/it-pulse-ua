@@ -4,6 +4,19 @@ These rules bind every change in this repository, whoever writes it: a person or
 `npm run lint` enforces the mechanical part (`eslint.config.ts`). The rest is on the author and
 the reviewer. Why these tools: [ADR 0006](docs/adr/0006-code-style-and-linting.md).
 
+## Modular architecture
+
+- The code is split into modules under `src/`, one folder each: `collector`, `extractor`, `db`,
+  `shared`, and later `taxonomy`, `api`, and so on. A module owns one responsibility and its data
+  access.
+- **`src/<module>/index.ts` is the module's public API.** Other modules import only from it. Test
+  helpers that other modules' tests need are exported from `src/<module>/testing.ts`. Never import
+  another module's internal file; ESLint (`no-restricted-imports`) fails the build.
+- A CLI entry point (`collect.ts`, `extract.ts`, `migrate.ts`) lives in its module and only wires
+  things together.
+- Dependencies point one way: feature modules (`collector`, `extractor`) → `db`, `shared`. Never
+  the reverse, and never in a cycle.
+
 ## Code reads like a book
 
 - **Fixed file layout**, in this order, with a `// ---- section ----` comment before each block:
@@ -74,8 +87,9 @@ the reviewer. Why these tools: [ADR 0006](docs/adr/0006-code-style-and-linting.m
 ## Tests
 
 - Every behaviour change comes with a test.
-  - Unit tests: `*.test.ts`.
-  - Integration tests, on real Postgres plus a fake HTTP server: `*.itest.ts`.
+- **Tests live in the `tests/` subfolder of their module**, never next to the code:
+  - unit tests: `src/<module>/tests/*.test.ts`;
+  - integration tests, on real Postgres plus a fake HTTP server: `src/<module>/tests/*.itest.ts`.
 - Tests read as scenarios: arrange, act, assert, separated by blank lines.
 
 ## Definition of done

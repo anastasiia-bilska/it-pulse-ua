@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { externalId, contentHash, cleanLink } from './normalize.ts';
+import { externalId, contentHash, cleanLink } from '../normalize.ts';
 
 // Synthetic fixtures only: never commit real vacancy text.
 const base = {

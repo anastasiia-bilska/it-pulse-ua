@@ -1,7 +1,7 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import { XMLParser } from 'fast-xml-parser';
 import type pg from 'pg';
-import { inTransaction } from '../db/db.ts';
+import { inTransaction } from '../db/index.ts';
 import { contentHash, externalId, type Payload, type Source } from './normalize.ts';
 
 // ---- types -------------------------------------------------------------------------------------
