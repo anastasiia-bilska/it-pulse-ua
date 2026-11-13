@@ -8,5 +8,7 @@ export {
   SALARY_PERIODS,
   SENIORITIES,
   WORK_FORMATS,
+  type ExtractedFields,
 } from './fields.ts';
 export { EXTRACTOR_VERSION, MODEL } from './prompt.ts';
+export { vacancyText } from './vacancy-text.ts';

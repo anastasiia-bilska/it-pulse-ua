@@ -16,7 +16,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "extract": "node --env-file-if-exists=.env src/extractor/extract.ts"
+    "extract": "node --env-file-if-exists=.env src/extractor/extract.ts",
+    "eval:dataset": "node --env-file-if-exists=.env src/evaluation/build-dataset.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.12.0",
