@@ -6,11 +6,11 @@
     "node": ">=24"
   },
   "scripts": {
-    "migrate": "node --env-file-if-exists=.env collector/migrate.ts",
-    "collect": "node --env-file-if-exists=.env collector/collect.ts",
-    "test": "node --test collector/*.test.ts",
+    "migrate": "node --env-file-if-exists=.env src/db/migrate.ts",
+    "collect": "node --env-file-if-exists=.env src/collector/collect.ts",
+    "test": "node --test 'src/**/*.test.ts'",
     "typecheck": "tsc",
-    "test:integration": "node --test --test-concurrency=1 collector/*.itest.ts",
+    "test:integration": "node --test --test-concurrency=1 'src/**/*.itest.ts'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

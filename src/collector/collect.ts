@@ -1,4 +1,5 @@
-import pg from 'pg';
+import type pg from 'pg';
+import { runScheduledJob } from '../shared/scheduled-job.ts';
 import { findProblems } from './checks.ts';
 import { collectAll, type Feed, type Summary } from './ingest.ts';
 
@@ -76,31 +77,25 @@ const FEEDS: Feed[] = [
   { source: 'djinni', feed: 'djinni:all', url: 'https://djinni.co/jobs/rss/' },
 ];
 
+// ---- constants ---------------------------------------------------------------------------------
+
 const POLITE_DELAY_MS = 1000;
 const RETRY_BASE_MS = 5000;
-const HEALTHCHECK_TIMEOUT_MS = 10_000;
 /** The run itself fails (and GitHub emails) only when most feeds are down. */
 const MAX_FAILED_SHARE = 0.5;
 
-/**
- * healthchecks.io: a success ping is the heartbeat (a missing one alerts), /fail alerts now.
- * A broken healthchecks.io must never fail the collector itself.
- */
-async function pingHealthchecks(problems: string[]): Promise<void> {
-  const pingUrl = process.env.HEALTHCHECK_URL;
-  if (!pingUrl) {
-    return;
+async function collect(db: pg.Client): Promise<string[]> {
+  const summary = await collectAll(db, FEEDS, {
+    userAgent: process.env.COLLECTOR_UA ?? 'it-pulse-ua-collector/0.1 (non-commercial research)',
+    delayMs: POLITE_DELAY_MS,
+    retryBaseMs: RETRY_BASE_MS,
+    log: console.log,
+  });
+  console.log(summaryLine(summary));
+  if (summary.failedFeeds.length > summary.feeds * MAX_FAILED_SHARE) {
+    process.exitCode = 1;
   }
-  const hasProblems = problems.length > 0;
-  try {
-    await fetch(hasProblems ? `${pingUrl}/fail` : pingUrl, {
-      method: 'POST',
-      body: hasProblems ? problems.join('\n') : 'ok',
-      signal: AbortSignal.timeout(HEALTHCHECK_TIMEOUT_MS),
-    });
-  } catch (error) {
-    console.error(`healthcheck ping failed: ${String(error)}`);
-  }
+  return findProblems(db, summary);
 }
 
 function summaryLine(summary: Summary): string {
@@ -113,31 +108,4 @@ function summaryLine(summary: Summary): string {
   ].join(' ');
 }
 
-async function collect(db: pg.Client): Promise<void> {
-  const summary = await collectAll(db, FEEDS, {
-    userAgent: process.env.COLLECTOR_UA ?? 'it-pulse-ua-collector/0.1 (non-commercial research)',
-    delayMs: POLITE_DELAY_MS,
-    retryBaseMs: RETRY_BASE_MS,
-    log: console.log,
-  });
-  const problems = await findProblems(db, summary);
-  console.log(summaryLine(summary));
-  for (const problem of problems) {
-    console.log(`PROBLEM\t${problem}`);
-  }
-  await pingHealthchecks(problems);
-  if (summary.failedFeeds.length > summary.feeds * MAX_FAILED_SHARE) {
-    process.exitCode = 1;
-  }
-}
-
-const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
-await db.connect();
-try {
-  await collect(db);
-} catch (error) {
-  await pingHealthchecks([`collector crashed: ${String(error)}`]);
-  throw error;
-} finally {
-  await db.end();
-}
+await runScheduledJob('collector', collect);
