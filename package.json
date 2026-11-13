@@ -6,8 +6,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "migrate": "node collector/migrate.ts",
-    "collect": "node collector/collect.ts",
+    "migrate": "node --env-file-if-exists=.env collector/migrate.ts",
+    "collect": "node --env-file-if-exists=.env collector/collect.ts",
     "test": "node --test collector/*.test.ts"
   },
   "dependencies": {
