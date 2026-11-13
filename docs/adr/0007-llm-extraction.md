@@ -59,7 +59,8 @@ nothing in v1 needs them).
 
 **Hallucination guards**
 
-1. Gemini `responseSchema` with the same enums, and validation in code anyway.
+1. Structured output: a JSON Schema generated from the same zod contract that validates the answer
+   in code (`src/extractor/fields.ts`), so the schema and the validation can't drift apart.
 2. **Evidence quotes** for salary, experience, english and domain. The model returns a verbatim
    quote, and code checks that it is a substring of the vacancy text after whitespace
    normalisation. If it isn't, the field is nulled and counted as `hallucination_dropped`. This is
@@ -77,8 +78,18 @@ grows three runs in a row also alerts.
 
 **Model**
 
-- A pinned Gemini Flash version, never a `-latest` alias, which could change silently.
-- Temperature 0.
+- **`gemini-3.5-flash-lite`**, pinned, never a `-latest` alias, which could change silently.
+  Google recommends Flash-Lite for high-volume extraction, and it has the most free-tier headroom.
+  The eval compares it with `gemini-3.8-flash`. If it falls short, we switch through a new
+  `extractor_version`.
+- **Interactions API** (`/v1beta/interactions`), which Google now recommends over the legacy
+  `generateContent`. Requests set `store: false`, so Google keeps no conversation history. We call
+  it with plain `fetch`: one endpoint doesn't justify an SDK.
+- **No temperature.** Gemini 3.5+ ignores sampling parameters (`temperature`, `top_p`, `top_k`),
+  and future models will reject them. Consistency comes from the pinned model, structured output
+  and the eval gate instead.
+- **Pacing:** one request every 4 s (15 per minute). A 429 waits 60 s and retries once. A second
+  429 stops the run with `quota_exhausted`, and the queue waits.
 - A model or prompt change means a new `extractor_version`, and the PR must pass the eval gate.
 - **No fallback model**: when the quota runs out, the queue waits. A fallback would mix models
   within one `extractor_version`, and eval would guarantee nothing.
