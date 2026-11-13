@@ -39,7 +39,7 @@ Guards come in four layers. Each one is added together with the stage it protect
    Results go to Langfuse datasets.
 3. **Data checks after each run** (`checks.ts`):
    - failed feeds;
-   - coverage gaps;
+   - coverage gaps, alerting only when the same feed gapped on its last 3 successful fetches (a single gap is logged, not alerted);
    - a volume drop: new items in 24h below 50% of the median of the previous 7 windows, checked once there are 8 days of history.
 
    Extraction-quality and quota checks (Neon, Gemini, ElevenLabs at 80%) come with their stages.
@@ -53,7 +53,8 @@ Guards come in four layers. Each one is added together with the stage it protect
 
 - A silent stop, a format change or a block reaches Telegram within about 3 hours.
 - Logs and ping bodies carry counts and feed names only, never vacancy text, because public repo logs are public.
-- Every failed feed raises an alert. If transient failures get noisy, alert only on two consecutive failures.
+- Alerts must be actionable. A one-off gap (a busy feed such as `dou:Other` outran one poll) is expected and nobody can act on it, so it only goes to the log and `fetch_log`. Three gaps in a row on one feed mean its poll interval is too slow, which is a change we can make.
+- Every failed feed still raises an alert (it has already survived 4 attempts with backoff). If transient failures get noisy, apply the same streak rule.
 - Rejected:
   - Sentry now, because there is no long-running server yet, so it comes with NestJS;
   - a custom Telegram bot, because healthchecks.io already sends to Telegram and adds a heartbeat that a bot wouldn't;
