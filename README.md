@@ -15,23 +15,23 @@ labelled, and the agent is planned.
 
 ## Status
 
-| Area                                                                             | Status      |
-| -------------------------------------------------------------------------------- | ----------- |
-| RSS collection: 59 DOU category feeds plus the Djinni feed, every 2h             | Done        |
-| Append-only raw layer, dedup by vacancy id plus content hash, bumps, gaps        | Done        |
-| Least-privilege `collector` role, separate `migrate` workflow                    | Done        |
-| Guards: CI, post-run data checks, healthchecks.io heartbeat with Telegram alerts | Done        |
-| Extraction schema: tables, CHECK constraints, `extractor` role, freshness views  | Done        |
-| LLM extraction with Gemini, evidence-quote checks, retry queue                   | Done        |
-| Langfuse traces for every model call (ADR 0010)                                  | Done        |
-| Skill taxonomy (ADR 0009): alias dictionary, automated triage, human override    | Done        |
-| Public dashboard on GitHub Pages with a freshness banner (ADR 0011)              | Done        |
-| Eval set: 150 stratified vacancies in a Langfuse dataset, 30 for blind labelling | Done        |
-| Eval harness and PR gate (ADR 0012)                                              | Done        |
-| Labelling the eval set; first baseline and the gate threshold                    | In progress |
-| «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10        | Planned     |
-| Weekly audio digest (ElevenLabs)                                                 | Planned     |
-| Wave 2: CV match, MCP server                                                     | Planned     |
+| Area                                                                                     | Status      |
+| ---------------------------------------------------------------------------------------- | ----------- |
+| RSS collection: 59 DOU category feeds plus the Djinni feed, every 2h                     | Done        |
+| Append-only raw layer, dedup by vacancy id plus content hash, bumps, gaps                | Done        |
+| Least-privilege `collector` role, separate `migrate` workflow                            | Done        |
+| Guards: CI, post-run data checks, healthchecks.io heartbeat with Telegram alerts         | Done        |
+| Extraction schema: tables, CHECK constraints, `extractor` role, freshness views          | Done        |
+| LLM extraction with Gemini, evidence-quote checks, retry queue                           | Done        |
+| Langfuse traces for every model call (ADR 0010)                                          | Done        |
+| Skill taxonomy (ADR 0009): alias dictionary, automated triage, human override            | Done        |
+| Public dashboard on GitHub Pages with a freshness banner (ADR 0011)                      | Done        |
+| Eval set builder: 150 stratified vacancies to a Langfuse dataset, 30 for blind labelling | Done        |
+| Eval harness and PR gate (ADR 0012)                                                      | Done        |
+| Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
+| «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10                | Planned     |
+| Weekly audio digest (ElevenLabs)                                                         | Planned     |
+| Wave 2: CV match, MCP server                                                             | Planned     |
 
 ## Architecture
 
