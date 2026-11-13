@@ -4,6 +4,8 @@ import type pg from 'pg';
 import { inTransaction } from './db.ts';
 import { contentHash, externalId, type Payload, type Source } from './normalize.ts';
 
+// ---- types -------------------------------------------------------------------------------------
+
 export interface Feed {
   source: Source;
   feed: string;
@@ -40,12 +42,33 @@ interface FeedOutcome {
   gap: boolean;
 }
 
+interface RssItem {
+  title?: string;
+  description?: string;
+  link?: string;
+  guid?: string;
+  pubDate?: string;
+  category?: string[];
+}
+
+interface RssDocument {
+  rss?: { channel?: { item?: RssItem[] } };
+}
+
+// ---- constants ---------------------------------------------------------------------------------
+
 const HTTP_OK = 200;
 const HTTP_NOT_MODIFIED = 304;
 const HTTP_TOO_MANY_REQUESTS = 429;
 const HTTP_SERVER_ERROR = 500;
 const MAX_ATTEMPTS = 4;
 const REQUEST_TIMEOUT_MS = 20_000;
+
+const rssParser = new XMLParser({
+  ignoreAttributes: true,
+  parseTagValue: false, // keep guids and titles as strings
+  isArray: (tagName) => tagName === 'item' || tagName === 'category',
+});
 
 // ---- collecting all feeds ----------------------------------------------------------------------
 
@@ -195,25 +218,6 @@ function backoffMs(attempt: number, retryBaseMs: number, response?: Response): n
 }
 
 // ---- RSS parsing -------------------------------------------------------------------------------
-
-interface RssItem {
-  title?: string;
-  description?: string;
-  link?: string;
-  guid?: string;
-  pubDate?: string;
-  category?: string[];
-}
-
-interface RssDocument {
-  rss?: { channel?: { item?: RssItem[] } };
-}
-
-const rssParser = new XMLParser({
-  ignoreAttributes: true,
-  parseTagValue: false, // keep guids and titles as strings
-  isArray: (tagName) => tagName === 'item' || tagName === 'category',
-});
 
 export function parseItems(source: Source, xml: string): Item[] {
   const channel = (rssParser.parse(xml) as RssDocument).rss?.channel;

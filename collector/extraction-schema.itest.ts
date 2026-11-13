@@ -5,18 +5,43 @@ import { after, before, test } from 'node:test';
 import pg from 'pg';
 import { connectAs, resetDatabase, testDatabaseUrl } from './test-database.ts';
 
-const ADMIN_URL = testDatabaseUrl();
+// ---- types -------------------------------------------------------------------------------------
 
-let admin: pg.Client;
-let extractor: pg.Client;
-let collector: pg.Client;
-
-interface Ids {
+/** Raw content versions seeded in before(). */
+interface SeededRawItems {
   vacancy1Old: string;
   vacancy1New: string;
   vacancy2: string;
 }
-let raw: Ids;
+
+interface ExtractionValues {
+  rawItemId: string;
+  version?: string;
+  role?: string | null;
+  seniority?: string | null;
+  salary?: [number | null, number | null, string | null, string | null];
+}
+
+interface CurrentVacancy {
+  raw_item_id: string;
+  title: string;
+  extractor_version: string | null;
+  role: string | null;
+}
+
+// ---- constants ---------------------------------------------------------------------------------
+
+const ADMIN_URL = testDatabaseUrl();
+
+const EXTRACTION_COLUMNS = `raw_item_id, extractor_version, model, prompt_hash, role, seniority,
+  salary_min, salary_max, salary_currency, salary_period, evidence`;
+
+// ---- shared state (set up in before()) ---------------------------------------------------------
+
+let admin: pg.Client;
+let extractor: pg.Client;
+let collector: pg.Client;
+let raw: SeededRawItems;
 
 // ---- fixtures (synthetic) ----------------------------------------------------------------------
 
@@ -34,17 +59,6 @@ async function seedRawVersion(externalId: string, title: string): Promise<string
     [externalId],
   );
   return rows[0]!.id;
-}
-
-const EXTRACTION_COLUMNS = `raw_item_id, extractor_version, model, prompt_hash, role, seniority,
-  salary_min, salary_max, salary_currency, salary_period, evidence`;
-
-interface ExtractionValues {
-  rawItemId: string;
-  version?: string;
-  role?: string | null;
-  seniority?: string | null;
-  salary?: [number | null, number | null, string | null, string | null];
 }
 
 /** Inserts an extraction as the extractor role and returns its id. */
@@ -65,13 +79,6 @@ async function insertExtraction(values: ExtractionValues): Promise<string> {
     ],
   );
   return rows[0]!.id;
-}
-
-interface CurrentVacancy {
-  raw_item_id: string;
-  title: string;
-  extractor_version: string | null;
-  role: string | null;
 }
 
 /** Vacancy 1 is the one with two content versions; the scenarios follow it. */

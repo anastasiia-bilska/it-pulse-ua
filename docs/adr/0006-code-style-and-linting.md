@@ -18,6 +18,8 @@ by an AI agent, which needs explicit, checkable rules rather than taste.
   - `typescript-eslint` `strictTypeChecked` + `stylisticTypeChecked` (type-aware, no `any`);
   - `eslint-plugin-unicorn` recommended (modern APIs, descriptive names, consistent booleans);
   - readability limits: complexity 8, nesting depth 2, at most 3 params, 40 lines per function;
+  - file layout: types before functions (`perfectionist/sort-modules`, unsorted within a group),
+    named functions as declarations (`func-style`);
   - `eslint-config-prettier` last, so ESLint never fights Prettier.
 
   When a rule makes code worse, we turn it off with a one-line reason in the config instead of

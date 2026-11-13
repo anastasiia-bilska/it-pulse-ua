@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import unicorn from 'eslint-plugin-unicorn';
+import perfectionist from 'eslint-plugin-perfectionist';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -13,6 +14,7 @@ export default defineConfig(
   tseslint.configs.stylisticTypeChecked,
   unicorn.configs.recommended,
   {
+    plugins: { perfectionist },
     languageOptions: {
       globals: globals.node,
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
@@ -25,6 +27,14 @@ export default defineConfig(
       'max-params': ['error', 3],
       'no-nested-ternary': 'error',
       eqeqeq: 'error',
+      // Named functions are declarations; arrows are for inline callbacks only.
+      'func-style': ['error', 'declaration'],
+      // File layout: types first, then functions (constants by convention, see CLAUDE.md).
+      // Order inside a group stays as written: top-down, in call order.
+      'perfectionist/sort-modules': [
+        'error',
+        { type: 'unsorted', groups: [['interface', 'type'], 'class', 'function'] },
+      ],
       curly: ['error', 'all'],
 
       '@typescript-eslint/explicit-module-boundary-types': 'error',
