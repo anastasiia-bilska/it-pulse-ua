@@ -4,8 +4,9 @@ name: dashboard
 # Cloudflare Pages (ADR 0015) and, until the switch is confirmed, to GitHub Pages (ADR 0011). The daily schedule keeps the freshness banner honest even if extraction
 # stops running altogether.
 on:
+  # After every extract run, and after a new digest episode so its player and transcript appear.
   workflow_run:
-    workflows: [extract]
+    workflows: [extract, digest]
     types: [completed]
   schedule:
     - cron: '45 6 * * *'
@@ -38,6 +39,11 @@ jobs:
       - run: npm ci
       # Order matters: the web build empties dist/site, then the CLI adds aggregates.json to it.
       - run: npm run build:web
+      # The latest digest episode's scripts (ADR 0013); none before the first release.
+      - name: Latest digest episode
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download --pattern digest.json --dir dist/digest-latest --clobber || echo "no digest episode yet"
       - run: npm run dashboard
       # Cloudflare Pages serves dist/site with the cache rules in web/public/_headers. The step is
       # skipped until the CLOUDFLARE_* secrets exist, so the site keeps updating on GitHub Pages.

@@ -42,6 +42,15 @@ export function formatDateTime(iso: string, language: Language): string {
   }).format(new Date(iso));
 }
 
+/** "9–15 листопада" / "9–15 November": the days of a digest week, given as YYYY-MM-DD. */
+export function formatDayRange(firstDay: string, lastDay: string, language: Language): string {
+  return new Intl.DateTimeFormat(LOCALES[language], {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC', // calendar days, not instants: no time zone may shift them
+  }).formatRange(new Date(firstDay), new Date(lastDay));
+}
+
 /** part / whole, or 0 for an empty whole, so a bar never gets NaN as its width. */
 export function fractionOf(part: number, whole: number): number {
   return whole === 0 ? 0 : part / whole;

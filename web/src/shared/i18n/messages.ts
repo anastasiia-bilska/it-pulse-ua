@@ -110,8 +110,14 @@ const UK = {
   digest: {
     title: 'Голосовий дайджест тижня',
     body: 'Головні зміни ринку за тиждень — коротким аудіо. Слухайте в дорозі, без графіків.',
-    playerTitle: 'Дайджест скоро',
+    comingTitle: 'Дайджест скоро',
+    trailerTitle: 'Трейлер · перший випуск у понеділок',
+    weekTitle: (days: string): string => `Тиждень ${days}`,
+    play: 'Відтворити',
+    pause: 'Пауза',
     playUnavailable: 'Відтворення недоступне',
+    transcript: 'Текст випуску',
+    voice: 'Голос: ElevenLabs',
   },
   method: {
     title: 'Як це працює',
@@ -246,8 +252,14 @@ const EN: Messages = {
   digest: {
     title: 'Weekly voice digest',
     body: 'The week’s main market shifts as a short audio. Listen on the go, no charts needed.',
-    playerTitle: 'Digest coming soon',
+    comingTitle: 'Digest coming soon',
+    trailerTitle: 'Trailer · first episode on Monday',
+    weekTitle: (days: string): string => `Week of ${days}`,
+    play: 'Play',
+    pause: 'Pause',
     playUnavailable: 'Playback unavailable',
+    transcript: 'Episode transcript',
+    voice: 'Voice: ElevenLabs',
   },
   method: {
     title: 'How it works',

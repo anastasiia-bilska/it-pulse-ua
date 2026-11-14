@@ -4,6 +4,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import pg from 'pg';
 import { DIMENSIONS, type Aggregates, type Dimension } from './aggregates.ts';
+import { readLatestDigest } from './latest-digest.ts';
 import {
   judgeFreshness,
   MIN_N,
@@ -77,6 +78,7 @@ async function computeAggregates(db: pg.Client): Promise<Aggregates> {
     topSkills: await topSkills(db),
     salaryUsdMonthByRole: salaryTable(salaries, 'role'),
     salaryUsdMonthBySeniority: salaryTable(salaries, 'seniority'),
+    digest: await readLatestDigest(),
   };
 }
 
