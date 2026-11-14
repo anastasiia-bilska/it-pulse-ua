@@ -10,6 +10,10 @@ on:
       week:
         description: ISO week to (re)publish, e.g. 2026-W46 (default — the week that just ended)
         required: false
+      dry_run:
+        description: Rehearsal — Gemini scripts and the number guard only; no speech, no release, no alert
+        type: boolean
+        default: false
 
 concurrency:
   group: digest
@@ -30,12 +34,13 @@ jobs:
         id: week
         env:
           INPUT_WEEK: ${{ inputs.week }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
           week="${INPUT_WEEK:-$(date -u -d '7 days ago' +%G-W%V)}"
           [[ "$week" =~ ^[0-9]{4}-W[0-9]{2}$ ]] || { echo "bad week: $week"; exit 1; }
           echo "week=$week" >> "$GITHUB_OUTPUT"
-          # Idempotent: an existing episode is never paid for twice.
-          if gh release view "digest-$week" >/dev/null 2>&1; then
+          # Idempotent: an existing episode is never paid for twice. A rehearsal publishes nothing.
+          if [ "$DRY_RUN" != true ] && gh release view "digest-$week" >/dev/null 2>&1; then
             echo "digest-$week already published"
             echo "exists=true" >> "$GITHUB_OUTPUT"
           fi
@@ -52,7 +57,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_DIGEST_URL }}
+          # A rehearsal must not touch the weekly heartbeat.
+          HEALTHCHECK_URL: ${{ !inputs.dry_run && secrets.HEALTHCHECK_DIGEST_URL || '' }}
+          DIGEST_DRY_RUN: ${{ inputs.dry_run }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           DIGEST_WEEK: ${{ steps.week.outputs.week }}
@@ -63,3 +70,10 @@ jobs:
             dist/digest/digest-uk.mp3 dist/digest/digest-en.mp3 dist/digest/digest.json \
             --title "IT Pulse UA — ${{ steps.week.outputs.week }}" \
             --notes-file dist/digest/notes.md --latest
+      - name: Keep the rehearsal
+        if: inputs.dry_run && hashFiles('dist/digest/rehearsal.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-rehearsal
+          path: dist/digest/rehearsal.json
+          retention-days: 7

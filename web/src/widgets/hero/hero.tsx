@@ -1,7 +1,7 @@
 // The opening: what the page is, where the data comes from, and the pulse line.
 import type { ReactElement } from 'react';
-import { AskMarketTeaser } from '../../features/ask-market/index.ts';
 import { useLanguage } from '../../shared/i18n/index.ts';
+import { WithSourceLinks } from '../../shared/ui/index.ts';
 import styles from './hero.module.scss';
 
 // ---- constants ---------------------------------------------------------------------------------
@@ -23,11 +23,10 @@ export function Hero(): ReactElement {
       <h1 id="hero-title" className={`text-display ${styles.title}`}>
         {messages.hero.title}
       </h1>
-      <p className={styles.lead}>{messages.hero.lead}</p>
+      <p className={styles.lead}>
+        <WithSourceLinks text={messages.hero.lead} />
+      </p>
       <PulseLine />
-      <div className={styles.ask}>
-        <AskMarketTeaser look="block" />
-      </div>
     </section>
   );
 }

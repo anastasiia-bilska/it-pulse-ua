@@ -55,6 +55,8 @@ interface WeekCountRow {
 
 const ANALYSED_ENOUGH = 90;
 const TOP_ROLES = 3;
+/** The extractor's catch-all role: "other leads" tells a listener nothing, so it is never ranked. */
+const CATCH_ALL_ROLE = 'other';
 const TOP_SKILLS = 5;
 const PERCENT = 100;
 
@@ -123,7 +125,10 @@ export function toFacts(week: IsoWeek, rows: WeekRows): WeeklyFacts {
     newVacancies: change(totals.this_week, totals.previous_week),
     analysedPercent,
     isPreliminary: analysedPercent < ANALYSED_ENOUGH,
-    topRoles: topChanges(rows.roles, TOP_ROLES),
+    topRoles: topChanges(
+      rows.roles.filter((row) => row.value !== CATCH_ALL_ROLE),
+      TOP_ROLES,
+    ),
     topSkills: topChanges(rows.skills, TOP_SKILLS),
     medianSalaryUsdMonth: medianSalary(rows.salaries),
   };
