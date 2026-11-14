@@ -39,8 +39,8 @@ export function DashboardPage(): ReactElement {
       <SiteHeader />
       <main id="top" className={styles.main} aria-busy={state.status === 'loading'}>
         <Hero />
-        <DataSections state={state} retry={retry} />
         <DigestPlayer episode={aggregates?.digest} />
+        <DataSections state={state} retry={retry} />
         <HowItWorks
           minN={aggregates?.minN ?? DEFAULT_MIN_N}
           windowDays={aggregates?.windowDays ?? DEFAULT_WINDOW_DAYS}

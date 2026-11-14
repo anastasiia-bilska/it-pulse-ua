@@ -27,7 +27,20 @@ const UK = {
     method: 'як збираємо й рахуємо',
   },
   soon: 'скоро',
-  ask: { title: 'Запитай ринок', hint: 'AI-агент' },
+  ask: {
+    title: 'Запитай ринок',
+    hint: 'AI-агент',
+    lead: 'AI-агент відповідатиме на питання про ринок цифрами з тих самих даних, що й дашборд. Кожна відповідь покаже n і SQL-запит, з якого вона взялася.',
+    examplesTitle: 'Наприклад:',
+    examples: [
+      'Яка частка вакансій з віддаленою роботою?',
+      'Яка медіанна зарплата Middle?',
+      'Які навички найпотрібніші?',
+      'Скільки вакансій в оборонці?',
+    ],
+    thin: 'Якщо в групі менше 10 вакансій, агент чесно скаже «даних замало» замість того, щоб вигадувати.',
+    close: 'Закрити',
+  },
   hero: {
     eyebrow: 'Оновлюється кожні 2 години · DOU + Djinni',
     title: 'Пульс IT-ринку України в цифрах',
@@ -169,7 +182,20 @@ const EN: Messages = {
     method: 'how we collect and count',
   },
   soon: 'soon',
-  ask: { title: 'Ask the market', hint: 'AI agent' },
+  ask: {
+    title: 'Ask the market',
+    hint: 'AI agent',
+    lead: 'An AI agent will answer questions about the market with numbers from the same data as the dashboard. Every answer will show its n and the SQL query it came from.',
+    examplesTitle: 'For example:',
+    examples: [
+      'What share of vacancies is remote?',
+      'What is the median Middle salary?',
+      'Which skills are most in demand?',
+      'How many vacancies are in defence?',
+    ],
+    thin: 'If a group has fewer than 10 vacancies, the agent will say “not enough data” instead of making things up.',
+    close: 'Close',
+  },
   hero: {
     eyebrow: 'Updated every 2 hours · DOU + Djinni',
     title: 'The pulse of Ukraine’s IT job market',
