@@ -98,19 +98,33 @@
 }
 
 .wave {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+  position: relative;
+  display: block;
   height: rem(36px);
 }
 
-.wave span {
+.bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+
+.bars span {
   flex: 1;
   border-radius: 2px;
   background: var(--color-surface-3);
 }
 
-.wave .played {
+/* The same bars in the accent, cut at the played fraction. The edge moves smoothly through a bar
+   instead of lighting whole bars one by one. */
+.playedLayer {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--progress, 0) * 100%) 0 0);
+}
+
+.playedLayer .bars span {
   background: var(--color-pulse);
 }
 
@@ -160,7 +174,10 @@
   }
 
   .wave {
-    gap: 2px;
     height: rem(28px);
+  }
+
+  .bars {
+    gap: 2px;
   }
 }
