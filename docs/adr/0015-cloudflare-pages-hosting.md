@@ -24,9 +24,9 @@ changed. That is wrong both ways for this site:
     revalidates, which costs a 304 when nothing changed, so the numbers are never older than the
     last build.
   - Every file also gets `X-Content-Type-Options: nosniff` and a strict referrer policy.
-- **Transition.** The workflow deploys to both hosts. The Cloudflare step runs only once the
-  `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets exist, so the site never stops
-  updating. The GitHub Pages job is removed in a follow-up once the new URL is confirmed.
+- **Transition (done).** The workflow first deployed to both hosts. The GitHub Pages deploy was
+  removed once `it-pulse-ua.pages.dev` was confirmed live with the cache headers (2026-11-14).
+  Since then a deploy with no `CLOUDFLARE_*` secrets fails loudly instead of being skipped.
 - **Least privilege** (as in ADR 0004): the API token is scoped to Cloudflare Pages edit on one
   account and lives only in GitHub secrets.
 - Cloudflare Web Analytics stays off: the page sets no cookies and tracks no one.

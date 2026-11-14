@@ -4,7 +4,7 @@ import type { Aggregates } from './types.ts';
 
 // ---- constants ---------------------------------------------------------------------------------
 
-/** Relative, so it resolves next to index.html under the Pages base path. */
+/** Relative, so it resolves next to index.html wherever the site is served. */
 const DATA_URL = 'aggregates.json';
 /** The parts every widget reads. */
 const REQUIRED_KEYS = [

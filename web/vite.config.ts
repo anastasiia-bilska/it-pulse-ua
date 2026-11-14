@@ -56,7 +56,7 @@ function resolveFontFile(id: string): URL {
 
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
-  // GitHub Pages serves the site under /it-pulse-ua/, so every asset URL stays relative.
+  // Relative asset URLs: the build works at any path (a pages.dev root, a preview, a subfolder).
   base: './',
   // Copied as is into dist/site: only _headers, the Cloudflare Pages cache rules (ADR 0015).
   publicDir: 'public',

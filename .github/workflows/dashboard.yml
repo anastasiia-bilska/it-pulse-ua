@@ -1,8 +1,8 @@
 name: dashboard
 
 # Rebuilds the public dashboard (aggregates only) after every extract run and publishes it to
-# Cloudflare Pages (ADR 0015) and, until the switch is confirmed, to GitHub Pages (ADR 0011). The daily schedule keeps the freshness banner honest even if extraction
-# stops running altogether.
+# Cloudflare Pages (ADR 0011, ADR 0015). The daily schedule keeps the freshness banner honest even
+# if extraction stops running altogether.
 on:
   workflow_run:
     workflows: [extract]
@@ -17,18 +17,17 @@ concurrency:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment:
+      name: cloudflare-pages
+      url: https://it-pulse-ua.pages.dev
     env:
       # Read-only access is enough to compute aggregates.
       DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
-      # Job-level so the deploy step's `if` can see whether it is set (a step's own env can't).
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,25 +38,10 @@ jobs:
       # Order matters: the web build empties dist/site, then the CLI adds aggregates.json to it.
       - run: npm run build:web
       - run: npm run dashboard
-      # Cloudflare Pages serves dist/site with the cache rules in web/public/_headers. The step is
-      # skipped until the CLOUDFLARE_* secrets exist, so the site keeps updating on GitHub Pages.
-      - if: env.CLOUDFLARE_API_TOKEN != ''
-        uses: cloudflare/wrangler-action@v4
+      # dist/site carries web/public/_headers, the cache rules Cloudflare Pages applies.
+      - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.162.0'
           command: pages deploy dist/site --project-name=it-pulse-ua --branch=main
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist/site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
