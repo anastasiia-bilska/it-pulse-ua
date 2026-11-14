@@ -10,7 +10,7 @@ function aggregatesWith(overrides: Partial<Aggregates>): Aggregates {
     generatedAt: '2026-11-14T00:00:00.000Z',
     windowDays: 30,
     minN: 10,
-    freshness: { isStale: false, reason: null, lastOkAt: null, backlog: 0 },
+    freshness: { isStale: false, reason: null, lastOkAt: null, lastRun: null, backlog: 0 },
     totals: { vacancies: 1259, extracted: 1200 },
     distributions: {
       source: [],
