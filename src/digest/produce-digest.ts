@@ -17,6 +17,8 @@ export interface DigestOptions {
   elevenLabs: ElevenLabsConfig;
   tracer: Tracer;
   outputDirectory: URL;
+  /** A rehearsal: facts and scripts only, written to rehearsal.json; no speech, no episode. */
+  isDryRun: boolean;
 }
 
 // ---- constants ---------------------------------------------------------------------------------
@@ -38,6 +40,10 @@ export async function produceDigest(db: pg.Client, options: DigestOptions): Prom
   const scripts = await scriptsOrProblem(options, facts);
   if (typeof scripts === 'string') {
     return [scripts];
+  }
+  if (options.isDryRun) {
+    await writeRehearsal(options.outputDirectory, facts, scripts);
+    return [];
   }
   const usage = await readUsage(options.elevenLabs);
   const needed = scripts.uk.length + scripts.en.length;
@@ -81,6 +87,18 @@ async function writeEpisode(
   await writeFile(new URL('notes.md', directory), releaseNotes(scripts));
   await writeFile(new URL('digest.json', directory), JSON.stringify({ facts, scripts }, null, 2));
   console.log(`episode=${facts.week} chars_uk=${scripts.uk.length} chars_en=${scripts.en.length}`);
+}
+
+/** Not digest.json, so the workflow can never publish a rehearsal by mistake. */
+async function writeRehearsal(directory: URL, facts: WeeklyFacts, scripts: Scripts): Promise<void> {
+  await mkdir(directory, { recursive: true });
+  await writeFile(
+    new URL('rehearsal.json', directory),
+    JSON.stringify({ facts, scripts }, null, 2),
+  );
+  console.log(
+    `rehearsal=${facts.week} chars_uk=${scripts.uk.length} chars_en=${scripts.en.length}`,
+  );
 }
 
 function releaseNotes(scripts: Scripts): string {
