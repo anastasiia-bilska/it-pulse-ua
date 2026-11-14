@@ -37,8 +37,8 @@ function webLayerRules(layer: string): Linter.RulesRecord {
         patterns: [
           ...upward,
           {
-            regex: String.raw`^(?:\.\./)+(?:pages|widgets|features|entities|shared)/[^/]+/(?!index\.ts$).+`,
-            message: 'Import another slice through its index.ts (ADR 0013).',
+            regex: String.raw`^(?:\.\./)+(?:pages|widgets|features|entities|shared)/[^/]+/(?!(?:index|testing)\.ts$).+`,
+            message: 'Import another slice through its index.ts (testing.ts in tests) (ADR 0013).',
           },
         ],
       },
@@ -137,7 +137,7 @@ export default defineConfig(
   })),
   {
     // Tests read as scenarios: long arrange/act/assert blocks and inline fixture builders are fine.
-    files: ['**/*.test.ts', '**/*.itest.ts'],
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.itest.ts'],
     rules: {
       'max-lines-per-function': 'off',
       'unicorn/max-nested-calls': 'off',

@@ -1,5 +1,6 @@
+/// <reference types="vitest/config" />
 // Build for the public dashboard (ADR 0013): `npm run build:web` writes dist/site, then
-// `npm run dashboard` adds aggregates.json next to it.
+// `npm run dashboard` adds aggregates.json next to it. Component tests run in Vitest here too.
 import react from '@vitejs/plugin-react';
 import { FontaineTransform } from 'fontaine';
 import { fileURLToPath } from 'node:url';
@@ -71,5 +72,12 @@ export default defineConfig({
     emptyOutDir: true,
     // Fonts are separate files so unicode-range can skip the subsets a page never uses.
     assetsInlineLimit: 0,
+  },
+  test: {
+    // Component tests (*.test.tsx). Pure rules (*.test.ts) run under node --test like the backend.
+    include: ['src/**/tests/*.test.tsx'],
+    // happy-dom implements <dialog> showModal(), which the burger menu relies on.
+    environment: 'happy-dom',
+    setupFiles: ['src/shared/testing/setup.ts'],
   },
 });

@@ -64,8 +64,12 @@ modular frontend (features, shared and so on).
 - The page costs about 83 KB gzipped of JS, which is React. Fonts are about 200 KB across six
   files, and a Ukrainian page fetches only the ones whose glyphs it uses.
 - Adding the agent is a new page and feature slices, with no restructuring.
-- A web test runner is not added. The rules live in plain `.ts` files that `node --test` covers;
-  components are checked by type, lint and a browser pass.
+- Two kinds of web tests, both in `tests/` (ADR 0008):
+  - pure rules (`*.test.ts`) run under `node --test`, like the backend;
+  - component tests (`*.test.tsx`) run in Vitest with Testing Library and happy-dom. They query by
+    role and text, the way a reader or a screen reader meets the page. happy-dom is used rather
+    than jsdom because it implements `<dialog>.showModal()`.
+  - `npm test` runs both, so CI needs no new step.
 - Rejected:
   - vanilla TS (manual DOM updates for tabs, menu, language);
   - Vue (a separate SFC lint toolchain);

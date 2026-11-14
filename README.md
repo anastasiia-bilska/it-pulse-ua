@@ -177,7 +177,7 @@ docker run --rm -d --name it-pulse-pg -e POSTGRES_PASSWORD=pg -p 5432:5432 postg
 export TEST_DATABASE_URL=postgres://postgres:pg@localhost:5432/postgres
 
 npm run typecheck && npm run lint && npm run format:check
-npm test                  # unit tests
+npm test                  # unit tests and web component tests (Vitest)
 npm run test:integration  # Postgres plus a fake RSS server
 npm run build:web         # the dashboard bundle in dist/site
 ```
