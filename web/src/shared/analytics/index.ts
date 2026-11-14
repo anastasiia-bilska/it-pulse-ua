@@ -1,4 +1,4 @@
-// Public API of shared/analytics: visitor analytics on Umami Cloud (ADR 0019). Umami is
+// Public API of shared/analytics: visitor analytics on Umami Cloud (ADR 0020). Umami is
 // cookieless, so the page needs no consent banner. Clicks are counted by Umami itself on any
 // <button>/<a> with a data-umami-event attribute; block views are counted here, for every element
 // with a data-block attribute.

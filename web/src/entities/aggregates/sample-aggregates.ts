@@ -14,6 +14,7 @@ export const SAMPLE_AGGREGATES: Aggregates = {
     isStale: true,
     reason: 'backlog',
     lastOkAt: '2026-11-13T21:42:00Z',
+    lastRun: { at: '2026-11-14T06:20:00Z', processed: 150, status: 'ok' },
     backlog: 640,
   },
   totals: { vacancies: 900, extracted: 200 },

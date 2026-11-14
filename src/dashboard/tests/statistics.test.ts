@@ -89,3 +89,21 @@ test('before the first run the page says so', () => {
   assert.equal(freshness.isStale, true);
   assert.equal(freshness.reason, 'never');
 });
+
+test('the last run is stated as it ended, even when it was not a full success', () => {
+  const freshness = judgeFreshness(
+    {
+      lastStatus: 'quota_exhausted',
+      lastOkAt: new Date(NOW.getTime() - 8 * HOUR_MS),
+      backlog: 357,
+      lastRun: { at: new Date(NOW.getTime() - HOUR_MS), processed: 150 },
+    },
+    NOW,
+  );
+
+  assert.deepEqual(freshness.lastRun, {
+    at: new Date(NOW.getTime() - HOUR_MS).toISOString(),
+    processed: 150,
+    status: 'quota_exhausted',
+  });
+});

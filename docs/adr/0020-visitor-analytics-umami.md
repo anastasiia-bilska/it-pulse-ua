@@ -1,4 +1,4 @@
-# 0019. Visitor analytics on Umami Cloud
+# 0020. Visitor analytics on Umami Cloud
 
 - Status: accepted
 - Date: 2026-11-14

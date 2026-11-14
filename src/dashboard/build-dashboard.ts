@@ -12,9 +12,20 @@ import {
   toShares,
   type Count,
   type Freshness,
+  type PipelineStatus,
   type SalaryRow,
   type Share,
 } from './statistics.ts';
+
+// ---- types -------------------------------------------------------------------------------------
+
+interface PipelineStatusRow {
+  last_status: string | null;
+  last_ok_at: Date | null;
+  last_run_at: Date | null;
+  backlog: number;
+  last_processed: number | null;
+}
 
 // ---- constants ---------------------------------------------------------------------------------
 
@@ -45,8 +56,12 @@ const USD_MONTH_SALARIES_SQL = `
   from vacancy_current
   where ${IN_WINDOW} and salary_currency = 'USD' and salary_period = 'month'`;
 
+// The newest run's processed count is not in the view, so it is read from job_run itself.
 const PIPELINE_STATUS_SQL = `
-  select last_status, last_ok_at, backlog from pipeline_status where job = 'extract'`;
+  select status.last_status, status.last_ok_at, status.last_run_at, status.backlog,
+         (select processed from job_run where job = 'extract' order by id desc limit 1)
+           as last_processed
+  from pipeline_status status where status.job = 'extract'`;
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -137,20 +152,23 @@ function salaryTable(
 }
 
 async function freshness(db: pg.Client): Promise<Freshness> {
-  const { rows } = await db.query<{
-    last_status: string | null;
-    last_ok_at: Date | null;
-    backlog: number;
-  }>(PIPELINE_STATUS_SQL);
-  const status = rows[0];
-  return judgeFreshness(
-    {
-      lastStatus: status?.last_status ?? null,
-      lastOkAt: status?.last_ok_at ?? null,
-      backlog: status?.backlog ?? 0,
-    },
-    new Date(),
-  );
+  const { rows } = await db.query<PipelineStatusRow>(PIPELINE_STATUS_SQL);
+  return judgeFreshness(toPipelineStatus(rows[0]), new Date());
+}
+
+/** No row means extraction has never run. */
+function toPipelineStatus(row: PipelineStatusRow | undefined): PipelineStatus {
+  if (!row) {
+    return { lastStatus: null, lastOkAt: null, backlog: 0 };
+  }
+  const status: PipelineStatus = {
+    lastStatus: row.last_status,
+    lastOkAt: row.last_ok_at,
+    backlog: row.backlog,
+  };
+  return row.last_run_at
+    ? { ...status, lastRun: { at: row.last_run_at, processed: row.last_processed ?? 0 } }
+    : status;
 }
 
 await buildDashboard();

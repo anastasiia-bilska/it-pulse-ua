@@ -9,6 +9,8 @@ export type Messages = typeof UK;
 // ---- constants ---------------------------------------------------------------------------------
 
 const UK = {
+  /** The same text as <title> in uk.html, which crawlers read. */
+  pageTitle: 'IT Pulse UA — ринок IT-вакансій України: навички, ролі, зарплати',
   skipToContent: 'Перейти до змісту',
   nav: {
     label: 'Розділи',
@@ -56,7 +58,11 @@ const UK = {
     },
     queued: (count: string): string =>
       `У черзі на аналіз: ${count}. Цифри нижче — лише по вже оброблених.`,
-    lastRun: (date: string): string => `останній успішний запуск: ${date}`,
+    lastOk: (date: string): string => `останній успішний запуск: ${date}`,
+    lastRun: (date: string): string => `останній запуск: ${date}`,
+    lastRunStopped: (date: string, processed: string): string =>
+      `останній запуск: ${date}, оброблено ${processed}, далі ліміт`,
+    lastRunFailed: (date: string): string => `останній запуск: ${date}, з помилкою`,
   },
   states: {
     loading: 'Завантажуємо статистику…',
@@ -164,6 +170,8 @@ const UK = {
 };
 
 const EN: Messages = {
+  /** The same text as <title> in index.html, which crawlers read. */
+  pageTitle: 'IT Pulse UA — Ukraine’s IT job market: skills, roles, salaries',
   skipToContent: 'Skip to content',
   nav: {
     label: 'Sections',
@@ -211,7 +219,11 @@ const EN: Messages = {
     },
     queued: (count: string): string =>
       `Queued for analysis: ${count}. The numbers below cover processed ones only.`,
-    lastRun: (date: string): string => `last successful run: ${date}`,
+    lastOk: (date: string): string => `last successful run: ${date}`,
+    lastRun: (date: string): string => `last run: ${date}`,
+    lastRunStopped: (date: string, processed: string): string =>
+      `last run: ${date}, ${processed} processed, then the daily limit`,
+    lastRunFailed: (date: string): string => `last run: ${date}, failed`,
   },
   states: {
     loading: 'Loading the numbers…',
