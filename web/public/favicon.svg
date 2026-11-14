@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The brand tile: the pulse line on the accent, as in the header logo. -->
+  <rect width="32" height="32" rx="8" fill="#d4f53c"/>
+  <polyline points="4 16 10 16 13 7 19 25 22 16 28 16" fill="none" stroke="#0c0e12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
