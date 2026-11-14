@@ -1,7 +1,14 @@
 // Public API of the aggregates entity: the data the dashboard shows and the rules for drawing it.
 export { valueLabel } from './labels.ts';
 export { loadAggregates } from './load-aggregates.ts';
-export type { Aggregates, Freshness, SalaryRow, Share, StaleReason } from './types.ts';
+export type {
+  Aggregates,
+  DigestEpisode,
+  Freshness,
+  SalaryRow,
+  Share,
+  StaleReason,
+} from './types.ts';
 export {
   barRows,
   insights,

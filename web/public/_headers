@@ -17,6 +17,9 @@
   Cache-Control: public, max-age=86400
 /sitemap.xml
   Cache-Control: public, max-age=86400
+# The digest audio keeps its name and changes weekly.
+/digest/*
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*
   X-Content-Type-Options: nosniff

@@ -1,0 +1,36 @@
+name: collect-trigger
+
+# Deploys the Cloudflare Worker that dispatches collect.yml every 2 hours (ADR 0018).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/trigger/**'
+      - '.github/workflows/collect-trigger.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: collect-trigger
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cloudflare/wrangler-action@v4
+        env:
+          DISPATCH_TOKEN: ${{ secrets.COLLECT_DISPATCH_TOKEN }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.162.0'
+          workingDirectory: src/trigger
+          # Uploaded as a Worker secret, never written to the repository or the log.
+          secrets: |
+            DISPATCH_TOKEN
+          command: deploy

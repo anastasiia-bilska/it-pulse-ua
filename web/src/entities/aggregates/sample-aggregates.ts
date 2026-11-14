@@ -1,6 +1,7 @@
 // Synthetic aggregates for `npm run dev:web` only (never bundled: see load-aggregates.ts).
 // Made up numbers that exercise every state: a stale banner, "not stated" leaders, one salary group
-// with quartiles, thin groups and a level with no salaries at all.
+// with quartiles, thin groups and a level with no salaries at all. The digest transcript reads like
+// a real episode, built from these same made-up numbers.
 import type { Aggregates } from './types.ts';
 
 // ---- constants ---------------------------------------------------------------------------------
@@ -119,4 +120,11 @@ export const SAMPLE_AGGREGATES: Aggregates = {
     { group: 'senior', n: 7, median: null, p25: null, p75: null },
     { group: 'junior', n: 3, median: null, p25: null, p75: null },
   ],
+  digest: {
+    week: { label: '2026-W46', firstDay: '2026-11-09', lastDay: '2026-11-15' },
+    scripts: {
+      uk: 'Привіт, це IT Pulse UA, тиждень 9–15 листопада. Проаналізовано лише 22% вакансій, тож цифри попередні. За тиждень з’явилося 900 нових вакансій. Найбільше шукають бекенд-розробників: 30 вакансій. Серед навичок лідирує Python. Медіанна зарплата Middle — 2500 доларів на місяць. До зустрічі в понеділок!',
+      en: 'Hi, this is IT Pulse UA for 9–15 November. Only 22% of the week’s vacancies are analysed so far, so the numbers are preliminary. 900 new vacancies appeared this week. Backend developers are the most wanted, with 30 vacancies. Python leads the skills. The median Middle salary is 2500 dollars a month. See you on Monday!',
+    },
+  },
 };

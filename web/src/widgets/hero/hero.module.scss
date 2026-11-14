@@ -1,6 +1,9 @@
 @use '../../shared/styles/breakpoints' as bp;
 @use '../../shared/styles/units' as *;
 
+/* One sweep of the pulse line; the eyebrow dot pings at the same rate. */
+$sweep: 2.8s;
+
 .hero {
   padding: clamp(rem(28px), 7vw, rem(88px)) 0 var(--space-6);
   display: flex;
@@ -21,8 +24,8 @@
   border-radius: 50%;
   background: var(--color-pulse);
   box-shadow: 0 0 0 4px var(--color-pulse-glow);
-  // Same rate as SWEEP_DURATION in hero.tsx.
-  animation: ping 2.8s ease-out infinite;
+  // Same rate as the sweep of the pulse line.
+  animation: ping $sweep ease-out infinite;
 }
 
 .title {
@@ -36,28 +39,51 @@
 }
 
 .pulse {
-  width: 100%;
   height: rem(64px);
   margin-top: var(--space-2);
+  // The sweep moves the mask by the line's own width (cqw), whatever the screen.
+  container-type: inline-size;
+}
+
+.trace {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   fill: none;
   stroke: var(--color-pulse);
   stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.pulse polyline {
-  vector-effect: non-scaling-stroke;
-}
-
-/* The full line stays visible but dim, so the shape reads even between sweeps. */
-.baseline {
-  opacity: 0.3;
-}
-
-.trace {
   filter: drop-shadow(0 0 4px var(--color-pulse));
+  /* One tile per line width, repeated: the head is the tile's bright right edge; behind it the
+     trace fades to a faint trail; the tile's first few percent are the erased gap ahead of the
+     head, over the previous sweep. Sliding the tile one width is one sweep. */
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 4%,
+    rgb(0 0 0 / 12%) 5%,
+    rgb(0 0 0 / 45%) 70%,
+    #000 100%
+  );
+  mask-size: 100% 100%;
+  mask-repeat: repeat-x;
+  animation: sweep $sweep linear infinite;
+}
+
+.trace polyline {
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes sweep {
+  from {
+    mask-position: -100cqw 0;
+  }
+
+  to {
+    mask-position: 0 0;
+  }
 }
 
 @keyframes ping {
@@ -71,29 +97,15 @@
   }
 }
 
-/* No motion asked for: the whole line at full strength, still. The SVG sweep keeps running
-   but its copy is hidden, so nothing moves on screen. */
+/* No motion asked for: the whole line at full strength, still. */
 @media (prefers-reduced-motion: reduce) {
   .dot {
     animation: none;
   }
 
-  .baseline {
-    opacity: 1;
-  }
-
   .trace {
-    display: none;
-  }
-}
-
-.ask {
-  display: none;
-}
-
-@include bp.compact {
-  .ask {
-    display: block;
+    animation: none;
+    mask-image: none;
   }
 }
 

@@ -2,9 +2,10 @@
 // replace only the data blocks; the header, hero and method stay readable either way.
 import type { ReactElement } from 'react';
 import type { Aggregates } from '../../entities/aggregates/index.ts';
+import { AskMarketTeaser } from '../../features/ask-market/index.ts';
 import { useLanguage } from '../../shared/i18n/index.ts';
 import { Button, EmptyState, StatusBanner } from '../../shared/ui/index.ts';
-import { DigestTeaser } from '../../widgets/digest-teaser/index.ts';
+import { DigestPlayer } from '../../widgets/digest-player/index.ts';
 import { FreshnessBanner } from '../../widgets/freshness-banner/index.ts';
 import { Hero } from '../../widgets/hero/index.ts';
 import { HowItWorks } from '../../widgets/how-it-works/index.ts';
@@ -39,12 +40,16 @@ export function DashboardPage(): ReactElement {
       <SiteHeader />
       <main id="top" className={styles.main} aria-busy={state.status === 'loading'}>
         <Hero />
+        <DigestPlayer episode={aggregates?.digest} />
         <DataSections state={state} retry={retry} />
-        <DigestTeaser />
         <HowItWorks
           minN={aggregates?.minN ?? DEFAULT_MIN_N}
           windowDays={aggregates?.windowDays ?? DEFAULT_WINDOW_DAYS}
         />
+        {/* On narrow screens the header has no room for the agent pill, so it closes the page. */}
+        <div className={styles.ask}>
+          <AskMarketTeaser look="block" />
+        </div>
       </main>
       <SiteFooter {...(aggregates && { generatedAt: aggregates.generatedAt })} />
     </>

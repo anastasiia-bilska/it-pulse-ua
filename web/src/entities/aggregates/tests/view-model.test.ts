@@ -40,6 +40,7 @@ function aggregates(overrides: Partial<Aggregates> = {}): Aggregates {
     topSkills: [{ value: 'Python', n: 34 }],
     salaryUsdMonthByRole: [],
     salaryUsdMonthBySeniority: [salary('middle', 12), salary('junior', 3)],
+    digest: null,
     ...overrides,
   };
 }

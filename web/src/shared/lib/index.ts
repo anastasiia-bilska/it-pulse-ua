@@ -1,6 +1,7 @@
 // Public API of shared/lib.
 export {
   formatDateTime,
+  formatDayRange,
   formatNumber,
   formatShare,
   formatUsd,

@@ -3,6 +3,7 @@
 export type {
   Aggregates,
   Count,
+  DigestEpisode,
   Dimension,
   Freshness,
   SalaryRow,

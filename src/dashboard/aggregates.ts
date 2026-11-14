@@ -14,6 +14,15 @@ export interface Aggregates {
   topSkills: Count[];
   salaryUsdMonthByRole: SalaryRow[];
   salaryUsdMonthBySeniority: SalaryRow[];
+  /** The latest audio digest episode, or null before the first one (ADR 0013). */
+  digest: DigestEpisode | null;
+}
+
+/** Its scripts are written from aggregates only, so they are public like the rest. */
+export interface DigestEpisode {
+  /** Null for the trailer, published before the first weekly episode. */
+  week: { label: string; firstDay: string; lastDay: string } | null;
+  scripts: { uk: string; en: string };
 }
 
 export type Dimension = (typeof DIMENSIONS)[number];
