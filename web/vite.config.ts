@@ -58,7 +58,8 @@ export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   // Relative asset URLs: the build works at any path (a pages.dev root, a preview, a subfolder).
   base: './',
-  // Copied as is into dist/site: only _headers, the Cloudflare Pages cache rules (ADR 0015).
+  // Copied as is into dist/site: _headers (Cloudflare Pages cache rules, ADR 0015), robots.txt and
+  // sitemap.xml. Without the last two, Pages' SPA fallback answers /robots.txt with index.html.
   publicDir: 'public',
   plugins: [
     react(),

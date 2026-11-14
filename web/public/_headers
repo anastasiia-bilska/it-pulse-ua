@@ -13,6 +13,10 @@
   Cache-Control: public, max-age=0, must-revalidate
 /aggregates.json
   Cache-Control: public, max-age=0, must-revalidate
+/robots.txt
+  Cache-Control: public, max-age=86400
+/sitemap.xml
+  Cache-Control: public, max-age=86400
 
 /*
   X-Content-Type-Options: nosniff
