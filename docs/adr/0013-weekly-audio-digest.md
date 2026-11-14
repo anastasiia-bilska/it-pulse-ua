@@ -35,10 +35,14 @@ its credibility.
   (plus the week's dates and the year), after normalising thousand separators. Anything else, or a
   script over the limit, rejects the episode: nothing is published and healthchecks gets `/fail`.
   The guard cannot see numbers written as words; the prompt forbids them.
-- **Speech:** ElevenLabs text-to-speech, model `eleven_multilingual_v2`, one library voice for both
-  languages, pinned as a constant. Before synthesis the job reads the subscription usage and
-  refuses to start if the two scripts would not fit. At 80% of the monthly quota it reports a
-  problem (ADR 0005).
+- **Speech:** ElevenLabs text-to-speech, model `eleven_multilingual_v2`, and the premade voice
+  "Matilda" for both languages, pinned as a constant. The owner chose it from samples of three
+  voices (and of the v3 and v4 models) rendered in a temporary workflow, so the key never left
+  GitHub secrets.
+- **Quota:** the API key has only the text-to-speech permission and a credit limit of 10,000 a
+  month, so it cannot overspend even if it leaks. Such a key may not read its usage (HTTP 401); the
+  job then skips the pre-check and the 80% warning (ADR 0005), and a run that hits the limit fails
+  and alerts. A key with the user-read permission turns both checks back on.
 - **Budget:** the free plan has 10,000 credits a month, one credit per character on
   `eleven_multilingual_v2`. Two scripts of at most 1100 characters, about 4.3 times a month, is
   about 9,500. That is tight on purpose. If it runs out, either Flash/Turbo (0.5 to 1 credit per

@@ -34,6 +34,8 @@ const NO_TRACING: Tracer = {
 /** What the fake Gemini answers next. */
 let scriptAnswer = { uk: '', en: '' };
 let quotaUsed = 0;
+/** False mimics a key without the user-read permission: the usage endpoint answers 401. */
+let canReadUsage = true;
 const spoken: string[] = [];
 let server: Server;
 let baseUrl = '';
@@ -48,6 +50,8 @@ function respond(request: IncomingMessage, response: ServerResponse): void {
   request.on('end', () => {
     if (request.url === '/v1beta/interactions') {
       response.writeHead(200).end(completed(JSON.stringify(scriptAnswer)));
+    } else if (!canReadUsage && request.url === '/v1/user/subscription') {
+      response.writeHead(401).end('{}');
     } else if (request.url === '/v1/user/subscription') {
       response
         .writeHead(200)
@@ -171,5 +175,15 @@ test('the 80% quota mark is reported even when the episode is published', async 
   const { problems, directory } = await run();
 
   assert.match(problems.join('; '), /ElevenLabs quota at 80%/);
+  assert.equal(existsSync(new URL('digest.json', directory)), true);
+});
+
+test('a key that may not read its usage still publishes, without the quota checks', async () => {
+  canReadUsage = false;
+  quotaUsed = 9990;
+
+  const { problems, directory } = await run();
+
+  assert.deepEqual(problems, []);
   assert.equal(existsSync(new URL('digest.json', directory)), true);
 });

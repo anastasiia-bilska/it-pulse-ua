@@ -9,11 +9,8 @@ import { produceDigest } from './produce-digest.ts';
 
 // ---- constants ---------------------------------------------------------------------------------
 
-/**
- * The library voice for both languages, chosen by the owner from samples. Empty until chosen: the
- * job then fails loudly instead of speaking with a random voice.
- */
-const VOICE_ID = '';
+/** "Matilda", a premade library voice for both languages, chosen by the owner from samples. */
+const VOICE_ID = 'XrExE9yKIg1WjnnlVkGX';
 const OUTPUT_DIRECTORY = new URL('../../dist/digest/', import.meta.url);
 
 // ---- functions ---------------------------------------------------------------------------------
@@ -30,7 +27,7 @@ async function digest(db: pg.Client): Promise<string[]> {
       },
       elevenLabs: {
         apiKey: requiredEnvironment('ELEVENLABS_API_KEY'),
-        voiceId: process.env.ELEVENLABS_VOICE_ID ?? requiredVoice(),
+        voiceId: VOICE_ID,
         baseUrl: process.env.ELEVENLABS_BASE_URL ?? ELEVENLABS_BASE_URL,
       },
       tracer,
@@ -45,14 +42,6 @@ async function digest(db: pg.Client): Promise<string[]> {
 function weekToReport(): IsoWeek {
   const label = process.env.DIGEST_WEEK;
   return label ? parseIsoWeek(label) : previousIsoWeek(new Date());
-}
-
-function requiredVoice(): string {
-  const voiceId: string = VOICE_ID;
-  if (!voiceId) {
-    throw new Error('VOICE_ID is not chosen yet (ADR 0013)');
-  }
-  return voiceId;
 }
 
 function requiredEnvironment(name: string): string {
