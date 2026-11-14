@@ -1,0 +1,75 @@
+@use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
+
+.hero {
+  padding: clamp(rem(28px), 7vw, rem(88px)) 0 var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: rem(20px);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: rem(10px);
+}
+
+.dot {
+  flex: none;
+  width: rem(8px);
+  height: rem(8px);
+  border-radius: 50%;
+  background: var(--color-pulse);
+  box-shadow: 0 0 0 4px var(--color-pulse-glow);
+}
+
+.title {
+  max-width: 15ch;
+}
+
+.lead {
+  max-width: 62ch;
+  font-size: clamp(rem(16px), 1.6vw, rem(20px));
+  color: var(--color-text-2);
+}
+
+.pulse {
+  width: 100%;
+  height: rem(64px);
+  margin-top: var(--space-2);
+  fill: none;
+  stroke: var(--color-pulse);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.pulse polyline {
+  vector-effect: non-scaling-stroke;
+}
+
+.ask {
+  display: none;
+}
+
+@include bp.compact {
+  .ask {
+    display: block;
+  }
+}
+
+@include bp.phone {
+  .hero {
+    gap: rem(14px);
+  }
+
+  .eyebrow {
+    font-size: rem(11px);
+    letter-spacing: 0.06em;
+  }
+
+  .pulse {
+    height: rem(40px);
+  }
+}

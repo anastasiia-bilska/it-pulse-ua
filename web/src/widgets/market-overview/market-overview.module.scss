@@ -1,0 +1,32 @@
+@use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
+
+.section {
+  margin-top: var(--space-7);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, rem(520px)), 1fr));
+  gap: var(--space-4);
+}
+
+.tabs {
+  display: none;
+}
+
+.panel {
+  display: flex;
+  min-width: 0;
+}
+
+.panel > section {
+  flex: 1;
+}
+
+@include bp.tablet {
+  .tabs {
+    display: block;
+  }
+
+  .hiddenOnPhone {
+    display: none;
+  }
+}

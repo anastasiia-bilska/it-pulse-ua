@@ -1,0 +1,89 @@
+@use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
+
+.section {
+  margin-top: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: rem(20px);
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.swipe {
+  display: none;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, rem(320px)), 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: rem(14px);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.tag {
+  font: 500 rem(13px) var(--font-mono);
+  color: var(--color-pulse);
+}
+
+.text {
+  flex: 1;
+  font-size: rem(20px);
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.track {
+  display: block;
+  height: rem(8px);
+  background: var(--color-surface-3);
+  border-radius: rem(4px);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--color-pulse);
+  border-radius: rem(4px);
+}
+
+@include bp.tablet {
+  .swipe {
+    display: inline;
+  }
+
+  .cards {
+    display: flex;
+    gap: rem(10px);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter) rem(4px);
+    scrollbar-width: none;
+  }
+
+  .card {
+    flex: 0 0 min(rem(290px), 80vw);
+    scroll-snap-align: start;
+    padding: rem(18px);
+    border-radius: rem(16px);
+  }
+
+  .text {
+    font-size: rem(17px);
+  }
+}

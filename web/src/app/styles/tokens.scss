@@ -1,0 +1,76 @@
+@use '../../shared/styles/units' as *;
+
+/* Design tokens from the UI-kit artboard. Dark theme only: the design has no light variant. */
+:root {
+  /* ---- colors ---- */
+  --color-ink: #0c0e12;
+  --color-surface: #14171d;
+  --color-surface-2: #1a1e26;
+  --color-surface-3: #232833;
+  --color-border: #262b35;
+  --color-border-strong: #343a46;
+  --color-border-hover: #4a5262;
+  --color-divider: #1f232c;
+  --color-rule: #222731;
+  --color-track: #1e222b;
+
+  --color-text: #eef0f4;
+  --color-text-2: #c7ccd6;
+  --color-muted: #a0a7b4;
+  --color-faint: #7d8594;
+  --color-disabled: #5e6573;
+
+  --color-pulse: #d4f53c;
+  --color-pulse-hover: #e3fb74;
+  --color-pulse-pressed: #b4d12a;
+  --color-pulse-soft: rgb(212 245 60 / 28%);
+  --color-pulse-glow: rgb(212 245 60 / 18%);
+  --color-pulse-2: #a3bd34;
+  --color-pulse-3: #6e8230;
+  --color-pulse-4: #4a5729;
+  --color-neutral-bar: #6b7486;
+  --hatch: repeating-linear-gradient(135deg, #59606e 0 3px, #262b35 3px 6px);
+
+  --color-fresh-bg: #1b2410;
+  --color-fresh-border: #4f6420;
+  --color-fresh-text: #e4f5b0;
+  --color-fresh-title: #f2fbd6;
+  --color-warning: #ffb547;
+  --color-warning-bg: #2a2110;
+  --color-warning-border: #6b5320;
+  --color-warning-text: #ffe2a8;
+  --color-warning-title: #fff1d4;
+  --color-warning-meta: #ffd27a;
+  --color-error: #ff6b74;
+  --color-error-bg: #2a1215;
+  --color-error-border: #7a2e35;
+  --color-error-text: #ffc9cc;
+  --color-error-title: #ffe3e5;
+  --color-error-action: #a8434b;
+
+  /* ---- type ---- */
+  --font-display: 'Unbounded', 'Unbounded fallback', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', 'Inter fallback', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrains Mono fallback', ui-monospace, monospace;
+
+  /* ---- spacing ---- */
+  --space-1: #{rem(4px)};
+  --space-2: #{rem(8px)};
+  --space-3: #{rem(12px)};
+  --space-4: #{rem(16px)};
+  --space-5: #{rem(24px)};
+  --space-6: #{rem(32px)};
+  --space-7: #{rem(56px)};
+  --gutter: clamp(#{rem(16px)}, 4vw, #{rem(40px)});
+  --container: #{rem(1240px)};
+
+  /* ---- radii ---- */
+  --radius-bar: #{rem(6px)};
+  --radius-tab: #{rem(9px)};
+  --radius-button: #{rem(12px)};
+  --radius-banner: #{rem(14px)};
+  --radius-card: #{rem(18px)};
+  --radius-pill: 999px;
+
+  --focus-ring: 0 0 0 2px var(--color-ink), 0 0 0 4px var(--color-pulse);
+}

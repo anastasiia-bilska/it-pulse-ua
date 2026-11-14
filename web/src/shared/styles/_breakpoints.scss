@@ -1,0 +1,25 @@
+// Breakpoints from the design: phone artboard 390px, tablet, and the width where the header nav
+// no longer fits. In em, so a reader who enlarges the text gets the narrower layout earlier
+// (em in media queries is relative to the browser's default size: 16px).
+
+$phone: 35em; // 560px
+$tablet: 47.9375em; // 767px
+$compact: 63.9375em; // 1023px
+
+@mixin phone {
+  @media (max-width: $phone) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: $tablet) {
+    @content;
+  }
+}
+
+@mixin compact {
+  @media (max-width: $compact) {
+    @content;
+  }
+}

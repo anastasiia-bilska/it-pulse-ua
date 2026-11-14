@@ -30,11 +30,14 @@ export interface PipelineStatus {
 
 export interface Freshness {
   isStale: boolean;
-  /** Plain-language reason for the banner, in Ukrainian; null when fresh. */
-  reason: string | null;
+  /** Why the banner shows, as a code the page translates; null when fresh. */
+  reason: StaleReason | null;
   lastOkAt: string | null;
   backlog: number;
 }
+
+/** quota: the AI model's daily limit is spent; failing: no successful run for too long. */
+export type StaleReason = 'quota' | 'backlog' | 'failing' | 'never';
 
 // ---- constants ---------------------------------------------------------------------------------
 
@@ -45,13 +48,6 @@ const STALE_BACKLOG = 300;
 /** …or when the last successful extraction run is older than this. */
 const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
 const PERCENT_PRECISION = 1000;
-
-const REASONS = {
-  quota: 'вичерпано денний ліміт AI-моделі',
-  backlog: 'у черзі багато нових вакансій',
-  failing: 'тимчасова помилка обробки',
-  never: 'аналіз вакансій ще не запускався',
-} as const;
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -92,16 +88,16 @@ export function judgeFreshness(status: PipelineStatus, now: Date): Freshness {
   return { isStale: reason !== null, reason, lastOkAt, backlog: status.backlog };
 }
 
-function staleReason(status: PipelineStatus, now: Date): string | null {
+function staleReason(status: PipelineStatus, now: Date): StaleReason | null {
   if (!status.lastOkAt) {
-    return REASONS.never;
+    return 'never';
   }
   const isOld = now.getTime() - status.lastOkAt.getTime() > STALE_AFTER_MS;
   if (!isOld && status.backlog <= STALE_BACKLOG) {
     return null;
   }
   if (status.lastStatus === 'quota_exhausted') {
-    return REASONS.quota;
+    return 'quota';
   }
-  return isOld ? REASONS.failing : REASONS.backlog;
+  return isOld ? 'failing' : 'backlog';
 }

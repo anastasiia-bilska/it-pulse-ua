@@ -1,0 +1,19 @@
+@use '../../shared/styles/units' as *;
+
+.toggle {
+  align-self: flex-start;
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: rem(10px);
+}
+
+.hatch {
+  flex: none;
+  width: rem(22px);
+  height: rem(10px);
+  border-radius: 3px;
+  background: var(--hatch);
+}

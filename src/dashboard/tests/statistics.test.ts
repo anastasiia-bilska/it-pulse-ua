@@ -61,7 +61,7 @@ test('a long queue after a quota stop explains the quota', () => {
   );
 
   assert.equal(freshness.isStale, true);
-  assert.match(freshness.reason ?? '', /ліміт/);
+  assert.equal(freshness.reason, 'quota');
 });
 
 test('no successful run for over 6 hours is stale', () => {
@@ -71,8 +71,21 @@ test('no successful run for over 6 hours is stale', () => {
   );
 
   assert.equal(freshness.isStale, true);
+  assert.equal(freshness.reason, 'failing');
+});
+
+test('a long queue after a normal run blames the queue', () => {
+  const freshness = judgeFreshness(
+    { lastStatus: 'ok', lastOkAt: new Date(NOW.getTime() - HOUR_MS), backlog: 900 },
+    NOW,
+  );
+
+  assert.equal(freshness.reason, 'backlog');
 });
 
 test('before the first run the page says so', () => {
-  assert.equal(judgeFreshness({ lastStatus: null, lastOkAt: null, backlog: 0 }, NOW).isStale, true);
+  const freshness = judgeFreshness({ lastStatus: null, lastOkAt: null, backlog: 0 }, NOW);
+
+  assert.equal(freshness.isStale, true);
+  assert.equal(freshness.reason, 'never');
 });

@@ -1,0 +1,184 @@
+@use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
+
+.section {
+  margin-top: var(--space-7);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, rem(520px)), 1fr));
+  gap: var(--space-4);
+  scroll-margin-top: rem(80px);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: rem(4px);
+}
+
+/* Level column, then the plot; the axis shares the plot column so ticks line up with boxes. */
+.axis,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, rem(110px)) 1fr;
+  gap: rem(6px) var(--space-4);
+}
+
+.axis::before {
+  content: '';
+}
+
+.ticks {
+  display: flex;
+  justify-content: space-between;
+  font: 500 rem(12px) var(--font-mono);
+  color: var(--color-faint);
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: rem(20px);
+}
+
+.row {
+  align-items: center;
+}
+
+.rowLabel {
+  display: flex;
+  flex-direction: column;
+}
+
+.group {
+  font-weight: 500;
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  gap: rem(6px);
+}
+
+.plot {
+  position: relative;
+  height: rem(28px);
+  background: var(--color-surface-2);
+  border-radius: rem(8px);
+}
+
+.box {
+  position: absolute;
+  top: rem(4px);
+  bottom: rem(4px);
+  border-radius: rem(6px);
+  background: var(--color-pulse-soft);
+  border: 1px solid var(--color-pulse);
+}
+
+.median {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--color-pulse);
+}
+
+.summary {
+  font: 500 rem(13px) var(--font-mono);
+}
+
+.thin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) rem(14px);
+}
+
+.thinText {
+  font-size: rem(14px);
+  color: var(--color-warning-meta);
+}
+
+.roles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(200px), 1fr));
+  gap: rem(10px);
+}
+
+.role {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: rem(12px) rem(14px);
+  border-radius: var(--radius-button);
+  background: var(--color-surface-2);
+  font-size: rem(14px);
+}
+
+.roleHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.roleValue {
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.roleTrack {
+  display: block;
+  height: rem(4px);
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.roleProgress,
+.roleDone {
+  display: block;
+  height: 100%;
+}
+
+.roleProgress {
+  background: var(--color-warning);
+}
+
+.roleDone {
+  background: var(--color-pulse);
+}
+
+@include bp.phone {
+  .row {
+    grid-template-columns: 1fr;
+    padding-bottom: rem(14px);
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .rowLabel {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .axis {
+    grid-template-columns: 1fr;
+  }
+
+  .axis::before {
+    display: none;
+  }
+
+  .ticks {
+    font-size: rem(11px);
+  }
+}

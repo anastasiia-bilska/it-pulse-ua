@@ -1,0 +1,29 @@
+@use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
+
+.card {
+  margin-top: var(--space-7);
+  scroll-margin-top: rem(80px);
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+}
+
+.toggle {
+  display: none;
+}
+
+@include bp.tablet {
+  .toggle {
+    display: inline-flex;
+  }
+
+  .collapsed li:nth-child(n + 11) {
+    display: none;
+  }
+}

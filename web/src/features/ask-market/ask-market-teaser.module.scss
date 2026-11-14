@@ -1,0 +1,54 @@
+@use '../../shared/styles/units' as *;
+
+.teaser {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-pulse);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.teaser > span:last-child {
+  padding: 1px rem(7px);
+  font-size: rem(10px);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.pill {
+  min-height: rem(44px);
+  padding: 0 rem(10px) 0 rem(16px);
+  border-radius: var(--radius-pill);
+}
+
+.block {
+  justify-content: center;
+  min-height: rem(52px);
+  border-radius: var(--radius-banner);
+  font-size: rem(16px);
+}
+
+.card {
+  gap: rem(14px);
+  padding: rem(16px);
+  border-radius: rem(16px);
+}
+
+.card .text {
+  flex: 1;
+}
+
+.card .title {
+  font-size: rem(17px);
+  font-weight: 700;
+}
+
+.hint {
+  font-size: rem(13px);
+  font-weight: 400;
+}

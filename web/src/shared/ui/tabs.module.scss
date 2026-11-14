@@ -1,0 +1,62 @@
+@use '../styles/units' as *;
+
+.list {
+  display: flex;
+}
+
+.tab {
+  min-height: rem(40px);
+  border-radius: var(--radius-tab);
+  font: 600 rem(14px) var(--font-body);
+  cursor: pointer;
+}
+
+/* Segmented: equal halves inside one dark track. */
+.segmented {
+  padding: rem(4px);
+  background: var(--color-ink);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+}
+
+.segmented .tab {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-2);
+}
+
+.segmented .tab[aria-selected='true'] {
+  background: var(--color-text);
+  color: var(--color-ink);
+}
+
+/* Chips: a scrollable row of pills that bleeds to the screen edges on phones. */
+.chips {
+  gap: var(--space-2);
+  overflow-x: auto;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: rem(4px) var(--gutter);
+  scrollbar-width: none;
+}
+
+.chips .tab {
+  flex: none;
+  padding: 0 rem(16px);
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  background: transparent;
+  color: var(--color-text-2);
+  border: 1px solid var(--color-border-strong);
+}
+
+.chips .tab:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.chips .tab[aria-selected='true'] {
+  background: var(--color-text);
+  color: var(--color-ink);
+  border-color: var(--color-text);
+}

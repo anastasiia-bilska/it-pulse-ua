@@ -1,0 +1,30 @@
+@use '../../shared/styles/units' as *;
+
+.main {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--gutter) rem(64px);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.skip {
+  position: absolute;
+  top: rem(8px);
+  left: rem(8px);
+  z-index: 20;
+  padding: rem(10px) rem(16px);
+  border-radius: var(--radius-button);
+  background: var(--color-pulse);
+  color: var(--color-ink);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip:focus-visible {
+  transform: none;
+}

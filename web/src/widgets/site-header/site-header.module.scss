@@ -1,0 +1,61 @@
+@use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgb(12 14 18 / 92%);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: rem(12px) var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+
+.brand {
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: var(--radius-button);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: rem(4px) rem(20px);
+  font-size: rem(15px);
+}
+
+.link {
+  padding: rem(10px) 0;
+  text-decoration: none;
+}
+
+.github {
+  display: flex;
+  padding: rem(10px);
+  border-radius: var(--radius-button);
+}
+
+.compact {
+  display: none;
+  align-items: center;
+  gap: rem(4px);
+}
+
+@include bp.compact {
+  .nav {
+    display: none;
+  }
+
+  .compact {
+    display: flex;
+  }
+}
