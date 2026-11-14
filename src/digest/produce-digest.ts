@@ -41,11 +41,11 @@ export async function produceDigest(db: pg.Client, options: DigestOptions): Prom
   }
   const usage = await readUsage(options.elevenLabs);
   const needed = scripts.uk.length + scripts.en.length;
-  if (usage.used + needed > usage.limit) {
+  if (usage && usage.used + needed > usage.limit) {
     return [`digest ${facts.week}: ElevenLabs quota left ${usage.limit - usage.used} < ${needed}`];
   }
   await writeEpisode(options, facts, scripts);
-  return quotaProblems(usage.used + needed, usage.limit);
+  return usage ? quotaProblems(usage.used + needed, usage.limit) : [];
 }
 
 /** The scripts, or the reason there are none: a quota stop or a rejection is not a crash. */

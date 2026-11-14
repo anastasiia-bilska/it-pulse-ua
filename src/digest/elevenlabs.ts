@@ -28,6 +28,9 @@ export const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io';
 const TTS_MODEL = 'eleven_multilingual_v2';
 const OUTPUT_FORMAT = 'mp3_44100_128';
 const REQUEST_TIMEOUT_MS = 120_000;
+/** A key without the "User" permission may not read its own usage; the check is then skipped. */
+const HTTP_UNAUTHORIZED = 401;
+const HTTP_FORBIDDEN = 403;
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -45,11 +48,15 @@ export async function synthesize(config: ElevenLabsConfig, text: string): Promis
   return new Uint8Array(await response.arrayBuffer());
 }
 
-export async function readUsage(config: ElevenLabsConfig): Promise<Usage> {
+/** Undefined when the key may not read usage: the key's own credit limit still caps spending. */
+export async function readUsage(config: ElevenLabsConfig): Promise<Usage | undefined> {
   const response = await fetch(`${config.baseUrl}/v1/user/subscription`, {
     headers: { 'xi-api-key': config.apiKey },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
+  if (response.status === HTTP_UNAUTHORIZED || response.status === HTTP_FORBIDDEN) {
+    return undefined;
+  }
   if (!response.ok) {
     throw new Error(`ElevenLabs subscription HTTP ${response.status}`);
   }

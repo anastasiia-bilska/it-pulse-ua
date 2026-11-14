@@ -1,7 +1,7 @@
 name: voice-samples
 
-# TEMPORARY (removed before merge): lists ElevenLabs models and voices, and renders short samples
-# so the owner can choose the digest voice (ADR 0013). The key never leaves GitHub secrets.
+# TEMPORARY (removed before merge): renders short samples so the owner can choose the digest voice
+# and model (ADR 0013). The key never leaves GitHub secrets. About 1300 credits in total.
 on:
   push:
     branches: [feat/audio-digest]
@@ -17,13 +17,29 @@ jobs:
     env:
       KEY: ${{ secrets.ELEVENLABS_API_KEY }}
       API: https://api.elevenlabs.io
+      UK: 'Привіт, це IT Pulse UA, щотижневий огляд ринку IT-вакансій. Цього тижня з’явилося 412 нових вакансій, на 8% більше, ніж минулого. Найбільше шукають бекенд-розробників.'
+      EN: 'Hi, this is IT Pulse UA, your weekly look at the Ukrainian IT job market. This week brought 412 new vacancies, up 8% on last week.'
     steps:
-      - name: Models and voices (free)
+      - name: Render samples
         run: |
-          curl -sf -H "xi-api-key: $KEY" "$API/v1/models" \
-            | jq -r '.[] | [.model_id, .token_cost_factor, (.languages | map(.language_id) | join(","))] | @tsv' \
-            || echo "models: no access"
-          curl -sf -H "xi-api-key: $KEY" "$API/v1/voices" \
-            | jq -r '.voices[] | [.voice_id, .name, .category, (.labels | tostring)] | @tsv' \
-            || echo "voices: no access"
-          curl -s -o /dev/null -w "subscription: HTTP %{http_code}\n" -H "xi-api-key: $KEY" "$API/v1/user/subscription"
+          mkdir samples
+          say() { # voice name model lang text
+            body=$(jq -n --arg t "$5" --arg m "$3" '{text: $t, model_id: $m}')
+            code=$(curl -s -o "samples/$2-$3-$4.mp3" -w "%{http_code}" -X POST \
+              -H "xi-api-key: $KEY" -H 'content-type: application/json' -d "$body" \
+              "$API/v1/text-to-speech/$1?output_format=mp3_44100_128")
+            echo "$2 $3 $4: HTTP $code"
+            [ "$code" = 200 ] || rm -f "samples/$2-$3-$4.mp3"
+          }
+          for voice in onwK4e9ZLuTAKqWW03F9:daniel Xb7hH8MSUJpSbSDYk0k2:alice XrExE9yKIg1WjnnlVkGX:matilda; do
+            say "${voice%%:*}" "${voice##*:}" eleven_multilingual_v2 uk "$UK"
+            say "${voice%%:*}" "${voice##*:}" eleven_multilingual_v2 en "$EN"
+          done
+          for model in eleven_v3 eleven_v4; do
+            say onwK4e9ZLuTAKqWW03F9 daniel "$model" uk "$UK"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-samples
+          path: samples
+          retention-days: 3
