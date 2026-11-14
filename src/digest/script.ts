@@ -48,6 +48,8 @@ Rules:
 - Role names are codes: say them naturally (ml_ai → "ML/AI", data_engineering → "data engineering").
 - Plain spoken language for the ear: short sentences, no lists, no markdown, no emoji, no links.
 - At most ${MAX_SCRIPT_CHARS} characters per language, spaces included.
+- Say the week's dates the way people speak: day and month in words, e.g. "9–15 листопада" and
+  "9–15 November". Never read a date as digits with dashes (2026-11-09), and skip the year.
 - Start with a greeting naming the digest and the week's dates; end with a short sign-off.`;
 
 // ---- functions ---------------------------------------------------------------------------------

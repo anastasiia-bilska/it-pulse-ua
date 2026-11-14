@@ -4,9 +4,17 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The browser tests also run twice a day on main, so a regression that lands without a PR or
+  # comes from the environment (runner image, fonts, browser builds) shows within 12 hours.
+  # Off the hour: GitHub drops more scheduled runs at :00.
+  schedule:
+    - cron: '23 */12 * * *'
+  workflow_dispatch:
 
 jobs:
   check:
+    # The schedule is for the browser tests only.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     services:
@@ -33,3 +41,25 @@ jobs:
       - run: npm test
       - run: npm run test:integration
       - run: npm run build:web
+
+  # Real-browser tests of the production build (ADR 0017): media and animation, which jsdom lacks.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

@@ -1,9 +1,19 @@
 name: dashboard
 
-# Rebuilds the public dashboard (aggregates only) after every extract run and publishes it to
-# Cloudflare Pages (ADR 0011, ADR 0015). The daily schedule keeps the freshness banner honest even
-# if extraction stops running altogether.
+# Rebuilds the public dashboard (aggregates only) and publishes it to Cloudflare Pages (ADR 0011,
+# ADR 0015), then checks the live site (ADR 0016). The daily schedule keeps the freshness banner
+# honest even if extraction stops running altogether.
 on:
+  # A merged change to the page reaches readers at once, not at the next extract run.
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'src/dashboard/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dashboard.yml'
+      - '.github/scripts/smoke-check.sh'
   # After every extract run, and after a new digest episode so its player and transcript appear.
   workflow_run:
     workflows: [extract, digest]
@@ -38,7 +48,6 @@ jobs:
       - run: npm ci
       # Order matters: the web build empties dist/site, then the CLI adds aggregates.json to it.
       - run: npm run build:web
-      # The latest digest episode's scripts (ADR 0013); none before the first release.
       # The latest digest episode (ADR 0013): its scripts go into aggregates.json, and its audio is
       # served from this site. GitHub serves release files as octet-stream downloads, which iOS
       # Safari refuses to play.
@@ -60,3 +69,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.162.0'
           command: pages deploy dist/site --project-name=it-pulse-ua --branch=main
+      # A deploy that went through can still serve a broken page: check what readers get.
+      - name: Smoke check of the live site
+        run: .github/scripts/smoke-check.sh https://it-pulse-ua.pages.dev dist/site/aggregates.json

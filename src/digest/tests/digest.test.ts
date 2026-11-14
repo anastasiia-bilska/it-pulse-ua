@@ -15,6 +15,7 @@ const ROWS: WeekRows = {
     { value: 'backend', this_week: 90, previous_week: 100 },
     { value: 'qa', this_week: 40, previous_week: 5 },
     { value: 'design', this_week: 9, previous_week: 30 },
+    { value: 'other', this_week: 500, previous_week: 400 },
   ],
   skills: [{ value: 'Python', this_week: 1500, previous_week: 1400 }],
   salaries: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10_000],
@@ -41,7 +42,7 @@ test('a malformed week from a manual run is refused', () => {
 
 // ---- facts -------------------------------------------------------------------------------------
 
-test('changes are whole percents, and small samples are never passed on', () => {
+test('changes are whole percents; small samples and the catch-all role are never passed on', () => {
   assert.deepEqual(FACTS.newVacancies, { thisWeek: 412, previousWeek: 380, changePercent: 8 });
   assert.deepEqual(
     FACTS.topRoles.map((role) => [role.name, role.changePercent]),

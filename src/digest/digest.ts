@@ -32,6 +32,7 @@ async function digest(db: pg.Client): Promise<string[]> {
       },
       tracer,
       outputDirectory: OUTPUT_DIRECTORY,
+      isDryRun: process.env.DIGEST_DRY_RUN === 'true',
     });
   } finally {
     await tracer.flush();
