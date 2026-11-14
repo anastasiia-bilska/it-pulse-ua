@@ -26,6 +26,7 @@ labelled, and the agent is planned.
 | Langfuse traces for every model call (ADR 0010)                                          | Done        |
 | Skill taxonomy (ADR 0009): alias dictionary, automated triage, human override            | Done        |
 | Public dashboard on GitHub Pages with a freshness banner (ADR 0011)                      | Done        |
+| Dashboard redesign: React + Vite, Feature-Sliced layers, UI-kit, UA/EN (ADR 0013)        | Done        |
 | Eval set builder: 150 stratified vacancies to a Langfuse dataset, 30 for blind labelling | Done        |
 | Eval harness and PR gate (ADR 0012)                                                      | Done        |
 | Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
@@ -99,7 +100,8 @@ flowchart LR
    ([ADR 0010](docs/adr/0010-langfuse-tracing.md)).
 5. **Serve** ([ADR 0011](docs/adr/0011-public-dashboard.md)). After each extract run a static
    dashboard is rebuilt from `vacancy_current` and `pipeline_status`: aggregates only, every share
-   with its n, and a banner when the data is stale. The agent (planned) reads the same views.
+   with its n, and a banner when the data is stale. The page is a React app in `web/`
+   ([ADR 0013](docs/adr/0013-web-app-react-fsd.md)). The agent (planned) reads the same views.
 
 ## Engineering practices
 
@@ -128,7 +130,8 @@ flowchart LR
   enforces the mechanical part. The same rules bind human and AI contributors.
 - **Modular layout** ([ADR 0008](docs/adr/0008-modular-layout.md)). One folder per module under
   `src/`. `index.ts` is the only public entry point, and ESLint fails a reach into another module's
-  internals.
+  internals. The web app follows Feature-Sliced layers
+  ([ADR 0013](docs/adr/0013-web-app-react-fsd.md)), with the layer direction enforced by ESLint.
 - **Decisions are recorded.** Every significant decision gets an ADR in the same pull request.
 
 ## Data and ethics
@@ -162,6 +165,8 @@ psql "$DATABASE_URL" -c 'create role collector; create role extractor;'
 
 npm run migrate   # apply db/migrations/*.sql
 npm run collect   # one collection run
+
+npm run dev:web   # the dashboard on synthetic data, no database needed
 ```
 
 Tests need a throwaway Postgres. The integration suite **wipes schema `public`** of
@@ -174,6 +179,7 @@ export TEST_DATABASE_URL=postgres://postgres:pg@localhost:5432/postgres
 npm run typecheck && npm run lint && npm run format:check
 npm test                  # unit tests
 npm run test:integration  # Postgres plus a fake RSS server
+npm run build:web         # the dashboard bundle in dist/site
 ```
 
 ## Repository layout
@@ -189,6 +195,8 @@ src/
   dashboard/     public aggregates for GitHub Pages
   shared/        scheduled-job runner: DB connection, healthchecks.io pings
   <module>/tests/  *.test.ts (unit), *.itest.ts (integration)
+web/             the dashboard: React + Vite (ADR 0013)
+  src/           app → pages → widgets → features → entities → shared
 db/migrations/   plain SQL, applied in order
 docs/adr/        architecture decision records
 .github/workflows/
@@ -217,3 +225,4 @@ CLAUDE.md        engineering rules for people and AI agents
 | [0010](docs/adr/0010-langfuse-tracing.md)                | LLM traces in Langfuse over OTLP, without an SDK            |
 | [0011](docs/adr/0011-public-dashboard.md)                | Public dashboard: static aggregates on GitHub Pages         |
 | [0012](docs/adr/0012-eval-harness.md)                    | Extraction eval harness and the PR eval gate                |
+| [0013](docs/adr/0013-web-app-react-fsd.md)               | Web app: React + Vite, Feature-Sliced layers, own fonts     |

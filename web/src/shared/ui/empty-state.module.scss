@@ -1,0 +1,16 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: var(--space-5);
+  border: 1px dashed #3a404c;
+  border-radius: var(--radius-banner);
+  text-align: center;
+}
+
+.icon {
+  display: flex;
+  color: var(--color-faint);
+}

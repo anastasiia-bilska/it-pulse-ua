@@ -1,0 +1,88 @@
+@use '../../shared/styles/breakpoints' as bp;
+
+.section {
+  margin-top: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.swipe {
+  display: none;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.tag {
+  font: 500 13px var(--font-mono);
+  color: var(--color-pulse);
+}
+
+.text {
+  flex: 1;
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.track {
+  display: block;
+  height: 8px;
+  background: var(--color-surface-3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--color-pulse);
+  border-radius: 4px;
+}
+
+@include bp.tablet {
+  .swipe {
+    display: inline;
+  }
+
+  .cards {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter) 4px;
+    scrollbar-width: none;
+  }
+
+  .card {
+    flex: 0 0 min(290px, 80vw);
+    scroll-snap-align: start;
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .text {
+    font-size: 17px;
+  }
+}

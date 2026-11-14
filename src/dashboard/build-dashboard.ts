@@ -1,7 +1,9 @@
-// CLI: computes the public aggregates and writes the static dashboard to dist/site (ADR 0011).
+// CLI: computes the public aggregates and writes aggregates.json next to the web build in
+// dist/site (ADR 0011, ADR 0013). Run `npm run build:web` first: the build empties dist/site.
 // Aggregates only: no vacancy text, titles, links or company names ever reach the page.
-import { copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import pg from 'pg';
+import { DIMENSIONS, type Aggregates, type Dimension } from './aggregates.ts';
 import {
   judgeFreshness,
   MIN_N,
@@ -13,40 +15,12 @@ import {
   type Share,
 } from './statistics.ts';
 
-// ---- types -------------------------------------------------------------------------------------
-
-interface Aggregates {
-  generatedAt: string;
-  windowDays: number;
-  minN: number;
-  freshness: Freshness;
-  totals: { vacancies: number; extracted: number };
-  distributions: Record<Dimension, Share[]>;
-  topSkills: Count[];
-  salaryUsdMonthByRole: SalaryRow[];
-  salaryUsdMonthBySeniority: SalaryRow[];
-}
-
-type Dimension = (typeof DIMENSIONS)[number];
-
 // ---- constants ---------------------------------------------------------------------------------
 
 /** Vacancies seen in the feeds within this window count as current. */
 const WINDOW_DAYS = 30;
 const TOP_SKILLS = 30;
-const PAGE_SOURCE = new URL('../../site/index.html', import.meta.url);
 const OUTPUT_DIRECTORY = new URL('../../dist/site/', import.meta.url);
-
-/** Column names, used verbatim in SQL, so they come only from this list. */
-const DIMENSIONS = [
-  'source',
-  'role',
-  'seniority',
-  'work_format',
-  'english',
-  'company_type',
-  'domain',
-] as const;
 
 const IN_WINDOW = `last_seen > now() - make_interval(days => $1)`;
 
@@ -82,7 +56,6 @@ async function buildDashboard(): Promise<void> {
     const aggregates = await computeAggregates(db);
     await mkdir(OUTPUT_DIRECTORY, { recursive: true });
     await writeFile(new URL('aggregates.json', OUTPUT_DIRECTORY), JSON.stringify(aggregates));
-    await copyFile(PAGE_SOURCE, new URL('index.html', OUTPUT_DIRECTORY));
     console.log(
       `vacancies=${aggregates.totals.vacancies} extracted=${aggregates.totals.extracted} ` +
         `stale=${aggregates.freshness.isStale}`,

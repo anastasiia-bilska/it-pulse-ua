@@ -1,0 +1,32 @@
+.footer {
+  border-top: 1px solid var(--color-rule);
+}
+
+.inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 28px var(--gutter) 40px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.text {
+  max-width: 60ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.links a {
+  padding: 10px 0;
+}

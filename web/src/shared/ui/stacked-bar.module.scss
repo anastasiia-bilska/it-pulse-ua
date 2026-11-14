@@ -1,0 +1,83 @@
+@use '../styles/breakpoints' as bp;
+
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 36px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar > span {
+  flex-basis: 0;
+  min-width: 2px;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--space-2) var(--space-4);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+}
+
+.value {
+  font: 500 13px var(--font-mono);
+  color: var(--color-text-2);
+  white-space: nowrap;
+}
+
+.ramp0 {
+  background: var(--color-pulse);
+}
+
+.ramp1 {
+  background: var(--color-pulse-2);
+}
+
+.ramp2 {
+  background: var(--color-pulse-3);
+}
+
+.ramp3 {
+  background: var(--color-pulse-4);
+}
+
+.ramp4 {
+  background: var(--color-text-2);
+}
+
+.missing {
+  background: var(--hatch);
+}
+
+@include bp.phone {
+  .bar {
+    height: 32px;
+    border-radius: var(--radius-tab);
+  }
+
+  .legend {
+    grid-template-columns: 1fr;
+  }
+}

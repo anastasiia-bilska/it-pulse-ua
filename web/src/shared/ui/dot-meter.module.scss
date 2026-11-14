@@ -1,0 +1,18 @@
+.meter {
+  display: flex;
+  gap: 4px;
+}
+
+.meter > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.filled {
+  background: var(--color-warning);
+}
+
+.empty {
+  border: 1.5px solid #4a505c;
+}

@@ -1,0 +1,60 @@
+@use '../../shared/styles/breakpoints' as bp;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgb(12 14 18 / 92%);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 12px var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+
+.brand {
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: var(--radius-button);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px 20px;
+  font-size: 15px;
+}
+
+.link {
+  padding: 10px 0;
+  text-decoration: none;
+}
+
+.github {
+  display: flex;
+  padding: 10px;
+  border-radius: var(--radius-button);
+}
+
+.compact {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+@include bp.compact {
+  .nav {
+    display: none;
+  }
+
+  .compact {
+    display: flex;
+  }
+}

@@ -1,0 +1,41 @@
+@use '../../shared/styles/breakpoints' as bp;
+
+.section {
+  margin-top: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tabs {
+  display: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+  gap: var(--space-4);
+}
+
+.panel {
+  display: flex;
+  min-width: 0;
+}
+
+.panel > section {
+  flex: 1;
+}
+
+@include bp.tablet {
+  .section {
+    gap: 14px;
+  }
+
+  .tabs {
+    display: block;
+  }
+
+  .hiddenOnPhone {
+    display: none;
+  }
+}

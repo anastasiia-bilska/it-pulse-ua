@@ -1,0 +1,35 @@
+/* Type scale from the UI-kit artboard. Numbers are set in mono so columns of figures line up. */
+.text-display {
+  font: 700 clamp(34px, 5.6vw, 72px) / 1.04 var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+.text-section {
+  font: 500 clamp(20px, 2.2vw, 26px) / 1.2 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.text-card-title {
+  font: 500 clamp(20px, 2vw, 22px) / 1.25 var(--font-display);
+}
+
+.text-subtitle {
+  font: 600 18px / 1.35 var(--font-body);
+}
+
+.text-caption {
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.text-data {
+  font: 500 13px / 1.4 var(--font-mono);
+  color: var(--color-muted);
+}
+
+.text-eyebrow {
+  font: 500 13px / 1.4 var(--font-mono);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}

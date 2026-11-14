@@ -1,6 +1,6 @@
 # 0011. Public dashboard: static aggregates on GitHub Pages
 
-- Status: accepted
+- Status: accepted; page technology amended by [ADR 0013](0013-web-app-react-fsd.md)
 - Date: 2026-11-14
 
 ## Context
@@ -26,7 +26,7 @@ server yet; NestJS comes later with the agent.
   Mixing currencies or periods would need FX rates and assumptions we don't want in v1.
 - **Window**: vacancies seen in the feeds in the last 30 days.
 - **Freshness banner**, the ADR 0007 rule: a backlog over 300 or more than 6h since the last `ok`
-  run. The reason is in plain Ukrainian (quota, queue, error).
+  run. The reason is a code (quota, queue, error) the page shows in plain language.
 - The page is vanilla HTML, CSS and JS, inline, with no third-party scripts or fonts. It renders
   data with `textContent` only.
 

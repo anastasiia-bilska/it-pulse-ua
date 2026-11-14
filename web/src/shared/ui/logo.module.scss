@@ -1,0 +1,39 @@
+@use '../styles/breakpoints' as bp;
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tile {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-pulse);
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile svg {
+  stroke-width: 2.4;
+}
+
+.name {
+  font: 700 18px / 1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+@include bp.phone {
+  .tile {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-tab);
+  }
+
+  .name {
+    font-size: 16px;
+  }
+}

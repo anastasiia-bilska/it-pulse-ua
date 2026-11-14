@@ -1,0 +1,118 @@
+@use '../styles/breakpoints' as bp;
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Desktop: label | bar | value on one line. Phones: label and value on top, the bar below. */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) 1fr auto;
+  grid-template-areas: 'label track value';
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  border-radius: 8px;
+}
+
+.row:hover {
+  background: var(--color-surface-2);
+}
+
+.label {
+  grid-area: label;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.prefix {
+  grid-area: prefix;
+  font: 500 13px var(--font-mono);
+  color: var(--color-faint);
+}
+
+.value {
+  grid-area: value;
+  font: 500 13px var(--font-mono);
+  color: var(--color-text-2);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.track {
+  grid-area: track;
+  display: block;
+  height: 12px;
+  background: var(--color-track);
+  border-radius: var(--radius-bar);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-bar);
+}
+
+.leader {
+  background: var(--color-pulse);
+}
+
+.neutral {
+  background: var(--color-neutral-bar);
+}
+
+.missing {
+  background: var(--hatch);
+}
+
+/* Skills: rank, name and count on one line with a thin bar under the name. */
+.slim {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  column-gap: 40px;
+  row-gap: 0;
+}
+
+.slim .row {
+  grid-template-columns: 32px minmax(0, 1fr) 40px;
+  grid-template-areas:
+    'prefix label value'
+    '. track track';
+  gap: 4px 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-divider);
+  border-radius: 0;
+}
+
+.slim .label {
+  font-weight: 500;
+}
+
+.slim .value {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.slim .track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+@include bp.phone {
+  .list:not(.slim) .row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'label value'
+      'track track';
+    gap: 6px var(--space-2);
+  }
+
+  .list:not(.slim) .track {
+    height: 10px;
+  }
+}

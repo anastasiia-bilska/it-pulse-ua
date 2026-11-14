@@ -1,14 +1,56 @@
 import js from '@eslint/js';
+import type { Linter } from 'eslint';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import unicorn from 'eslint-plugin-unicorn';
 import perfectionist from 'eslint-plugin-perfectionist';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+// ---- constants ---------------------------------------------------------------------------------
+
+/**
+ * Feature-Sliced layers of the web app, top to bottom (ADR 0013). A layer imports only the layers
+ * below it, and another slice only through its index.ts.
+ */
+const WEB_LAYERS = ['app', 'pages', 'widgets', 'features', 'entities', 'shared'];
+
+// ---- functions ---------------------------------------------------------------------------------
+
+/** no-restricted-imports for one web layer: nothing from the layers above, no deep slice imports. */
+function webLayerRules(layer: string): Linter.RulesRecord {
+  const above = WEB_LAYERS.slice(0, WEB_LAYERS.indexOf(layer));
+  const upward =
+    above.length === 0
+      ? []
+      : [
+          {
+            regex: `(?:^|/)(?:${above.join('|')})/`,
+            message: `${layer} may only import from the layers below it (ADR 0013).`,
+          },
+        ];
+  return {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          ...upward,
+          {
+            regex: String.raw`^(?:\.\./)+(?:pages|widgets|features|entities|shared)/[^/]+/(?!index\.ts$).+`,
+            message: 'Import another slice through its index.ts (ADR 0013).',
+          },
+        ],
+      },
+    ],
+  };
+}
+
+// ---- config ------------------------------------------------------------------------------------
+
 // Engineering rules behind this config: CLAUDE.md. Why these tools: ADR 0006.
 export default defineConfig(
-  { ignores: ['node_modules/'] },
+  { ignores: ['node_modules/', 'dist/'] },
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
@@ -71,6 +113,28 @@ export default defineConfig(
       'unicorn/require-array-sort-compare': 'off',
     },
   },
+  {
+    // The browser app (ADR 0013): React function components, DOM globals.
+    files: ['web/**/*.{ts,tsx}'],
+    extends: [reactHooks.configs.flat['recommended-latest']],
+    languageOptions: { globals: globals.browser },
+    rules: {
+      // React's own names: component props are `props`-like objects and refs are `ref`.
+      'unicorn/name-replacements': ['error', { allowList: { db: true, props: true, ref: true } }],
+      // ADR 0011: the page renders data as text only, never as HTML.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message: 'Render data as text (ADR 0011).',
+        },
+      ],
+    },
+  },
+  ...WEB_LAYERS.map((layer) => ({
+    files: [`web/src/${layer}/**/*.{ts,tsx}`],
+    rules: webLayerRules(layer),
+  })),
   {
     // Tests read as scenarios: long arrange/act/assert blocks and inline fixture builders are fine.
     files: ['**/*.test.ts', '**/*.itest.ts'],

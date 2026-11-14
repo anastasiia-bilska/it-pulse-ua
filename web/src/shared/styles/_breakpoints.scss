@@ -1,0 +1,24 @@
+// Breakpoints from the design: phone artboard 390px, tablet, and the width where the header nav
+// no longer fits. Mixins keep the numbers in one place.
+
+$phone: 560px;
+$tablet: 767px;
+$compact: 1023px;
+
+@mixin phone {
+  @media (max-width: $phone) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: $tablet) {
+    @content;
+  }
+}
+
+@mixin compact {
+  @media (max-width: $compact) {
+    @content;
+  }
+}
