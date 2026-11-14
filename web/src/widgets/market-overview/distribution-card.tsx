@@ -74,6 +74,8 @@ function ExpandToggle({
     <Button
       aria-expanded={isExpanded}
       aria-controls={listId}
+      data-umami-event={isExpanded ? 'distribution-collapse' : 'distribution-expand'}
+      data-umami-event-list={listId}
       className={styles.toggle}
       onClick={onToggle}
     >

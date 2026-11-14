@@ -21,6 +21,8 @@ export function LanguageSwitch({ isWide = false }: { isWide?: boolean }): ReactE
           key={option}
           type="button"
           lang={option}
+          data-umami-event="language"
+          data-umami-event-language={option}
           aria-pressed={option === language}
           className={styles.option}
           onClick={() => {

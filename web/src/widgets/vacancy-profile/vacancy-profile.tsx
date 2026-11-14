@@ -24,7 +24,7 @@ export function VacancyProfile({ aggregates }: { aggregates: Aggregates }): Reac
   const [selected, setSelected] = useState<ProfileDimension>('seniority');
   const titles = messages.profile.stacks;
   return (
-    <section aria-labelledby="profile-title" className={styles.section}>
+    <section data-block="profile" aria-labelledby="profile-title" className={styles.section}>
       <h2 id="profile-title" className="text-section">
         {messages.profile.title}
       </h2>

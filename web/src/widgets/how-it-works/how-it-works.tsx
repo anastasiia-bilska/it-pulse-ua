@@ -16,21 +16,16 @@ export function HowItWorks({
   const { messages } = useLanguage();
   const copy = messages.method;
   return (
-    <section id="method" aria-labelledby="method-title" className={styles.section}>
+    <section
+      id="method"
+      data-block="method"
+      aria-labelledby="method-title"
+      className={styles.section}
+    >
       <h2 id="method-title" className="text-section">
         {copy.title}
       </h2>
-      <ol className={styles.steps}>
-        {copy.steps.map((step, index) => (
-          <li key={step.title} className={styles.step}>
-            <span className={styles.number}>{String(index + 1).padStart(2, '0')}</span>
-            <div className={styles.stepText}>
-              <span className="text-subtitle">{step.title}</span>
-              <span className={styles.stepBody}>{step.body}</span>
-            </div>
-          </li>
-        ))}
-      </ol>
+      <Steps steps={copy.steps} />
       <ul className={styles.rules}>
         {copy.rules(minN, windowDays).map((rule) => (
           <li key={rule} className={styles.rule}>
@@ -40,5 +35,21 @@ export function HowItWorks({
         ))}
       </ul>
     </section>
+  );
+}
+
+function Steps({ steps }: { steps: readonly { title: string; body: string }[] }): ReactElement {
+  return (
+    <ol className={styles.steps}>
+      {steps.map((step, index) => (
+        <li key={step.title} className={styles.step}>
+          <span className={styles.number}>{String(index + 1).padStart(2, '0')}</span>
+          <div className={styles.stepText}>
+            <span className="text-subtitle">{step.title}</span>
+            <span className={styles.stepBody}>{step.body}</span>
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }

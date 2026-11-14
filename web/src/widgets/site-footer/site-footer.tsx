@@ -23,8 +23,12 @@ export function SiteFooter({ generatedAt }: { generatedAt?: string }): ReactElem
           )}
         </div>
         <div className={styles.links}>
-          <a href={REPOSITORY_URL}>{copy.code}</a>
-          <a href={ADR_URL}>ADR</a>
+          <a href={REPOSITORY_URL} data-umami-event="outbound-github">
+            {copy.code}
+          </a>
+          <a href={ADR_URL} data-umami-event="outbound-adr">
+            ADR
+          </a>
         </div>
       </div>
     </footer>
