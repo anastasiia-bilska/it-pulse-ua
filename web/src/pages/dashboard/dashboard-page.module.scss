@@ -1,3 +1,4 @@
+@use '../../shared/styles/breakpoints' as bp;
 @use '../../shared/styles/units' as *;
 
 .main {
@@ -27,4 +28,15 @@
 
 .skip:focus-visible {
   transform: none;
+}
+
+.ask {
+  display: none;
+  margin-top: var(--space-7);
+}
+
+@include bp.compact {
+  .ask {
+    display: block;
+  }
 }

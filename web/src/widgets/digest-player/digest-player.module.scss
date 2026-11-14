@@ -2,7 +2,8 @@
 @use '../../shared/styles/units' as *;
 
 .teaser {
-  margin-top: var(--space-7);
+  // Right under the hero (which ends with its own padding), and clear of the data that follows.
+  margin: 0 0 var(--space-6);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
