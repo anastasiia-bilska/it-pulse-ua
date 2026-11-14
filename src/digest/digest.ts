@@ -9,8 +9,8 @@ import { produceDigest } from './produce-digest.ts';
 
 // ---- constants ---------------------------------------------------------------------------------
 
-/** "Matilda", a premade library voice for both languages, chosen by the owner from samples. */
-const VOICE_ID = 'XrExE9yKIg1WjnnlVkGX';
+/** "Daniel", a premade library voice for both languages, chosen by the owner from samples. */
+const VOICE_ID = 'onwK4e9ZLuTAKqWW03F9';
 const OUTPUT_DIRECTORY = new URL('../../dist/digest/', import.meta.url);
 
 // ---- functions ---------------------------------------------------------------------------------

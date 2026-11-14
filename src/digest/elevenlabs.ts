@@ -24,8 +24,8 @@ interface SubscriptionResponse {
 // ---- constants ---------------------------------------------------------------------------------
 
 export const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io';
-/** Speaks Ukrainian and English with the same voice (ADR 0013). */
-const TTS_MODEL = 'eleven_multilingual_v2';
+/** Speaks Ukrainian and English with the same voice; chosen over v2 and v3 by ear (ADR 0013). */
+const TTS_MODEL = 'eleven_v4';
 const OUTPUT_FORMAT = 'mp3_44100_128';
 const REQUEST_TIMEOUT_MS = 120_000;
 /** A key without the "User" permission may not read its own usage; the check is then skipped. */
