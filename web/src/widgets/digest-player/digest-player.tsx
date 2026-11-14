@@ -1,6 +1,14 @@
 // The weekly voice digest (ADR 0013): the latest episode in the page language, with its transcript.
 // States follow the UI-kit: paused, playing (the wave fills as it plays) and unavailable.
-import { useRef, useState, type ComponentProps, type ReactElement, type RefObject } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactElement,
+  type RefObject,
+  type SyntheticEvent,
+} from 'react';
 import type { DigestEpisode } from '../../entities/aggregates/index.ts';
 import { digestAudioUrl } from '../../shared/config/index.ts';
 import { useLanguage, type Messages } from '../../shared/i18n/index.ts';
@@ -18,8 +26,6 @@ interface PlayerProperties {
 interface Playback {
   isPlaying: boolean;
   isBroken: boolean;
-  /** 0–1, how much of the episode has played. */
-  progress: number;
 }
 
 // ---- constants ---------------------------------------------------------------------------------
@@ -30,7 +36,7 @@ const WAVE = [
   100, 50, 35, 80, 60, 40, 55, 30,
 ];
 
-const STOPPED: Playback = { isPlaying: false, isBroken: false, progress: 0 };
+const STOPPED: Playback = { isPlaying: false, isBroken: false };
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -55,9 +61,9 @@ export function DigestPlayer({
           <details className={styles.transcript}>
             <summary>{copy.transcript}</summary>
             <p>{episode.scripts[language]}</p>
-            <p className={styles.voice}>{copy.voice}</p>
           </details>
         )}
+        {episode && <p className={styles.voice}>{copy.voice}</p>}
       </div>
       {/* A new source is a new player: playback state never leaks across languages. */}
       <Player key={source ?? 'none'} source={source} title={playerTitle(episode)} />
@@ -78,7 +84,9 @@ export function DigestPlayer({
 function Player({ source, title }: PlayerProperties): ReactElement {
   const { messages } = useLanguage();
   const audioElement = useRef<HTMLAudioElement>(null);
-  const { playback, audioEvents, toggle } = usePlayback(audioElement);
+  const wave = useRef<HTMLSpanElement>(null);
+  const { playback, audioEvents, toggle } = usePlayback(audioElement, wave);
+  useSmoothProgress(audioElement, wave, playback.isPlaying);
   const isAvailable = source !== undefined && !playback.isBroken;
   return (
     <div className={isAvailable ? `${styles.player} ${styles.available}` : styles.player}>
@@ -92,26 +100,27 @@ function Player({ source, title }: PlayerProperties): ReactElement {
       >
         <Icon name={isAvailable && playback.isPlaying ? 'pause' : 'play'} size={22} />
       </button>
-      <Track title={title} progress={playback.progress} />
+      <div className={styles.track}>
+        <span className={styles.trackTitle}>{title}</span>
+        {/* The bright copy of the wave is revealed by --progress: no per-bar jumps. */}
+        <span ref={wave} className={styles.wave} aria-hidden="true">
+          <Bars />
+          <span className={styles.playedLayer}>
+            <Bars />
+          </span>
+        </span>
+      </div>
     </div>
   );
 }
 
-function Track({ title, progress }: { title: string; progress: number }): ReactElement {
-  const playedBars = Math.round(progress * WAVE.length);
+function Bars(): ReactElement {
   return (
-    <div className={styles.track}>
-      <span className={styles.trackTitle}>{title}</span>
-      <span className={styles.wave} aria-hidden="true">
-        {WAVE.map((height, index) => (
-          <span
-            key={index}
-            className={index < playedBars ? styles.played : undefined}
-            style={{ height: `${height}%` }}
-          />
-        ))}
-      </span>
-    </div>
+    <span className={styles.bars}>
+      {WAVE.map((height, index) => (
+        <span key={index} style={{ height: `${height}%` }} />
+      ))}
+    </span>
   );
 }
 
@@ -123,7 +132,10 @@ function playLabel(copy: Messages['digest'], isAvailable: boolean, isPlaying: bo
 }
 
 /** Play state mirrors the element's own events, so the button never disagrees with the audio. */
-function usePlayback(audioElement: RefObject<HTMLAudioElement | null>): {
+function usePlayback(
+  audioElement: RefObject<HTMLAudioElement | null>,
+  wave: RefObject<HTMLSpanElement | null>,
+): {
   playback: Playback;
   audioEvents: ComponentProps<'audio'>;
   toggle: () => Promise<void>;
@@ -138,9 +150,9 @@ function usePlayback(audioElement: RefObject<HTMLAudioElement | null>): {
     },
     onError: markBroken,
     onTimeUpdate: (event) => {
-      const progress = progressOf(event.currentTarget);
-      setPlayback((state) => ({ ...state, progress }));
+      paintProgress(wave.current, event.currentTarget);
     },
+    onEnded: rewind,
   };
   return { playback, audioEvents, toggle };
 
@@ -162,6 +174,39 @@ function usePlayback(audioElement: RefObject<HTMLAudioElement | null>): {
   }
 }
 
-function progressOf(element: HTMLAudioElement): number {
-  return element.duration > 0 ? element.currentTime / element.duration : 0;
+/** While playing, repaint the wave every frame: timeupdate fires only about 4 times a second. */
+function useSmoothProgress(
+  audioElement: RefObject<HTMLAudioElement | null>,
+  wave: RefObject<HTMLSpanElement | null>,
+  isPlaying: boolean,
+): void {
+  useEffect(() => {
+    if (!isPlaying) {
+      return;
+    }
+    let frame = requestAnimationFrame(paint);
+    function paint(): void {
+      if (audioElement.current) {
+        paintProgress(wave.current, audioElement.current);
+      }
+      frame = requestAnimationFrame(paint);
+    }
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [audioElement, wave, isPlaying]);
+}
+
+/** A finished episode rewinds, so the wave doesn't stay fully lit (timeupdate repaints it). */
+function rewind(event: SyntheticEvent<HTMLAudioElement>): void {
+  event.currentTarget.currentTime = 0;
+}
+
+/**
+ * Writes the CSS variable directly: a React render per frame would be wasted work. Called every
+ * frame while playing, and on timeupdate for paused seeks and the rewind.
+ */
+function paintProgress(wave: HTMLSpanElement | null, element: HTMLAudioElement): void {
+  const fraction = element.duration > 0 ? element.currentTime / element.duration : 0;
+  wave?.style.setProperty('--progress', String(fraction));
 }
