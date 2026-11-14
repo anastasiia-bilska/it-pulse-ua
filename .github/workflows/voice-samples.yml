@@ -1,0 +1,29 @@
+name: voice-samples
+
+# TEMPORARY (removed before merge): lists ElevenLabs models and voices, and renders short samples
+# so the owner can choose the digest voice (ADR 0013). The key never leaves GitHub secrets.
+on:
+  push:
+    branches: [feat/audio-digest]
+    paths: [.github/workflows/voice-samples.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  samples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      API: https://api.elevenlabs.io
+    steps:
+      - name: Models and voices (free)
+        run: |
+          curl -sf -H "xi-api-key: $KEY" "$API/v1/models" \
+            | jq -r '.[] | [.model_id, .token_cost_factor, (.languages | map(.language_id) | join(","))] | @tsv' \
+            || echo "models: no access"
+          curl -sf -H "xi-api-key: $KEY" "$API/v1/voices" \
+            | jq -r '.voices[] | [.voice_id, .name, .category, (.labels | tostring)] | @tsv' \
+            || echo "voices: no access"
+          curl -s -o /dev/null -w "subscription: HTTP %{http_code}\n" -H "xi-api-key: $KEY" "$API/v1/user/subscription"
