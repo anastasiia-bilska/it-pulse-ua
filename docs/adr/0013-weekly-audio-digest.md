@@ -15,7 +15,10 @@ its credibility.
 - **Where:** each episode is a GitHub Release `digest-<ISO week>` (for example `digest-2026-W46`)
   with `digest-uk.mp3`, `digest-en.mp3` and `digest.json` (the scripts). Releases are free and
   persist across Pages builds. The dashboard plays `releases/latest/download/digest-<lang>.mp3`.
-  Every release in this repository is a digest, so "latest" is always the newest episode.
+  Every release in this repository is a digest, so "latest" is always the newest episode. The
+  dashboard build downloads the latest `digest.json` and puts its week and scripts into
+  `aggregates.json` as the transcript; it rebuilds after every digest run. Before the first weekly
+  episode a trailer release (no week, no numbers) stands in.
 - **When:** Mondays at 08:05 UTC, just after the Gemini daily quota resets and before the 08:17
   collect triggers extraction, which would use the quota up. The episode covers the previous ISO
   week (Monday to Sunday, UTC) and compares it with the week before. A manual run takes a week

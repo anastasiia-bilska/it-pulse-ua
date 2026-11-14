@@ -4,8 +4,9 @@ name: dashboard
 # Cloudflare Pages (ADR 0011, ADR 0015). The daily schedule keeps the freshness banner honest even
 # if extraction stops running altogether.
 on:
+  # After every extract run, and after a new digest episode so its player and transcript appear.
   workflow_run:
-    workflows: [extract]
+    workflows: [extract, digest]
     types: [completed]
   schedule:
     - cron: '45 6 * * *'
@@ -37,6 +38,11 @@ jobs:
       - run: npm ci
       # Order matters: the web build empties dist/site, then the CLI adds aggregates.json to it.
       - run: npm run build:web
+      # The latest digest episode's scripts (ADR 0013); none before the first release.
+      - name: Latest digest episode
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download --pattern digest.json --dir dist/digest-latest --clobber || echo "no digest episode yet"
       - run: npm run dashboard
       # dist/site carries web/public/_headers, the cache rules Cloudflare Pages applies.
       - uses: cloudflare/wrangler-action@v4
