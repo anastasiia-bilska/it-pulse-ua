@@ -4,9 +4,17 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The browser tests also run twice a day on main, so a regression that lands without a PR or
+  # comes from the environment (runner image, fonts, browser builds) shows within 12 hours.
+  # Off the hour: GitHub drops more scheduled runs at :00.
+  schedule:
+    - cron: '23 */12 * * *'
+  workflow_dispatch:
 
 jobs:
   check:
+    # The schedule is for the browser tests only.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     services:
