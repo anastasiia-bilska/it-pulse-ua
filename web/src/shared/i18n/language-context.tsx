@@ -1,4 +1,5 @@
-// The page language: Ukrainian by default, switched in place without a reload.
+// The page language: English by default (the readers we most want are international), switched
+// in place without a reload.
 import {
   createContext,
   use,
@@ -25,8 +26,15 @@ const LanguageContext = createContext<LanguageState | null>(null);
 
 // ---- functions ---------------------------------------------------------------------------------
 
-export function LanguageProvider({ children }: { children: ReactNode }): ReactElement {
-  const [language, setLanguage] = useState<Language>('uk');
+export function LanguageProvider({
+  children,
+  initialLanguage = 'en',
+}: {
+  children: ReactNode;
+  /** Tests start in Ukrainian, the language their assertions are written in. */
+  initialLanguage?: Language;
+}): ReactElement {
+  const [language, setLanguage] = useState<Language>(initialLanguage);
   // Screen readers and hyphenation follow <html lang>, so it tracks the switch.
   useEffect(() => {
     document.documentElement.lang = language;

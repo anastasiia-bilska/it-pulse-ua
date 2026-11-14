@@ -4,9 +4,26 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  border: 0;
   background: var(--color-pulse);
   color: var(--color-ink);
+  font: inherit;
   font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-pulse-hover);
+  }
+
+  &:active {
+    background: var(--color-pulse-pressed);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pulse);
+    outline-offset: 3px;
+  }
 }
 
 .teaser > span:last-child {
@@ -27,6 +44,7 @@
 }
 
 .block {
+  width: 100%;
   justify-content: center;
   min-height: rem(52px);
   border-radius: var(--radius-banner);
@@ -34,6 +52,7 @@
 }
 
 .card {
+  width: 100%;
   gap: rem(14px);
   padding: rem(16px);
   border-radius: rem(16px);
@@ -51,4 +70,81 @@
 .hint {
   font-size: rem(13px);
   font-weight: 400;
+}
+
+/* The popup: centred, as wide as a comfortable line, scrolling inside on short screens. */
+.dialog {
+  width: calc(100% - 2 * var(--space-4));
+  max-width: rem(560px);
+  max-height: calc(100% - 2 * var(--space-4));
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: rem(22px);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: clamp(rem(20px), 4vw, rem(32px));
+}
+
+.dialogTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialogTitle {
+  font: 700 clamp(rem(26px), 4vw, rem(36px)) / 1.05 var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+.lead {
+  font-size: rem(17px);
+  color: var(--color-text-2);
+}
+
+.examplesTitle {
+  font-size: rem(14px);
+  color: var(--color-muted);
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: rem(12px) rem(16px);
+    border: 1px solid var(--color-border);
+    border-radius: rem(12px);
+    background: var(--color-ink);
+    color: var(--color-text-2);
+    font-weight: 500;
+  }
+}
+
+.thin {
+  display: flex;
+  gap: rem(12px);
+  padding: rem(16px);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: rem(14px);
+  font-size: rem(14px);
+  color: var(--color-muted);
+
+  svg {
+    flex: none;
+    color: var(--color-warning);
+  }
 }

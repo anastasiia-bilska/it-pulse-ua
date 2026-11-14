@@ -109,16 +109,6 @@ $sweep: 2.8s;
   }
 }
 
-.ask {
-  display: none;
-}
-
-@include bp.compact {
-  .ask {
-    display: block;
-  }
-}
-
 @include bp.phone {
   .hero {
     gap: rem(14px);

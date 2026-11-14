@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { ADR_URL, REPOSITORY_URL } from '../../shared/config/index.ts';
 import { useLanguage } from '../../shared/i18n/index.ts';
 import { formatDateTime } from '../../shared/lib/index.ts';
+import { WithSourceLinks } from '../../shared/ui/index.ts';
 import styles from './site-footer.module.scss';
 
 // ---- functions ---------------------------------------------------------------------------------
@@ -14,7 +15,9 @@ export function SiteFooter({ generatedAt }: { generatedAt?: string }): ReactElem
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div className={styles.text}>
-          <p>{copy.text}</p>
+          <p>
+            <WithSourceLinks text={copy.text} />
+          </p>
           {generatedAt && (
             <p className="text-data">{copy.updated(formatDateTime(generatedAt, language))}</p>
           )}
