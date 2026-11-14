@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import type { Aggregates } from '../aggregates.ts';
+import { socialCardFacts, socialCardHtml } from '../social-card.ts';
+
+// ---- functions ---------------------------------------------------------------------------------
+
+function aggregatesWith(overrides: Partial<Aggregates>): Aggregates {
+  return {
+    generatedAt: '2026-11-14T00:00:00.000Z',
+    windowDays: 30,
+    minN: 10,
+    freshness: { isStale: false, reason: null, lastOkAt: null, backlog: 0 },
+    totals: { vacancies: 1259, extracted: 1200 },
+    distributions: {
+      source: [],
+      role: [],
+      seniority: [],
+      work_format: [
+        { value: 'office', n: 600, share: 0.5 },
+        { value: 'remote', n: 516, share: 0.43 },
+      ],
+      english: [],
+      company_type: [],
+      domain: [],
+    },
+    topSkills: [
+      { value: 'Python', n: 300 },
+      { value: 'SQL', n: 200 },
+    ],
+    salaryUsdMonthByRole: [],
+    salaryUsdMonthBySeniority: [],
+    digest: null,
+    ...overrides,
+  };
+}
+
+// ---- tests -------------------------------------------------------------------------------------
+
+test('the card shows vacancies, the remote share and the top skill', () => {
+  const aggregates = aggregatesWith({});
+
+  const facts = socialCardFacts(aggregates);
+
+  // uk-UA groups thousands with a no-break space.
+  assert.deepEqual(facts, { vacancies: '1\u{A0}259', remoteShare: '43%', topSkill: 'Python' });
+});
+
+test('a market with no remote vacancies reads 0%, not a missing number', () => {
+  const aggregates = aggregatesWith({});
+  aggregates.distributions.work_format = [{ value: 'office', n: 10, share: 1 }];
+
+  const facts = socialCardFacts(aggregates);
+
+  assert.equal(facts?.remoteShare, '0%');
+});
+
+test('before the first extraction the card goes out without numbers', () => {
+  const aggregates = aggregatesWith({ totals: { vacancies: 5, extracted: 0 }, topSkills: [] });
+
+  const html = socialCardHtml(socialCardFacts(aggregates), '');
+
+  assert.doesNotMatch(html, /class="stats"/);
+  assert.match(html, /Пульс IT-ринку України/);
+});
+
+test('a skill name is escaped into the HTML', () => {
+  const facts = { vacancies: '1', remoteShare: '1%', topSkill: 'C<b>&' };
+
+  const html = socialCardHtml(facts, '');
+
+  assert.match(html, /C&lt;b&gt;&amp;/);
+});
