@@ -204,7 +204,7 @@ docs/adr/        architecture decision records
   collect.yml    cron every 2h, collector role
   migrate.yml    on migration changes, owner role
   extract.yml    after each collect, extractor role
-  dashboard.yml  after each extract and daily, publishes to Pages
+  dashboard.yml  after each extract and daily, publishes to Cloudflare Pages (and GitHub Pages)
   eval.yml       eval gate on extractor PRs, or manual
 CLAUDE.md        engineering rules for people and AI agents
 ```
@@ -226,3 +226,4 @@ CLAUDE.md        engineering rules for people and AI agents
 | [0011](docs/adr/0011-public-dashboard.md)                | Public dashboard: static aggregates on GitHub Pages         |
 | [0012](docs/adr/0012-eval-harness.md)                    | Extraction eval harness and the PR eval gate                |
 | [0013](docs/adr/0013-web-app-react-fsd.md)               | Web app: React + Vite, Feature-Sliced layers, own fonts     |
+| [0014](docs/adr/0014-cloudflare-pages-hosting.md)        | Host the dashboard on Cloudflare Pages, with cache headers  |

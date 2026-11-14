@@ -58,7 +58,8 @@ export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   // GitHub Pages serves the site under /it-pulse-ua/, so every asset URL stays relative.
   base: './',
-  publicDir: false,
+  // Copied as is into dist/site: only _headers, the Cloudflare Pages cache rules (ADR 0014).
+  publicDir: 'public',
   plugins: [
     react(),
     FontaineTransform.vite({
