@@ -58,7 +58,11 @@ const UK = {
     },
     queued: (count: string): string =>
       `У черзі на аналіз: ${count}. Цифри нижче — лише по вже оброблених.`,
-    lastRun: (date: string): string => `останній успішний запуск: ${date}`,
+    lastOk: (date: string): string => `останній успішний запуск: ${date}`,
+    lastRun: (date: string): string => `останній запуск: ${date}`,
+    lastRunStopped: (date: string, processed: string): string =>
+      `останній запуск: ${date}, оброблено ${processed}, далі ліміт`,
+    lastRunFailed: (date: string): string => `останній запуск: ${date}, з помилкою`,
   },
   states: {
     loading: 'Завантажуємо статистику…',
@@ -215,7 +219,11 @@ const EN: Messages = {
     },
     queued: (count: string): string =>
       `Queued for analysis: ${count}. The numbers below cover processed ones only.`,
-    lastRun: (date: string): string => `last successful run: ${date}`,
+    lastOk: (date: string): string => `last successful run: ${date}`,
+    lastRun: (date: string): string => `last run: ${date}`,
+    lastRunStopped: (date: string, processed: string): string =>
+      `last run: ${date}, ${processed} processed, then the daily limit`,
+    lastRunFailed: (date: string): string => `last run: ${date}, failed`,
   },
   states: {
     loading: 'Loading the numbers…',
