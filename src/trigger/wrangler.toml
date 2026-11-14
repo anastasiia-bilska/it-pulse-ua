@@ -1,0 +1,10 @@
+# The collector's clock (ADR 0018): a Cron Trigger that dispatches collect.yml every 2 hours.
+name = "it-pulse-collect-trigger"
+main = "collect-trigger.ts"
+compatibility_date = "2026-11-01"
+# Cron only: no public URL.
+workers_dev = false
+
+[triggers]
+# UTC, the same slots the GitHub schedule used.
+crons = ["17 */2 * * *"]
