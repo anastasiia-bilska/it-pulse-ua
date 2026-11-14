@@ -1,5 +1,5 @@
 // CLI: computes the public aggregates and writes aggregates.json next to the web build in
-// dist/site (ADR 0011, ADR 0013). Run `npm run build:web` first: the build empties dist/site.
+// dist/site (ADR 0011, ADR 0014). Run `npm run build:web` first: the build empties dist/site.
 // Aggregates only: no vacancy text, titles, links or company names ever reach the page.
 import { mkdir, writeFile } from 'node:fs/promises';
 import pg from 'pg';

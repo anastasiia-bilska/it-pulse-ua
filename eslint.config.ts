@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint';
 // ---- constants ---------------------------------------------------------------------------------
 
 /**
- * Feature-Sliced layers of the web app, top to bottom (ADR 0013). A layer imports only the layers
+ * Feature-Sliced layers of the web app, top to bottom (ADR 0014). A layer imports only the layers
  * below it, and another slice only through its index.ts.
  */
 const WEB_LAYERS = ['app', 'pages', 'widgets', 'features', 'entities', 'shared'];
@@ -27,7 +27,7 @@ function webLayerRules(layer: string): Linter.RulesRecord {
       : [
           {
             regex: `(?:^|/)(?:${above.join('|')})/`,
-            message: `${layer} may only import from the layers below it (ADR 0013).`,
+            message: `${layer} may only import from the layers below it (ADR 0014).`,
           },
         ];
   return {
@@ -38,7 +38,7 @@ function webLayerRules(layer: string): Linter.RulesRecord {
           ...upward,
           {
             regex: String.raw`^(?:\.\./)+(?:pages|widgets|features|entities|shared)/[^/]+/(?!(?:index|testing)\.ts$).+`,
-            message: 'Import another slice through its index.ts (testing.ts in tests) (ADR 0013).',
+            message: 'Import another slice through its index.ts (testing.ts in tests) (ADR 0014).',
           },
         ],
       },
@@ -114,7 +114,7 @@ export default defineConfig(
     },
   },
   {
-    // The browser app (ADR 0013): React function components, DOM globals.
+    // The browser app (ADR 0014): React function components, DOM globals.
     files: ['web/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat['recommended-latest']],
     languageOptions: { globals: globals.browser },

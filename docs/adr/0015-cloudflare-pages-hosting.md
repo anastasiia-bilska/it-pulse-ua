@@ -1,4 +1,4 @@
-# 0014. Host the dashboard on Cloudflare Pages, with cache headers
+# 0015. Host the dashboard on Cloudflare Pages, with cache headers
 
 - Status: accepted
 - Date: 2026-11-14

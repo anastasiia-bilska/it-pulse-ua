@@ -1,4 +1,4 @@
-# 0013. Web app: React + Vite, Feature-Sliced layers, self-hosted fonts
+# 0014. Web app: React + Vite, Feature-Sliced layers, self-hosted fonts
 
 - Status: accepted
 - Date: 2026-11-14

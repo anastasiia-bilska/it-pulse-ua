@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-// Build for the public dashboard (ADR 0013): `npm run build:web` writes dist/site, then
+// Build for the public dashboard (ADR 0014): `npm run build:web` writes dist/site, then
 // `npm run dashboard` adds aggregates.json next to it. Component tests run in Vitest here too.
 import react from '@vitejs/plugin-react';
 import { FontaineTransform } from 'fontaine';
@@ -58,7 +58,7 @@ export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   // GitHub Pages serves the site under /it-pulse-ua/, so every asset URL stays relative.
   base: './',
-  // Copied as is into dist/site: only _headers, the Cloudflare Pages cache rules (ADR 0014).
+  // Copied as is into dist/site: only _headers, the Cloudflare Pages cache rules (ADR 0015).
   publicDir: 'public',
   plugins: [
     react(),

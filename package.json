@@ -23,7 +23,8 @@
     "dev:web": "vite web",
     "build:web": "vite build web",
     "preview:web": "vite preview web",
-    "test:web": "vitest run --config web/vite.config.ts"
+    "test:web": "vitest run --config web/vite.config.ts",
+    "digest": "node --env-file-if-exists=.env src/digest/digest.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

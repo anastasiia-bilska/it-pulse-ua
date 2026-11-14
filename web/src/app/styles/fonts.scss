@@ -1,5 +1,5 @@
 /*
- * Self-hosted variable fonts (ADR 0013). Only the latin and cyrillic subsets are declared: the page
+ * Self-hosted variable fonts (ADR 0014). Only the latin and cyrillic subsets are declared: the page
  * is Ukrainian and English, so latin-ext (118 KB for Unbounded alone), greek and vietnamese never
  * download. A glyph outside these ranges falls back to the system font.
  * The metric-matched "<family> fallback" faces come from fontaine (vite.config.ts).

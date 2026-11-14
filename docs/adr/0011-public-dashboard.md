@@ -1,7 +1,7 @@
 # 0011. Public dashboard: static aggregates on GitHub Pages
 
-- Status: accepted; page technology amended by [ADR 0013](0013-web-app-react-fsd.md), hosting by
-  [ADR 0014](0014-cloudflare-pages-hosting.md)
+- Status: accepted; page technology amended by [ADR 0014](0014-web-app-react-fsd.md), hosting by
+  [ADR 0015](0015-cloudflare-pages-hosting.md)
 - Date: 2026-11-14
 
 ## Context

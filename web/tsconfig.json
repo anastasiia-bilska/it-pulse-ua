@@ -1,5 +1,5 @@
 {
-  // The browser app (ADR 0013). Vite bundles it; tsc only typechecks.
+  // The browser app (ADR 0014). Vite bundles it; tsc only typechecks.
   "compilerOptions": {
     "target": "es2023",
     "lib": ["es2024", "dom", "dom.iterable"],

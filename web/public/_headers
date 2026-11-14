@@ -1,4 +1,4 @@
-# Cloudflare Pages response headers (ADR 0014).
+# Cloudflare Pages response headers (ADR 0015).
 
 # Vite puts a content hash in every file name here: a new build is a new URL, so the old one
 # can be cached for a year and never revalidated.
