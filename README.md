@@ -29,6 +29,7 @@ labelled, and the agent is planned.
 | Dashboard redesign: React + Vite, Feature-Sliced layers, UI-kit, UA/EN (ADR 0014)        | Done        |
 | Eval set builder: 150 stratified vacancies to a Langfuse dataset, 30 for blind labelling | Done        |
 | Eval harness and PR gate (ADR 0012)                                                      | Done        |
+| End-to-end tests in Chromium and WebKit on the production build (ADR 0017)               | Done        |
 | Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
 | «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10                | Planned     |
 | Weekly audio digest in Ukrainian and English, number-guarded (ADR 0013)                  | In progress |
@@ -228,3 +229,4 @@ CLAUDE.md        engineering rules for people and AI agents
 | [0013](docs/adr/0013-weekly-audio-digest.md)             | Weekly audio digest                                         |
 | [0014](docs/adr/0014-web-app-react-fsd.md)               | Web app: React + Vite, Feature-Sliced layers, own fonts     |
 | [0015](docs/adr/0015-cloudflare-pages-hosting.md)        | Host the dashboard on Cloudflare Pages, with cache headers  |
+| [0017](docs/adr/0017-e2e-tests.md)                       | End-to-end tests in real browsers with Playwright           |
