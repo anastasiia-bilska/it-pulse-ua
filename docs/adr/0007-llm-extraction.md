@@ -65,8 +65,17 @@ nothing in v1 needs them).
    quote, and code checks that it is a substring of the vacancy text after whitespace
    normalisation. If it isn't, the field is nulled and counted as `hallucination_dropped`. This is
    deterministic and free.
-3. The eval set catches misinterpretation of a real quote. If eval shows salary is often misread,
-   add a regex cross-check for salary only.
+3. **Salary numbers** (amended 2026-11-14): a real quote can still carry a made-up amount, e.g.
+   "25000 грн + до 50 000" read as a maximum of 75000. So `salary_min` and `salary_max` must each
+   be a number the quote states, after reading grouped thousands ("32 000", "2,000") and k
+   suffixes ("4k", "$3-4k", "5 тис"). A mismatch drops the salary like a missing quote.
+   - Replayed on the 934 stored `v1` extractions, it drops 1 of 137 salaries, and that one is the
+     summed amount above.
+   - Experience gets no such check: quotes say "three years", "6 months" (0.5) or "not required"
+     (0), and a digits-only rule dropped 19 of 630 correct values.
+   - No `extractor_version` bump: re-extracting every vacancy would spend about three runs of
+     free-tier quota to correct one stored value. Rows before this change keep the weaker check.
+4. The eval set catches other misreadings of a real quote.
 
 We rejected an LLM judge and self-consistency: both double the quota and their errors correlate.
 We also rejected model-reported confidence, because it is poorly calibrated.

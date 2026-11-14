@@ -1,7 +1,7 @@
 // Unit tests for everything between the model's answer and the database row.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { checkEvidence } from '../evidence.ts';
+import { checkEvidence, numbersIn } from '../evidence.ts';
 import type { ExtractedFields } from '../fields.ts';
 import { toGeminiSchema } from '../gemini.ts';
 import { RESPONSE_SCHEMA } from '../prompt.ts';
@@ -134,4 +134,41 @@ test('the schema sent to Gemini uses no anyOf and no $schema anywhere', () => {
 
   assert.ok(!serialized.includes('anyOf'));
   assert.ok(!serialized.includes('$schema'));
+});
+
+test('numbersIn reads grouped thousands, k suffixes and shared-k ranges', () => {
+  assert.deepEqual(numbersIn('від 32 000 грн'), [32_000]);
+  assert.deepEqual(numbersIn('$2,000–3,500'), [2000, 3500]);
+  assert.deepEqual(numbersIn('$3-4k+ monthly'), [3000, 4000]);
+  assert.deepEqual(numbersIn('5 тис. $'), [5000]);
+  assert.deepEqual(numbersIn('1.5k'), [1500]);
+});
+
+test('a real salary quote with an amount it does not state is dropped', () => {
+  const text = 'Оплата: 25000 грн + додаткові виплати до 50 000 грн';
+  const fields = tidyFields({
+    ...NOTHING_STATED,
+    salary_min: 25_000,
+    salary_max: 75_000,
+    salary_currency: 'UAH',
+    salary_quote: '25000 грн + додаткові виплати до 50 000 грн',
+  });
+
+  const checked = checkEvidence(fields, text);
+
+  assert.deepEqual(checked.dropped.includes('salary'), true);
+  assert.equal(checked.fields.salary_max, null);
+});
+
+test('a salary quote in another notation still backs its amounts', () => {
+  const text = 'Top performers make $3-4k monthly.';
+  const fields = tidyFields({
+    ...NOTHING_STATED,
+    salary_min: 3000,
+    salary_max: 4000,
+    salary_currency: 'USD',
+    salary_quote: '$3-4k',
+  });
+
+  assert.equal(checkEvidence(fields, text).fields.salary_min, 3000);
 });
