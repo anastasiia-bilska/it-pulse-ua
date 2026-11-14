@@ -30,7 +30,7 @@ labelled, and the agent is planned.
 | Eval harness and PR gate (ADR 0012)                                                      | Done        |
 | Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
 | «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10                | Planned     |
-| Weekly audio digest (ElevenLabs)                                                         | Planned     |
+| Weekly audio digest in Ukrainian and English, number-guarded (ADR 0013)                  | In progress |
 | Wave 2: CV match, MCP server                                                             | Planned     |
 
 ## Architecture

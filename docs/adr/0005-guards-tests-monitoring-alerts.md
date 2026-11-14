@@ -45,7 +45,7 @@ Guards come in four layers. Each one is added together with the stage it protect
    - coverage gaps, alerting only when the same feed gapped on its last 3 successful fetches (a single gap is logged, not alerted);
    - a volume drop: new items in 24h below 50% of the median of the previous 7 windows, checked once there are 8 days of history.
 
-   Extraction-quality and quota checks (Neon, Gemini, ElevenLabs at 80%) come with their stages.
+   Extraction-quality and quota checks (Neon, Gemini, ElevenLabs at 80%) come with their stages. The ElevenLabs check is in the digest job (ADR 0013).
 
 4. **Alerts via healthchecks.io → Telegram.** The collector pings at the end of each run:
    - a success ping is a heartbeat, and a missing ping (2h period plus 4h grace) raises an alert, which also covers a cron that never started. The grace is long because GitHub Actions delays or skips scheduled runs under load: on the night of 2026-11-13 it skipped two slots in a row and a 1h grace raised false alerts. The RSS windows (about 15h on Djinni, up to 38h on DOU) absorb a 6h silence without data loss;

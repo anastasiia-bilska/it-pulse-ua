@@ -17,6 +17,13 @@ export {
   type ModelCallOptions,
 } from './extract-pending.ts';
 export { extractedFieldsSchema } from './fields.ts';
-export { GEMINI_BASE_URL, QuotaExhaustedError } from './gemini.ts';
+export {
+  GEMINI_BASE_URL,
+  generateJson,
+  QuotaExhaustedError,
+  toGeminiSchema,
+  type GeminiConfig,
+  type Generation,
+} from './gemini.ts';
 export { EXTRACTOR_VERSION, MODEL, PROMPT_HASH } from './prompt.ts';
 export { vacancyText } from './vacancy-text.ts';

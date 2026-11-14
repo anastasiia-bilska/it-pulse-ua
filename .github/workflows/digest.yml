@@ -1,0 +1,65 @@
+name: digest
+
+# The weekly audio digest (ADR 0013). Mondays 08:05 UTC: just after the Gemini daily quota resets
+# and before the 08:17 collect triggers extraction, which would use it up.
+on:
+  schedule:
+    - cron: '5 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      week:
+        description: ISO week to (re)publish, e.g. 2026-W46 (default — the week that just ended)
+        required: false
+
+concurrency:
+  group: digest
+  cancel-in-progress: false
+
+permissions:
+  contents: write # creates the release
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pick the week
+        id: week
+        env:
+          INPUT_WEEK: ${{ inputs.week }}
+        run: |
+          week="${INPUT_WEEK:-$(date -u -d '7 days ago' +%G-W%V)}"
+          [[ "$week" =~ ^[0-9]{4}-W[0-9]{2}$ ]] || { echo "bad week: $week"; exit 1; }
+          echo "week=$week" >> "$GITHUB_OUTPUT"
+          # Idempotent: an existing episode is never paid for twice.
+          if gh release view "digest-$week" >/dev/null 2>&1; then
+            echo "digest-$week already published"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.week.outputs.exists != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - if: steps.week.outputs.exists != 'true'
+        run: npm ci
+      - if: steps.week.outputs.exists != 'true'
+        run: npm run digest
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_EXTRACTOR }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_DIGEST_URL }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          DIGEST_WEEK: ${{ steps.week.outputs.week }}
+      - name: Publish the episode
+        if: steps.week.outputs.exists != 'true' && hashFiles('dist/digest/digest.json') != ''
+        run: |
+          gh release create "digest-${{ steps.week.outputs.week }}" \
+            dist/digest/digest-uk.mp3 dist/digest/digest-en.mp3 dist/digest/digest.json \
+            --title "IT Pulse UA — ${{ steps.week.outputs.week }}" \
+            --notes-file dist/digest/notes.md --latest
