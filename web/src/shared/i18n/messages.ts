@@ -9,6 +9,8 @@ export type Messages = typeof UK;
 // ---- constants ---------------------------------------------------------------------------------
 
 const UK = {
+  /** The same text as <title> in uk.html, which crawlers read. */
+  pageTitle: 'IT Pulse UA — ринок IT-вакансій України: навички, ролі, зарплати',
   skipToContent: 'Перейти до змісту',
   nav: {
     label: 'Розділи',
@@ -168,6 +170,8 @@ const UK = {
 };
 
 const EN: Messages = {
+  /** The same text as <title> in index.html, which crawlers read. */
+  pageTitle: 'IT Pulse UA — Ukraine’s IT job market: skills, roles, salaries',
   skipToContent: 'Skip to content',
   nav: {
     label: 'Sections',
