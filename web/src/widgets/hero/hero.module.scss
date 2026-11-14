@@ -21,6 +21,8 @@
   border-radius: 50%;
   background: var(--color-pulse);
   box-shadow: 0 0 0 4px var(--color-pulse-glow);
+  // Same rate as SWEEP_DURATION in hero.tsx.
+  animation: ping 2.8s ease-out infinite;
 }
 
 .title {
@@ -47,6 +49,42 @@
 
 .pulse polyline {
   vector-effect: non-scaling-stroke;
+}
+
+/* The full line stays visible but dim, so the shape reads even between sweeps. */
+.baseline {
+  opacity: 0.3;
+}
+
+.trace {
+  filter: drop-shadow(0 0 4px var(--color-pulse));
+}
+
+@keyframes ping {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-pulse-glow);
+  }
+
+  60%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+/* No motion asked for: the whole line at full strength, still. The SVG sweep keeps running
+   but its copy is hidden, so nothing moves on screen. */
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+
+  .baseline {
+    opacity: 1;
+  }
+
+  .trace {
+    display: none;
+  }
 }
 
 .ask {
