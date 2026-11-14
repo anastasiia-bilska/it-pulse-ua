@@ -30,3 +30,17 @@ test('switching to English changes the copy and <html lang>', async () => {
   expect(screen.getByRole('heading')).toHaveTextContent('The pulse of Ukraine’s IT job market');
   expect(document.documentElement).toHaveAttribute('lang', 'en');
 });
+
+test('the address and the tab title follow the language, so a shared link opens in it', async () => {
+  const { user } = renderWithLanguage(<LanguageSwitch />);
+
+  await user.click(screen.getByRole('button', { name: 'EN' }));
+
+  expect(location.pathname).toBe('/');
+  expect(document.title).toMatch(/Ukraine’s IT job market/);
+
+  await user.click(screen.getByRole('button', { name: 'UA' }));
+
+  expect(location.pathname).toBe('/uk');
+  expect(document.title).toMatch(/ринок IT-вакансій України/);
+});

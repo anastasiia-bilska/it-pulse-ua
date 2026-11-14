@@ -37,13 +37,19 @@ function aggregatesWith(overrides: Partial<Aggregates>): Aggregates {
 
 // ---- tests -------------------------------------------------------------------------------------
 
-test('the card shows vacancies, the remote share and the top skill', () => {
-  const aggregates = aggregatesWith({});
+test('each card shows vacancies, the remote share and the top skill in its language', () => {
+  const facts = socialCardFacts(aggregatesWith({}));
 
-  const facts = socialCardFacts(aggregates);
+  const english = socialCardHtml(facts, 'en', '');
+  const ukrainian = socialCardHtml(facts, 'uk', '');
 
+  assert.match(english, /<html lang="en">/);
+  assert.match(english, />1,259<.*vacancies in 30 days/);
+  assert.match(english, />43%<.*remote/);
   // uk-UA groups thousands with a no-break space.
-  assert.deepEqual(facts, { vacancies: '1\u{A0}259', remoteShare: '43%', topSkill: 'Python' });
+  assert.match(ukrainian, />1\u{A0}259<.*вакансій за 30 днів/u);
+  assert.match(ukrainian, /Пульс IT-ринку України/);
+  assert.match(ukrainian, />Python<.*навичка №1/);
 });
 
 test('a market with no remote vacancies reads 0%, not a missing number', () => {
@@ -52,22 +58,22 @@ test('a market with no remote vacancies reads 0%, not a missing number', () => {
 
   const facts = socialCardFacts(aggregates);
 
-  assert.equal(facts?.remoteShare, '0%');
+  assert.equal(facts?.remoteShare, 0);
 });
 
 test('before the first extraction the card goes out without numbers', () => {
   const aggregates = aggregatesWith({ totals: { vacancies: 5, extracted: 0 }, topSkills: [] });
 
-  const html = socialCardHtml(socialCardFacts(aggregates), '');
+  const html = socialCardHtml(socialCardFacts(aggregates), 'en', '');
 
   assert.doesNotMatch(html, /class="stats"/);
-  assert.match(html, /Пульс IT-ринку України/);
+  assert.match(html, /The pulse of Ukraine’s IT job market/);
 });
 
 test('a skill name is escaped into the HTML', () => {
-  const facts = { vacancies: '1', remoteShare: '1%', topSkill: 'C<b>&' };
+  const facts = { vacancies: 1, windowDays: 30, remoteShare: 0.01, topSkill: 'C<b>&' };
 
-  const html = socialCardHtml(facts, '');
+  const html = socialCardHtml(facts, 'en', '');
 
   assert.match(html, /C&lt;b&gt;&amp;/);
 });

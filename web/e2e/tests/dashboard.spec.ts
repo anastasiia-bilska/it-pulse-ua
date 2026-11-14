@@ -55,6 +55,23 @@ test('the page opens in English', async ({ page }) => {
   await expect(page.locator('#hero-title')).toHaveText('The pulse of Ukraine’s IT job market');
 });
 
+// One page per language (ADR 0019): crawlers and shared links get the language in the address.
+test('/uk opens in Ukrainian and switching back to English moves to /', async ({ page }) => {
+  await page.goto('/uk');
+
+  await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+  await expect(page.locator('#hero-title')).toHaveText('Пульс IT-ринку України в цифрах');
+  await expect(page.locator('link[hreflang="en"]')).toHaveAttribute(
+    'href',
+    'https://it-pulse-ua.pages.dev/',
+  );
+
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveTitle(/Ukraine’s IT job market/);
+});
+
 // The header pill on wide screens, the block at the end of the page on phones: one is visible.
 test('"Ask the market" opens its dialog, and the dialog closes', async ({ page }) => {
   await page.goto('/');

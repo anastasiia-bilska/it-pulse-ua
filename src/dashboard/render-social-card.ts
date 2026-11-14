@@ -1,17 +1,18 @@
-// CLI: renders the social card (og:image) to dist/site/og.png from this build's aggregates.json.
+// CLI: renders the social cards (og:image) to dist/site/og-<language>.png from this build's
+// aggregates.json, one per page language (ADR 0019).
 // Run after `npm run dashboard`. Chromium paints it with the same self-hosted fonts as the site,
 // inlined, so the render needs no network.
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 import type { Aggregates } from './aggregates.ts';
-import { socialCardFacts, socialCardHtml } from './social-card.ts';
+import { CARD_LANGUAGES, socialCardFacts, socialCardHtml } from './social-card.ts';
 
 // ---- constants ---------------------------------------------------------------------------------
 
 const SITE_DIRECTORY = new URL('../../dist/site/', import.meta.url);
 const NODE_MODULES = new URL('../../node_modules/@fontsource-variable/', import.meta.url);
 const FONT_PACKAGES = ['unbounded', 'inter', 'jetbrains-mono'];
-/** The card is Ukrainian with Latin numbers and skill names: no other subset is needed. */
+/** The cards are English and Ukrainian: no other subset is needed. */
 const NEEDED_SUBSET = /-(latin|cyrillic)-wght-normal\.woff2/;
 const CARD_SIZE = { width: 1200, height: 630 };
 
@@ -22,15 +23,17 @@ async function renderSocialCard(): Promise<void> {
     await readFile(new URL('aggregates.json', SITE_DIRECTORY), 'utf8'),
   ) as Aggregates;
   const facts = socialCardFacts(aggregates);
-  const html = socialCardHtml(facts, await inlineFontFaces());
+  const fontFaces = await inlineFontFaces();
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: CARD_SIZE });
-    await page.setContent(html);
-    await page.evaluate(async () => {
-      await globalThis.document.fonts.ready;
-    });
-    await writeFile(new URL('og.png', SITE_DIRECTORY), await page.screenshot());
+    for (const language of CARD_LANGUAGES) {
+      await page.setContent(socialCardHtml(facts, language, fontFaces));
+      await page.evaluate(async () => {
+        await globalThis.document.fonts.ready;
+      });
+      await writeFile(new URL(`og-${language}.png`, SITE_DIRECTORY), await page.screenshot());
+    }
   } finally {
     await browser.close();
   }

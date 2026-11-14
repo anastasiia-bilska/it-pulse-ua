@@ -11,10 +11,16 @@
   Cache-Control: public, max-age=0, must-revalidate
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
+/uk
+  Cache-Control: public, max-age=0, must-revalidate
+/uk.html
+  Cache-Control: public, max-age=0, must-revalidate
 /aggregates.json
   Cache-Control: public, max-age=0, must-revalidate
 # Redrawn with the numbers on every build, under the same name.
-/og.png
+/og-en.png
+  Cache-Control: public, max-age=0, must-revalidate
+/og-uk.png
   Cache-Control: public, max-age=0, must-revalidate
 /robots.txt
   Cache-Control: public, max-age=86400

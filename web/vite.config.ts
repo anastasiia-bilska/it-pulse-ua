@@ -11,24 +11,32 @@ import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite';
 const NODE_MODULES = new URL('../node_modules/', import.meta.url);
 
 /**
- * Fonts the first screen paints with: the hero heading (Unbounded) and body text (Inter), in the
- * page's default language. Mono and latin load lazily; preloading them would delay these two.
+ * Fonts the first screen paints with: the hero heading (Unbounded) and body text (Inter), in each
+ * page's language (ADR 0019). Mono and the other script load lazily; preloading them would delay
+ * these two.
  */
-const ABOVE_THE_FOLD_FONTS = [
-  /unbounded-cyrillic-wght-normal-[\w-]+\.woff2$/,
-  /inter-cyrillic-wght-normal-[\w-]+\.woff2$/,
-];
+const ABOVE_THE_FOLD_FONTS: Record<string, RegExp[]> = {
+  '/index.html': [
+    /unbounded-latin-wght-normal-[\w-]+\.woff2$/,
+    /inter-latin-wght-normal-[\w-]+\.woff2$/,
+  ],
+  '/uk.html': [
+    /unbounded-cyrillic-wght-normal-[\w-]+\.woff2$/,
+    /inter-cyrillic-wght-normal-[\w-]+\.woff2$/,
+  ],
+};
 
 // ---- functions ---------------------------------------------------------------------------------
 
 /** Adds <link rel=preload> for the hashed above-the-fold font files of the production build. */
-function preloadFonts(patterns: RegExp[]): Plugin {
+function preloadFonts(patternsByPage: Record<string, RegExp[]>): Plugin {
   return {
     name: 'preload-fonts',
     apply: 'build',
     transformIndexHtml: {
       order: 'post',
       handler(html, context): HtmlTagDescriptor[] {
+        const patterns = patternsByPage[context.path] ?? [];
         const files = Object.keys(context.bundle ?? {});
         return files
           .filter((file) => patterns.some((pattern) => pattern.test(file)))
@@ -74,6 +82,14 @@ export default defineConfig({
     emptyOutDir: true,
     // Fonts are separate files so unicode-range can skip the subsets a page never uses.
     assetsInlineLimit: 0,
+    // One page per language (ADR 0019): crawlers index each with its own <html lang> and meta.
+    // Cloudflare Pages serves uk.html at /uk.
+    rolldownOptions: {
+      input: {
+        en: fileURLToPath(new URL('index.html', import.meta.url)),
+        uk: fileURLToPath(new URL('uk.html', import.meta.url)),
+      },
+    },
   },
   test: {
     // Component tests (*.test.tsx). Pure rules (*.test.ts) run under node --test like the backend.
