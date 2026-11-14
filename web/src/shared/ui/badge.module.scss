@@ -1,11 +1,13 @@
+@use '../styles/units' as *;
+
 .badge {
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
   flex: none;
-  padding: 4px 10px;
+  padding: rem(4px) rem(10px);
   border-radius: var(--radius-pill);
-  font: 500 12px / 1.4 var(--font-mono);
+  font: 500 rem(12px) / 1.4 var(--font-mono);
   white-space: nowrap;
 }
 

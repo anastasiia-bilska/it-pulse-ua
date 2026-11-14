@@ -1,8 +1,9 @@
 @use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
 
 .card {
   margin-top: var(--space-7);
-  scroll-margin-top: 80px;
+  scroll-margin-top: rem(80px);
 }
 
 .heading {

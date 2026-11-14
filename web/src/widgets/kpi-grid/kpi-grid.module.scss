@@ -1,14 +1,15 @@
 @use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, rem(240px)), 1fr));
   gap: var(--space-4);
 }
 
 @include bp.phone {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: rem(10px);
   }
 }

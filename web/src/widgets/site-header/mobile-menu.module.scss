@@ -1,6 +1,8 @@
+@use '../../shared/styles/units' as *;
+
 .dialog {
   width: 100%;
-  max-width: 480px;
+  max-width: rem(480px);
   height: 100%;
   max-height: none;
   margin: 0 0 0 auto;
@@ -24,7 +26,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: rem(10px) rem(16px);
   border-bottom: 1px solid var(--color-rule);
 }
 
@@ -32,7 +34,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: rem(12px) rem(16px);
   display: flex;
   flex-direction: column;
 }
@@ -40,8 +42,8 @@
 .link {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 0;
+  gap: rem(14px);
+  padding: rem(14px) 0;
   border-bottom: 1px solid var(--color-divider);
   color: var(--color-text);
   text-decoration: none;
@@ -52,8 +54,8 @@
 }
 
 .number {
-  width: 24px;
-  font: 500 13px var(--font-mono);
+  width: rem(24px);
+  font: 500 rem(13px) var(--font-mono);
   color: var(--color-pulse);
 }
 
@@ -61,28 +63,28 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: rem(4px);
   line-height: 1.25;
 }
 
 .linkTitle {
-  font: 500 22px / 1.2 var(--font-display);
+  font: 500 rem(22px) / 1.2 var(--font-display);
   letter-spacing: -0.02em;
 }
 
 .teasers {
-  margin-top: 20px;
+  margin-top: rem(20px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: rem(10px);
 }
 
 .digest {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: 16px;
+  gap: rem(14px);
+  padding: rem(14px) rem(16px);
+  border-radius: rem(16px);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   font-weight: 600;
@@ -97,6 +99,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px 24px;
+  padding: rem(14px) rem(16px) rem(24px);
   border-top: 1px solid var(--color-rule);
 }

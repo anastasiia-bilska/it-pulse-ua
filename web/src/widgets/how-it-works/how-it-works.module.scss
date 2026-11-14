@@ -1,10 +1,11 @@
 @use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
 
 .section {
   margin-top: var(--space-7);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: rem(20px);
 }
 
 .steps {
@@ -12,14 +13,14 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, rem(250px)), 1fr));
   gap: var(--space-4);
 }
 
 .step {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: rem(10px);
   padding: var(--space-5);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -27,18 +28,18 @@
 }
 
 .number {
-  font: 500 14px var(--font-mono);
+  font: 500 rem(14px) var(--font-mono);
   color: var(--color-pulse);
 }
 
 .stepText {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: rem(10px);
 }
 
 .stepBody {
-  font-size: 15px;
+  font-size: rem(15px);
   color: var(--color-muted);
 }
 
@@ -48,17 +49,17 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: rem(10px);
 }
 
 .rule {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 10px 16px;
+  padding: rem(10px) rem(16px);
   border-radius: var(--radius-pill);
   border: 1px solid #2e3440;
-  font-size: 14px;
+  font-size: rem(14px);
   color: var(--color-text-2);
 }
 
@@ -69,13 +70,13 @@
 
 @include bp.phone {
   .steps {
-    gap: 10px;
+    gap: rem(10px);
   }
 
   .step {
     flex-direction: row;
-    gap: 14px;
-    padding: 14px 16px;
+    gap: rem(14px);
+    padding: rem(14px) rem(16px);
     border-radius: var(--radius-banner);
   }
 
@@ -84,11 +85,11 @@
   }
 
   .stepBody {
-    font-size: 14px;
+    font-size: rem(14px);
   }
 
   .rule {
-    padding: 8px 12px;
-    font-size: 13px;
+    padding: rem(8px) rem(12px);
+    font-size: rem(13px);
   }
 }

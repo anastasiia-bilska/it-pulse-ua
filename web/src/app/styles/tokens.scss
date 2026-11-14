@@ -1,3 +1,5 @@
+@use '../../shared/styles/units' as *;
+
 /* Design tokens from the UI-kit artboard. Dark theme only: the design has no light variant. */
 :root {
   /* ---- colors ---- */
@@ -52,22 +54,22 @@
   --font-mono: 'JetBrains Mono', 'JetBrains Mono fallback', ui-monospace, monospace;
 
   /* ---- spacing ---- */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 56px;
-  --gutter: clamp(16px, 4vw, 40px);
-  --container: 1240px;
+  --space-1: #{rem(4px)};
+  --space-2: #{rem(8px)};
+  --space-3: #{rem(12px)};
+  --space-4: #{rem(16px)};
+  --space-5: #{rem(24px)};
+  --space-6: #{rem(32px)};
+  --space-7: #{rem(56px)};
+  --gutter: clamp(#{rem(16px)}, 4vw, #{rem(40px)});
+  --container: #{rem(1240px)};
 
   /* ---- radii ---- */
-  --radius-bar: 6px;
-  --radius-tab: 9px;
-  --radius-button: 12px;
-  --radius-banner: 14px;
-  --radius-card: 18px;
+  --radius-bar: #{rem(6px)};
+  --radius-tab: #{rem(9px)};
+  --radius-button: #{rem(12px)};
+  --radius-banner: #{rem(14px)};
+  --radius-card: #{rem(18px)};
   --radius-pill: 999px;
 
   --focus-ring: 0 0 0 2px var(--color-ink), 0 0 0 4px var(--color-pulse);

@@ -36,8 +36,12 @@ modular frontend (features, shared and so on).
   it type-only, so it is erased from the bundle. Freshness reasons are now codes (`quota`,
   `backlog`, `failing`, `never`), so the page can translate them.
 - **Styles:** SCSS modules per component, with breakpoint mixins in
-  `shared/styles/_breakpoints.scss`. Design tokens are CSS custom properties in
-  `app/styles/tokens.scss`. Dark theme only, as designed.
+  `shared/styles/_breakpoints.scss`.
+  - Sizes are written in the design's px through `rem()` (`shared/styles/_units.scss`) and
+    compile to rem, so type and spacing follow the reader's browser font size.
+  - Media queries are in em for the same reason.
+  - Hairlines under 4px (borders, focus ring) stay in px so they stay crisp. Design tokens are CSS custom properties in
+    `app/styles/tokens.scss`. Dark theme only, as designed.
 - **Fonts, self-hosted** (Unbounded, Inter, JetBrains Mono; variable woff2 from
   `@fontsource-variable`).
   - Only latin and cyrillic `@font-face` rules are declared, so latin-ext, greek and vietnamese

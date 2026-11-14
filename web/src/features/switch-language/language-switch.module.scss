@@ -1,3 +1,5 @@
+@use '../../shared/styles/units' as *;
+
 .group {
   display: flex;
   flex: none;
@@ -7,12 +9,12 @@
 }
 
 .option {
-  min-width: 44px;
-  min-height: 36px;
-  padding: 0 12px;
+  min-width: rem(44px);
+  min-height: rem(36px);
+  padding: 0 rem(12px);
   border: 0;
   border-radius: var(--radius-pill);
-  font: 600 13px var(--font-body);
+  font: 600 rem(13px) var(--font-body);
   background: transparent;
   color: var(--color-text-2);
   cursor: pointer;

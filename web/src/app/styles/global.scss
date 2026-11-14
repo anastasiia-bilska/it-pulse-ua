@@ -1,3 +1,5 @@
+@use '../../shared/styles/units' as *;
+
 *,
 *::before,
 *::after {
@@ -6,7 +8,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+  scroll-padding-top: rem(80px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -20,7 +22,7 @@ body {
   min-height: 100vh;
   background: var(--color-ink);
   color: var(--color-text);
-  font: 400 16px/1.5 var(--font-body);
+  font: 400 rem(16px) / 1.5 var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 

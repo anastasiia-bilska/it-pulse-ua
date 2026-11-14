@@ -1,4 +1,5 @@
 @use '../../shared/styles/breakpoints' as bp;
+@use '../../shared/styles/units' as *;
 
 .header {
   position: sticky;
@@ -12,7 +13,7 @@
 .inner {
   max-width: var(--container);
   margin: 0 auto;
-  padding: 12px var(--gutter);
+  padding: rem(12px) var(--gutter);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -28,25 +29,25 @@
 .nav {
   display: flex;
   align-items: center;
-  gap: 4px 20px;
-  font-size: 15px;
+  gap: rem(4px) rem(20px);
+  font-size: rem(15px);
 }
 
 .link {
-  padding: 10px 0;
+  padding: rem(10px) 0;
   text-decoration: none;
 }
 
 .github {
   display: flex;
-  padding: 10px;
+  padding: rem(10px);
   border-radius: var(--radius-button);
 }
 
 .compact {
   display: none;
   align-items: center;
-  gap: 4px;
+  gap: rem(4px);
 }
 
 @include bp.compact {

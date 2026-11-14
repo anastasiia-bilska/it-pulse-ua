@@ -1,15 +1,16 @@
 @use '../styles/breakpoints' as bp;
+@use '../styles/units' as *;
 
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: rem(10px);
 }
 
 .tile {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: rem(36px);
+  height: rem(36px);
+  border-radius: rem(10px);
   background: var(--color-pulse);
   color: var(--color-ink);
   display: flex;
@@ -22,18 +23,18 @@
 }
 
 .name {
-  font: 700 18px / 1 var(--font-display);
+  font: 700 rem(18px) / 1 var(--font-display);
   letter-spacing: -0.01em;
 }
 
 @include bp.phone {
   .tile {
-    width: 32px;
-    height: 32px;
+    width: rem(32px);
+    height: rem(32px);
     border-radius: var(--radius-tab);
   }
 
   .name {
-    font-size: 16px;
+    font-size: rem(16px);
   }
 }

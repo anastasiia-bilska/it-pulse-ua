@@ -1,17 +1,19 @@
+@use '../styles/units' as *;
+
 .list {
   display: flex;
 }
 
 .tab {
-  min-height: 40px;
+  min-height: rem(40px);
   border-radius: var(--radius-tab);
-  font: 600 14px var(--font-body);
+  font: 600 rem(14px) var(--font-body);
   cursor: pointer;
 }
 
 /* Segmented: equal halves inside one dark track. */
 .segmented {
-  padding: 4px;
+  padding: rem(4px);
   background: var(--color-ink);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-button);
@@ -34,13 +36,13 @@
   gap: var(--space-2);
   overflow-x: auto;
   margin: 0 calc(-1 * var(--gutter));
-  padding: 4px var(--gutter);
+  padding: rem(4px) var(--gutter);
   scrollbar-width: none;
 }
 
 .chips .tab {
   flex: none;
-  padding: 0 16px;
+  padding: 0 rem(16px);
   border-radius: var(--radius-pill);
   font-weight: 500;
   background: transparent;

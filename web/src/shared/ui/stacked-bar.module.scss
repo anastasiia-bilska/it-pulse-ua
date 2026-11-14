@@ -1,10 +1,11 @@
 @use '../styles/breakpoints' as bp;
+@use '../styles/units' as *;
 
 .bar {
   display: flex;
   gap: 2px;
-  height: 36px;
-  border-radius: 10px;
+  height: rem(36px);
+  border-radius: rem(10px);
   overflow: hidden;
 }
 
@@ -18,21 +19,21 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(rem(190px), 1fr));
   gap: var(--space-2) var(--space-4);
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: rem(10px);
+  font-size: rem(14px);
 }
 
 .swatch {
   flex: none;
-  width: 12px;
-  height: 12px;
+  width: rem(12px);
+  height: rem(12px);
   border-radius: 3px;
 }
 
@@ -42,7 +43,7 @@
 }
 
 .value {
-  font: 500 13px var(--font-mono);
+  font: 500 rem(13px) var(--font-mono);
   color: var(--color-text-2);
   white-space: nowrap;
 }
@@ -73,7 +74,7 @@
 
 @include bp.phone {
   .bar {
-    height: 32px;
+    height: rem(32px);
     border-radius: var(--radius-tab);
   }
 

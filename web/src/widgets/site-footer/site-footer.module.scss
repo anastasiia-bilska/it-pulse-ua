@@ -1,3 +1,5 @@
+@use '../../shared/styles/units' as *;
+
 .footer {
   border-top: 1px solid var(--color-rule);
 }
@@ -5,12 +7,12 @@
 .inner {
   max-width: var(--container);
   margin: 0 auto;
-  padding: 28px var(--gutter) 40px;
+  padding: rem(28px) var(--gutter) rem(40px);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-4) var(--space-6);
-  font-size: 14px;
+  font-size: rem(14px);
   color: var(--color-muted);
 }
 
@@ -28,5 +30,5 @@
 }
 
 .links a {
-  padding: 10px 0;
+  padding: rem(10px) 0;
 }

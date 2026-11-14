@@ -1,3 +1,5 @@
+@use '../../shared/styles/units' as *;
+
 .teaser {
   display: flex;
   align-items: center;
@@ -8,8 +10,8 @@
 }
 
 .teaser > span:last-child {
-  padding: 1px 7px;
-  font-size: 10px;
+  padding: 1px rem(7px);
+  font-size: rem(10px);
 }
 
 .text {
@@ -19,22 +21,22 @@
 }
 
 .pill {
-  min-height: 44px;
-  padding: 0 10px 0 16px;
+  min-height: rem(44px);
+  padding: 0 rem(10px) 0 rem(16px);
   border-radius: var(--radius-pill);
 }
 
 .block {
   justify-content: center;
-  min-height: 52px;
+  min-height: rem(52px);
   border-radius: var(--radius-banner);
-  font-size: 16px;
+  font-size: rem(16px);
 }
 
 .card {
-  gap: 14px;
-  padding: 16px;
-  border-radius: 16px;
+  gap: rem(14px);
+  padding: rem(16px);
+  border-radius: rem(16px);
 }
 
 .card .text {
@@ -42,11 +44,11 @@
 }
 
 .card .title {
-  font-size: 17px;
+  font-size: rem(17px);
   font-weight: 700;
 }
 
 .hint {
-  font-size: 13px;
+  font-size: rem(13px);
   font-weight: 400;
 }
