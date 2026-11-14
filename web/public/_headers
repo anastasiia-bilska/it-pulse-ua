@@ -13,6 +13,9 @@
   Cache-Control: public, max-age=0, must-revalidate
 /aggregates.json
   Cache-Control: public, max-age=0, must-revalidate
+# The digest audio keeps its name and changes weekly.
+/digest/*
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*
   X-Content-Type-Options: nosniff

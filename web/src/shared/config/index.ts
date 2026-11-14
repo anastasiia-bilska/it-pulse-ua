@@ -13,7 +13,14 @@ export const SOURCE_URLS = {
 
 // ---- functions ---------------------------------------------------------------------------------
 
-/** The newest digest episode: GitHub serves the latest release's files at a stable address. */
+/**
+ * The newest digest episode. The dashboard build copies it next to the page: GitHub serves release
+ * files as octet-stream downloads, which iOS Safari will not play. Dev has no build, so it plays
+ * the release directly (fine in desktop browsers).
+ */
 export function digestAudioUrl(language: Language): string {
-  return `${REPOSITORY_URL}/releases/latest/download/digest-${language}.mp3`;
+  const file = `digest-${language}.mp3`;
+  return import.meta.env.DEV
+    ? `${REPOSITORY_URL}/releases/latest/download/${file}`
+    : `digest/${file}`;
 }

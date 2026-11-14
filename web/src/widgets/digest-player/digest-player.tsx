@@ -90,7 +90,7 @@ function Player({ source, title }: PlayerProperties): ReactElement {
         aria-label={playLabel(messages.digest, isAvailable, playback.isPlaying)}
         onClick={() => void toggle()}
       >
-        <Icon name={playback.isPlaying ? 'pause' : 'play'} size={22} />
+        <Icon name={isAvailable && playback.isPlaying ? 'pause' : 'play'} size={22} />
       </button>
       <Track title={title} progress={playback.progress} />
     </div>
