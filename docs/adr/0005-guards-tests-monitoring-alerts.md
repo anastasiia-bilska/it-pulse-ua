@@ -48,14 +48,15 @@ Guards come in four layers. Each one is added together with the stage it protect
    Extraction-quality and quota checks (Neon, Gemini, ElevenLabs at 80%) come with their stages.
 
 4. **Alerts via healthchecks.io → Telegram.** The collector pings at the end of each run:
-   - a success ping is a heartbeat, and a missing ping (2h period plus 1h grace) raises an alert, which also covers a cron that never started;
+   - a success ping is a heartbeat, and a missing ping (2h period plus 4h grace) raises an alert, which also covers a cron that never started. The grace is long because GitHub Actions delays or skips scheduled runs under load: on the night of 2026-11-13 it skipped two slots in a row and a 1h grace raised false alerts. The RSS windows (about 15h on Djinni, up to 38h on DOU) absorb a 6h silence without data loss;
+   - the `extract` check (`HEALTHCHECK_EXTRACT_URL`) uses the same schedule, since extraction runs after every collect;
    - any problem from the data checks, or a crash, pings `/fail` with a counts-only summary.
 
    Ping failures never fail the collector. With `HEALTHCHECK_URL` unset, pinging is skipped.
 
 ## Consequences
 
-- A silent stop, a format change or a block reaches Telegram within about 3 hours.
+- A silent stop, a format change or a block reaches Telegram within about 6 hours.
 - Logs and ping bodies carry counts and feed names only, never vacancy text, because public repo logs are public.
 - Alerts must be actionable. A one-off gap (a busy feed such as `dou:Other` outran one poll) is expected and nobody can act on it, so it only goes to the log and `fetch_log`. Three gaps in a row on one feed mean its poll interval is too slow, which is a change we can make.
 - Every failed feed still raises an alert (it has already survived 4 attempts with backoff). If transient failures get noisy, apply the same streak rule.
