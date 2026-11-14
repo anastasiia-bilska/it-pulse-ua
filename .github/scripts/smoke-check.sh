@@ -38,6 +38,7 @@ check_page() {
   script=$(curl -fsS "$site/" | grep -oE 'assets/[^"]+\.js' | head -1)
   [ -n "$script" ] || fail "index.html loads no script bundle"
   expect_type "$script" 'text/javascript|application/javascript'
+  expect_type 'favicon.svg' 'image/svg\+xml'
 }
 
 check_aggregates() {
