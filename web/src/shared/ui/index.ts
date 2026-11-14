@@ -10,6 +10,7 @@ export { Icon } from './icon.tsx';
 export type { IconName } from './icon.tsx';
 export { KpiCard, KpiSkeleton } from './kpi-card.tsx';
 export { Logo } from './logo.tsx';
+export { WithSourceLinks } from './source-links.tsx';
 export { StackedBar } from './stacked-bar.tsx';
 export type { StackSegment } from './stacked-bar.tsx';
 export { StatusBanner } from './status-banner.tsx';

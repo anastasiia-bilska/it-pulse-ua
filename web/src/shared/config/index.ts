@@ -5,6 +5,11 @@ import type { Language } from '../lib/index.ts';
 
 export const REPOSITORY_URL = 'https://github.com/anastasiia-bilska/it-pulse-ua';
 export const ADR_URL = `${REPOSITORY_URL}/tree/main/docs/adr`;
+/** The job boards the data comes from, linked wherever the copy names them. */
+export const SOURCE_URLS = {
+  DOU: 'https://jobs.dou.ua/',
+  Djinni: 'https://djinni.co/jobs/',
+} as const;
 
 // ---- functions ---------------------------------------------------------------------------------
 

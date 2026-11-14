@@ -71,6 +71,8 @@
     gap: rem(10px);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    // The row bleeds to the screen edges; snapping must still leave the page gutter.
+    scroll-padding-inline: var(--gutter);
     margin: 0 calc(-1 * var(--gutter));
     padding: 0 var(--gutter) rem(4px);
     scrollbar-width: none;

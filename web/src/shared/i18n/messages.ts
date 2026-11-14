@@ -44,7 +44,7 @@ const UK = {
   hero: {
     eyebrow: 'Оновлюється кожні 2 години · DOU + Djinni',
     title: 'Пульс IT-ринку України в цифрах',
-    lead: 'Публічні вакансії DOU та Djinni, розібрані LLM на факти: ролі, рівні, навички, формат роботи та зарплати. Кожна частка — з n, кожне число простежується до SQL.',
+    lead: 'Публічні вакансії з DOU та Djinni, які LLM розбирає на ролі, рівні, навички, формат роботи та зарплати. Біля кожної цифри видно, на скількох вакансіях вона порахована.',
   },
   freshness: {
     title: 'Дані трохи відстають.',
@@ -199,7 +199,7 @@ const EN: Messages = {
   hero: {
     eyebrow: 'Updated every 2 hours · DOU + Djinni',
     title: 'The pulse of Ukraine’s IT job market',
-    lead: 'Public DOU and Djinni vacancies, turned into facts by an LLM: roles, levels, skills, work format and pay. Every share carries its n, every number traces back to SQL.',
+    lead: 'Public vacancies from DOU and Djinni, broken down by an LLM into roles, levels, skills, work format and pay. Every figure shows how many vacancies it is based on.',
   },
   freshness: {
     title: 'Data is a little behind.',
