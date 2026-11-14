@@ -18,6 +18,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  // Keeps the "soon" badge pill-sized instead of stretched across the column.
+  align-items: flex-start;
   gap: rem(10px);
 }
 

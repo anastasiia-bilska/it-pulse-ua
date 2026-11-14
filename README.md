@@ -2,7 +2,7 @@
 
 _AI-аналітика українського IT-ринку вакансій: що наймають, скільки платять і куди рухається ринок._
 
-**Live dashboard: <https://anastasiia-bilska.github.io/it-pulse-ua/>**
+**Live dashboard: <https://it-pulse-ua.pages.dev/>**
 
 ## What and why
 
@@ -25,7 +25,7 @@ labelled, and the agent is planned.
 | LLM extraction with Gemini, evidence-quote checks, retry queue                           | Done        |
 | Langfuse traces for every model call (ADR 0010)                                          | Done        |
 | Skill taxonomy (ADR 0009): alias dictionary, automated triage, human override            | Done        |
-| Public dashboard on GitHub Pages with a freshness banner (ADR 0011)                      | Done        |
+| Public dashboard with a freshness banner (ADR 0011), on Cloudflare Pages (ADR 0015)      | Done        |
 | Dashboard redesign: React + Vite, Feature-Sliced layers, UI-kit, UA/EN (ADR 0014)        | Done        |
 | Eval set builder: 150 stratified vacancies to a Langfuse dataset, 30 for blind labelling | Done        |
 | Eval harness and PR gate (ADR 0012)                                                      | Done        |
@@ -57,7 +57,7 @@ flowchart LR
 
   GEM["Gemini<br/>structured output"]
   LF["Langfuse<br/>traces, eval set"]
-  PAGES["GitHub Pages<br/>public dashboard"]
+  PAGES["Cloudflare Pages<br/>public dashboard"]
   HC["healthchecks.io"] --> TG["Telegram alerts"]
 
   DOU --> COL
@@ -192,7 +192,7 @@ src/
   taxonomy/      skill aliases and triage
   observability/ Langfuse traces and datasets
   evaluation/    eval set sampling, scoring; run-eval.ts is the eval CLI
-  dashboard/     public aggregates for GitHub Pages
+  dashboard/     public aggregates for the web dashboard
   shared/        scheduled-job runner: DB connection, healthchecks.io pings
   <module>/tests/  *.test.ts (unit), *.itest.ts (integration)
 web/             the dashboard: React + Vite (ADR 0014)
@@ -204,7 +204,7 @@ docs/adr/        architecture decision records
   collect.yml    cron every 2h, collector role
   migrate.yml    on migration changes, owner role
   extract.yml    after each collect, extractor role
-  dashboard.yml  after each extract and daily, publishes to Cloudflare Pages (and GitHub Pages)
+  dashboard.yml  after each extract and daily, publishes to Cloudflare Pages
   eval.yml       eval gate on extractor PRs, or manual
 CLAUDE.md        engineering rules for people and AI agents
 ```
