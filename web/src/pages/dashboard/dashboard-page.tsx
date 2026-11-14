@@ -47,7 +47,7 @@ export function DashboardPage(): ReactElement {
           windowDays={aggregates?.windowDays ?? DEFAULT_WINDOW_DAYS}
         />
         {/* On narrow screens the header has no room for the agent pill, so it closes the page. */}
-        <div className={styles.ask}>
+        <div className={styles.ask} data-block="ask-market">
           <AskMarketTeaser look="block" />
         </div>
       </main>
@@ -80,7 +80,7 @@ function DataSections({
           tone="error"
           title={copy.errorTitle}
           action={
-            <Button variant="danger" onClick={retry}>
+            <Button variant="danger" data-umami-event="retry" onClick={retry}>
               {copy.retry}
             </Button>
           }

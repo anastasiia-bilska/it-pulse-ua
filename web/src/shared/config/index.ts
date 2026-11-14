@@ -10,6 +10,8 @@ export const SOURCE_URLS = {
   DOU: 'https://jobs.dou.ua/',
   Djinni: 'https://djinni.co/jobs/',
 } as const;
+/** Umami Cloud site ID (ADR 0019). Public by design: it is in the page source anyway. */
+export const UMAMI_WEBSITE_ID = 'TODO-umami-website-id';
 
 // ---- functions ---------------------------------------------------------------------------------
 

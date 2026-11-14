@@ -18,6 +18,8 @@ export function AskMarketTeaser({ look }: { look: 'pill' | 'block' | 'card' }): 
         type="button"
         className={`${styles.teaser} ${styles[look]}`}
         aria-haspopup="dialog"
+        data-umami-event="ask-market-open"
+        data-umami-event-placement={look}
         onClick={() => dialog.current?.showModal()}
       >
         <Icon name="chat" size={look === 'card' ? 24 : 18} />

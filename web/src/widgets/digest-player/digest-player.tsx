@@ -44,7 +44,7 @@ export function DigestPlayer({
   const copy = messages.digest;
   const source = episode ? digestAudioUrl(language) : undefined;
   return (
-    <section aria-labelledby="digest-title" className={styles.teaser}>
+    <section data-block="digest" aria-labelledby="digest-title" className={styles.teaser}>
       <div className={styles.text}>
         {!episode && <Badge tone="soonOnAccent">{messages.soon}</Badge>}
         <h2 id="digest-title" className={styles.title}>
@@ -88,6 +88,7 @@ function Player({ source, title }: PlayerProperties): ReactElement {
         className={styles.play}
         disabled={!isAvailable}
         aria-label={playLabel(messages.digest, isAvailable, playback.isPlaying)}
+        data-umami-event={playback.isPlaying ? 'digest-pause' : 'digest-play'}
         onClick={() => void toggle()}
       >
         <Icon name={isAvailable && playback.isPlaying ? 'pause' : 'play'} size={22} />
