@@ -32,7 +32,7 @@ its credibility.
   vacancies already analysed, the top roles and skills with their counts, and the median USD
   monthly salary. A value with n below 10 is not passed on at all (the dashboard's «даних замало»
   rule). The model never does arithmetic.
-- **Script:** one Gemini call (`MODEL` from the extractor) writes both scripts, Ukrainian and
+- **Script:** one Gemini call (its own pinned model, not the extractor's) writes both scripts, Ukrainian and
   English, from the same facts. Rules: digits only, no number that is not in the facts, at most
   1100 characters each. If less than 90% of the week's vacancies are analysed, the script must
   say the numbers are preliminary.

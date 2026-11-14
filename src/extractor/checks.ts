@@ -15,8 +15,20 @@ const GROWING_BACKLOG_RUNS = 3;
 // ---- functions ---------------------------------------------------------------------------------
 
 export async function findRunProblems(db: pg.Client, report: RunReport): Promise<string[]> {
-  const problems = [failureShareProblem(report), await growingBacklogProblem(db)];
+  const problems = [
+    outageProblem(report),
+    failureShareProblem(report),
+    await growingBacklogProblem(db),
+  ];
   return problems.filter((problem) => problem !== undefined);
+}
+
+/** Unlike a quota stop, an outage is not routine: alert now, not after the backlog grows. */
+function outageProblem(report: RunReport): string | undefined {
+  if (!report.stoppedByOutage) {
+    return;
+  }
+  return `Gemini unavailable: run stopped, ${report.backlog} vacancies wait in the queue`;
 }
 
 function failureShareProblem(report: RunReport): string | undefined {

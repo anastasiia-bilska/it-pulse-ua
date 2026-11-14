@@ -36,6 +36,7 @@ interface InteractionResponse {
 export const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com';
 const API_REVISION = '2026-05-20';
 const REQUEST_TIMEOUT_MS = 60_000;
+const HTTP_BAD_REQUEST = 400;
 const HTTP_TOO_MANY_REQUESTS = 429;
 
 // ---- errors ------------------------------------------------------------------------------------
@@ -45,6 +46,15 @@ export class QuotaExhaustedError extends Error {
   override name = 'QuotaExhaustedError';
 }
 
+/**
+ * The service failed, not this request: 5xx, a timeout, the network, a bad key or a retired
+ * model. Counting it against the vacancy would dead-letter fresh vacancies during an outage, so
+ * the caller stops the run instead and the queue waits.
+ */
+export class GeminiUnavailableError extends Error {
+  override name = 'GeminiUnavailableError';
+}
+
 // ---- functions ---------------------------------------------------------------------------------
 
 export async function generateJson(
@@ -52,27 +62,16 @@ export async function generateJson(
   request: GenerationRequest,
 ): Promise<Generation> {
   const startedAt = performance.now();
-  const response = await fetch(`${config.baseUrl}/v1beta/interactions`, {
-    method: 'POST',
-    headers: {
-      'x-goog-api-key': config.apiKey,
-      'content-type': 'application/json',
-      'api-revision': API_REVISION,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      system_instruction: request.systemInstruction,
-      input: request.input,
-      response_format: { type: 'text', mime_type: 'application/json', schema: request.schema },
-      store: false, // no server-side history: we never continue a conversation
-    }),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
+  const response = await post(config, request);
   if (response.status === HTTP_TOO_MANY_REQUESTS) {
     throw new QuotaExhaustedError('Gemini quota exhausted (429)');
   }
-  if (!response.ok) {
+  // Only a 400 is about this request; any other error status is about the service.
+  if (response.status === HTTP_BAD_REQUEST) {
     throw new Error(`Gemini HTTP ${response.status}`);
+  }
+  if (!response.ok) {
+    throw new GeminiUnavailableError(`Gemini HTTP ${response.status}`);
   }
   const interaction = (await response.json()) as InteractionResponse;
   return {
@@ -81,6 +80,34 @@ export async function generateJson(
     outputTokens: interaction.usage?.total_output_tokens ?? 0,
     latencyMs: Math.round(performance.now() - startedAt),
   };
+}
+
+/** A network error or timeout means no answer at all: the service is unavailable. */
+async function post(config: GeminiConfig, request: GenerationRequest): Promise<Response> {
+  try {
+    return await fetch(`${config.baseUrl}/v1beta/interactions`, {
+      method: 'POST',
+      headers: {
+        'x-goog-api-key': config.apiKey,
+        'content-type': 'application/json',
+        'api-revision': API_REVISION,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        system_instruction: request.systemInstruction,
+        input: request.input,
+        response_format: { type: 'text', mime_type: 'application/json', schema: request.schema },
+        store: false, // no server-side history: we never continue a conversation
+      }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch (error) {
+    throw new GeminiUnavailableError(`Gemini unreachable: ${errorName(error)}`);
+  }
+}
+
+function errorName(error: unknown): string {
+  return error instanceof Error ? error.name : 'unknown error';
 }
 
 function outputText(interaction: InteractionResponse): string {
