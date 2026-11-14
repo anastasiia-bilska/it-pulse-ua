@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One entry per language page, each listing both (ADR 0019). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://it-pulse-ua.pages.dev/</loc>
+    <changefreq>daily</changefreq>
+    <xhtml:link rel="alternate" hreflang="en" href="https://it-pulse-ua.pages.dev/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://it-pulse-ua.pages.dev/uk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://it-pulse-ua.pages.dev/" />
+  </url>
+  <url>
+    <loc>https://it-pulse-ua.pages.dev/uk</loc>
+    <changefreq>daily</changefreq>
+    <xhtml:link rel="alternate" hreflang="en" href="https://it-pulse-ua.pages.dev/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://it-pulse-ua.pages.dev/uk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://it-pulse-ua.pages.dev/" />
+  </url>
+</urlset>
