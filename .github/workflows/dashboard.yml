@@ -39,10 +39,19 @@ jobs:
       # Order matters: the web build empties dist/site, then the CLI adds aggregates.json to it.
       - run: npm run build:web
       # The latest digest episode's scripts (ADR 0013); none before the first release.
+      # The latest digest episode (ADR 0013): its scripts go into aggregates.json, and its audio is
+      # served from this site. GitHub serves release files as octet-stream downloads, which iOS
+      # Safari refuses to play.
       - name: Latest digest episode
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download --pattern digest.json --dir dist/digest-latest --clobber || echo "no digest episode yet"
+        run: |
+          if gh release download --pattern 'digest*' --dir dist/digest-latest --clobber; then
+            mkdir -p dist/site/digest
+            cp dist/digest-latest/digest-*.mp3 dist/site/digest/
+          else
+            echo "no digest episode yet"
+          fi
       - run: npm run dashboard
       # dist/site carries web/public/_headers, the cache rules Cloudflare Pages applies.
       - uses: cloudflare/wrangler-action@v4

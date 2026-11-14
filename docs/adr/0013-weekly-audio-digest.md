@@ -14,7 +14,9 @@ its credibility.
 
 - **Where:** each episode is a GitHub Release `digest-<ISO week>` (for example `digest-2026-W46`)
   with `digest-uk.mp3`, `digest-en.mp3` and `digest.json` (the scripts). Releases are free and
-  persist across Pages builds. The dashboard plays `releases/latest/download/digest-<lang>.mp3`.
+  persist across Pages builds. The dashboard build copies the latest episode's mp3 files next to
+  the page and plays them from there: GitHub serves release files as `application/octet-stream`
+  attachments, which iOS Safari will not play.
   Every release in this repository is a digest, so "latest" is always the newest episode. The
   dashboard build downloads the latest `digest.json` and puts its week and scripts into
   `aggregates.json` as the transcript; it rebuilds after every digest run. Before the first weekly
