@@ -48,7 +48,22 @@ test('the language switch changes the hero and the player titles', async ({ page
   await expect(page.getByText(/^Тиждень /)).toBeVisible();
 });
 
-// "Ask the market" is still a non-clickable teaser on main; PR #26 turns it into a dialog.
-test.skip('"Ask the market" opens its dialog', () => {
-  // Write once the popup lands (PR #26).
+test('the page opens in English', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('#hero-title')).toHaveText('The pulse of Ukraine’s IT job market');
+});
+
+// The header pill on wide screens, the block at the end of the page on phones: one is visible.
+test('"Ask the market" opens its dialog, and the dialog closes', async ({ page }) => {
+  await page.goto('/');
+
+  await page.getByRole('button', { name: /Ask the market/ }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Ask the market' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('not enough data');
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).toBeHidden();
 });
