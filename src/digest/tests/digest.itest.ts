@@ -71,7 +71,7 @@ function completed(text: string): string {
   });
 }
 
-async function run(): Promise<{ problems: string[]; directory: URL }> {
+async function run(isDryRun = false): Promise<{ problems: string[]; directory: URL }> {
   const directory = pathToFileURL(`${await mkdtemp(path.join(tmpdir(), 'digest-'))}/`);
   const problems = await produceDigest(extractor, {
     week: WEEK,
@@ -79,6 +79,7 @@ async function run(): Promise<{ problems: string[]; directory: URL }> {
     elevenLabs: { apiKey: 'test-key', voiceId: 'test-voice', baseUrl },
     tracer: NO_TRACING,
     outputDirectory: directory,
+    isDryRun,
   });
   return { problems, directory };
 }
@@ -186,4 +187,16 @@ test('a key that may not read its usage still publishes, without the quota check
 
   assert.deepEqual(problems, []);
   assert.equal(existsSync(new URL('digest.json', directory)), true);
+});
+
+test('a rehearsal writes the scripts and speaks nothing', async () => {
+  spoken.length = 0;
+  scriptAnswer = { uk: 'Вакансій 12.', en: '12 vacancies.' };
+
+  const { problems, directory } = await run(true);
+
+  assert.deepEqual(problems, []);
+  assert.deepEqual(spoken, []);
+  assert.equal(existsSync(new URL('rehearsal.json', directory)), true);
+  assert.equal(existsSync(new URL('digest.json', directory)), false);
 });
