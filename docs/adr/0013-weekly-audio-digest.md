@@ -30,7 +30,7 @@ its credibility.
 - **Facts come from code, words from the model.** `src/digest` computes every number the script
   may use: vacancy counts for both weeks, percent changes (rounded to whole numbers), the share of
   vacancies already analysed, the top roles and skills with their counts, and the median USD
-  monthly salary. A value with n below 10 is not passed on at all (the dashboard's «даних замало»
+  monthly salary (EUR and UAH converted at the NBU rate, ADR 0011). A value with n below 10 is not passed on at all (the dashboard's «даних замало»
   rule). The model never does arithmetic.
 - **Script:** one Gemini call (`MODEL` from the extractor) writes both scripts, Ukrainian and
   English, from the same facts. Rules: digits only, no number that is not in the facts, at most

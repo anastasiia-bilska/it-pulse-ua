@@ -23,8 +23,15 @@ server yet; NestJS comes later with the agent.
   shown as its own value, never hidden.
 - **Small samples are suppressed.** A salary group below n = 10 shows «даних замало» instead of
   numbers. The same rule binds the agent later.
-- **Salary** is compared only for USD per month: the range midpoint, as quartiles p25 / median / p75.
-  Mixing currencies or periods would need FX rates and assumptions we don't want in v1.
+- **Salary** is compared in USD per month: the range midpoint, as quartiles p25 / median / p75.
+  - EUR and UAH salaries are converted at the official National Bank of Ukraine rate of the build
+    day (amended 2026-11-16, `src/dashboard/usd-rates.ts`). USD-only had silently dropped about
+    15% of salaries (30 of 196 in the window), mostly UAH. `aggregates.json` carries the rate date.
+  - The same rule feeds the weekly digest.
+  - If the NBU can't be reached, the build falls back to USD only and logs a PROBLEM line, instead
+    of failing.
+  - Hourly and yearly salaries stay out: converting them needs hours-per-month and bonus
+    assumptions, and the extractor has found none so far.
 - **Window**: vacancies seen in the feeds in the last 30 days.
 - **Freshness banner**, the ADR 0007 rule: a backlog over 300 or more than 6h since the last `ok`
   run. The reason is a code (quota, queue, error) the page shows in plain language.

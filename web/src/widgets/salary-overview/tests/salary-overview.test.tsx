@@ -28,7 +28,7 @@ test('a thin level shows how far it is from the threshold, not a number', () => 
 test('a level with no USD salaries says so instead of vanishing', () => {
   renderWithLanguage(<SalaryOverview aggregates={SAMPLE_AGGREGATES} />);
 
-  expect(levelRow('Lead')).toHaveTextContent('Поки немає вакансій із вилкою в USD');
+  expect(levelRow('Lead')).toHaveTextContent('Поки немає вакансій із вилкою');
 });
 
 test('roles below the threshold show progress; a role above it shows its median', () => {

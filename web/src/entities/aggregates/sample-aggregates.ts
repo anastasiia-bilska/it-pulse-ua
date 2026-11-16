@@ -121,6 +121,7 @@ export const SAMPLE_AGGREGATES: Aggregates = {
     { group: 'senior', n: 7, median: null, p25: null, p75: null },
     { group: 'junior', n: 3, median: null, p25: null, p75: null },
   ],
+  salaryRatesDate: '16.11.2026',
   digest: {
     week: { label: '2026-W46', firstDay: '2026-11-09', lastDay: '2026-11-15' },
     scripts: {

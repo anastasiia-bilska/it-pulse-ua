@@ -16,6 +16,7 @@ import {
   type SalaryRow,
   type Share,
 } from './statistics.ts';
+import { fetchUsdRates, rateParameters, usdMonthSalarySql, type UsdRates } from './usd-rates.ts';
 
 // ---- types -------------------------------------------------------------------------------------
 
@@ -49,12 +50,16 @@ const TOP_SKILLS_SQL = `
   order by n desc, value
   limit $2`;
 
-// One salary per vacancy: the midpoint of the range, or the bound that is given.
+// One salary per vacancy, in USD per month (usd-rates.ts); $2 and $3 are the EUR and UAH rates.
 const USD_MONTH_SALARIES_SQL = `
-  select coalesce(role, 'not_stated') as role, coalesce(seniority, 'not_stated') as seniority,
-         (coalesce(salary_min, salary_max) + coalesce(salary_max, salary_min))::float8 / 2 as salary
-  from vacancy_current
-  where ${IN_WINDOW} and salary_currency = 'USD' and salary_period = 'month'`;
+  select role, seniority, salary
+  from (
+    select coalesce(role, 'not_stated') as role, coalesce(seniority, 'not_stated') as seniority,
+           ${usdMonthSalarySql(2)} as salary
+    from vacancy_current
+    where ${IN_WINDOW}
+  ) as converted
+  where salary is not null`;
 
 // The newest run's processed count is not in the view, so it is read from job_run itself.
 const PIPELINE_STATUS_SQL = `
@@ -82,7 +87,8 @@ async function buildDashboard(): Promise<void> {
 }
 
 async function computeAggregates(db: pg.Client): Promise<Aggregates> {
-  const salaries = await usdMonthSalaries(db);
+  const rates = await fetchUsdRates();
+  const salaries = await usdMonthSalaries(db, rates);
   return {
     generatedAt: new Date().toISOString(),
     windowDays: WINDOW_DAYS,
@@ -93,6 +99,7 @@ async function computeAggregates(db: pg.Client): Promise<Aggregates> {
     topSkills: await topSkills(db),
     salaryUsdMonthByRole: salaryTable(salaries, 'role'),
     salaryUsdMonthBySeniority: salaryTable(salaries, 'seniority'),
+    salaryRatesDate: rates?.date ?? null,
     digest: await readLatestDigest(),
   };
 }
@@ -128,10 +135,11 @@ async function topSkills(db: pg.Client): Promise<Count[]> {
 
 async function usdMonthSalaries(
   db: pg.Client,
+  rates: UsdRates | null,
 ): Promise<{ role: string; seniority: string; salary: number }[]> {
   const { rows } = await db.query<{ role: string; seniority: string; salary: number }>(
     USD_MONTH_SALARIES_SQL,
-    [WINDOW_DAYS],
+    [WINDOW_DAYS, ...rateParameters(rates)],
   );
   return rows;
 }
