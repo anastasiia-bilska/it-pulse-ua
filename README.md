@@ -32,7 +32,7 @@ labelled, and the agent is planned.
 | End-to-end tests in Chromium and WebKit on the production build (ADR 0017)               | Done        |
 | Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
 | «Запитай ринок» agent core: fixed SQL tools, number guard, `npm run ask` (ADR 0021)      | Done        |
-| «Запитай ринок» Worker endpoint and dashboard widget                                     | Planned     |
+| «Запитай ринок» endpoint (Pages Function, daily caps) and dashboard widget               | Done        |
 | Weekly audio digest in Ukrainian and English, number-guarded (ADR 0013)                  | In progress |
 | Wave 2: CV match, MCP server                                                             | Planned     |
 
@@ -195,9 +195,11 @@ src/
   observability/ Langfuse traces and datasets
   evaluation/    eval set sampling, scoring; run-eval.ts is the eval CLI
   dashboard/     public aggregates for the web dashboard
-  agent/         «Запитай ринок»: plan → SQL tools → guarded answer; ask.ts is the CLI
+  agent/         «Запитай ринок»: plan → SQL tools → guarded answer; ask.ts is the CLI,
+                 ask-endpoint.ts serves POST /api/ask
   shared/        scheduled-job runner, healthchecks.io pings, number guard
   <module>/tests/  *.test.ts (unit), *.itest.ts (integration)
+functions/       Cloudflare Pages Functions: api/ask.ts wires the agent endpoint (ADR 0021)
 web/             the dashboard: React + Vite (ADR 0014)
   src/           app → pages → widgets → features → entities → shared
 db/migrations/   plain SQL, applied in order
@@ -232,3 +234,4 @@ CLAUDE.md        engineering rules for people and AI agents
 | [0014](docs/adr/0014-web-app-react-fsd.md)               | Web app: React + Vite, Feature-Sliced layers, own fonts     |
 | [0015](docs/adr/0015-cloudflare-pages-hosting.md)        | Host the dashboard on Cloudflare Pages, with cache headers  |
 | [0017](docs/adr/0017-e2e-tests.md)                       | End-to-end tests in real browsers with Playwright           |
+| [0021](docs/adr/0021-ask-the-market-agent.md)            | «Запитай ринок»: fixed SQL tools, a public Pages Function   |

@@ -64,8 +64,18 @@ check_digest_audio() {
   done
 }
 
+# The /api/ask function is deployed and answers (ADR 0021). A malformed question is refused before
+# any quota row or Gemini call, so the check costs nothing.
+check_ask_endpoint() {
+  local status
+  status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' \
+    -d '{"question": "", "language": "en"}' "$site/api/ask") || fail 'api/ask is unreachable'
+  [ "$status" = 400 ] || fail "api/ask answered a malformed question with $status, expected 400"
+}
+
 wait_for_this_build
 check_page
 check_aggregates
 check_digest_audio
+check_ask_endpoint
 echo "smoke ok: $site"

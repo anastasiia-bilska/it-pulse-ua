@@ -95,15 +95,15 @@ const SKILL_DEMAND_SQL = `
 
 // ---- functions ---------------------------------------------------------------------------------
 
-/** `usdRates` null (NBU unreachable) leaves USD salaries only, and the facts say so. */
+/** Rates load only for a salary question; null (NBU unreachable) leaves USD salaries only. */
 export async function runTool(
   db: pg.Client,
   plan: ToolPlan,
-  usdRates: UsdRates | null,
+  loadUsdRates: () => Promise<UsdRates | null>,
 ): Promise<ToolResult> {
   switch (plan.tool) {
     case 'salary': {
-      return salary(db, plan.filters, usdRates);
+      return salary(db, plan.filters, await loadUsdRates());
     }
     case 'top_skills': {
       return topSkills(db, plan.filters);

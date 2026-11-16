@@ -1,2 +1,2 @@
-// Public API of the ask-market feature (a teaser until the agent ships).
-export { AskMarketTeaser } from './ask-market-teaser.tsx';
+// Public API of the ask-market feature: the «Запитай ринок» button and its dialog (ADR 0021).
+export { AskMarket } from './ask-market.tsx';

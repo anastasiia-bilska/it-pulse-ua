@@ -76,7 +76,7 @@ async function ask(plan: object, answers: string[] = []): Promise<MarketAnswer> 
   return askMarket(extractor, 'синтетичне питання', {
     gemini: { apiKey: 'test-key', model: 'gemini-test', baseUrl },
     tracer: NO_TRACING,
-    usdRates: USD_RATES,
+    loadUsdRates: () => Promise.resolve(USD_RATES),
     now: new Date(),
   });
 }
