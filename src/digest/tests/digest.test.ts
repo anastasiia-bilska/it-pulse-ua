@@ -78,7 +78,7 @@ test('a made-up number is caught', () => {
 });
 
 test('the dates of the week are allowed, other dates are not', () => {
-  assert.ok(allowedNumbers(FACTS).has('2026'));
+  assert.ok(allowedNumbers(FACTS).includes(2026));
   assert.deepEqual(findUnknownNumbers('Наступний випуск 23 листопада.', FACTS), ['23']);
 });
 

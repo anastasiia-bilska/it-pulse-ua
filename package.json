@@ -26,6 +26,8 @@
     "preview:web": "vite preview web",
     "test:web": "vitest run --config web/vite.config.ts",
     "digest": "node --env-file-if-exists=.env src/digest/digest.ts",
+    "ask": "node --env-file-if-exists=.env src/agent/ask.ts",
+    "eval:planner": "node --env-file-if-exists=.env src/agent/eval-planner.ts",
     "test:e2e": "npm run build:web && node web/e2e/prepare-site.ts && playwright test -c web/playwright.config.ts"
   },
   "dependencies": {

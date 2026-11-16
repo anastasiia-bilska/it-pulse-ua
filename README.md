@@ -31,7 +31,8 @@ labelled, and the agent is planned.
 | Eval harness and PR gate (ADR 0012)                                                      | Done        |
 | End-to-end tests in Chromium and WebKit on the production build (ADR 0017)               | Done        |
 | Uploading and labelling the eval set; first baseline and the gate threshold              | In progress |
-| «Запитай ринок» agent, with a mandatory "даних замало" answer when n < 10                | Planned     |
+| «Запитай ринок» agent core: fixed SQL tools, number guard, `npm run ask` (ADR 0020)      | Done        |
+| «Запитай ринок» Worker endpoint and dashboard widget                                     | Planned     |
 | Weekly audio digest in Ukrainian and English, number-guarded (ADR 0013)                  | In progress |
 | Wave 2: CV match, MCP server                                                             | Planned     |
 
@@ -194,7 +195,8 @@ src/
   observability/ Langfuse traces and datasets
   evaluation/    eval set sampling, scoring; run-eval.ts is the eval CLI
   dashboard/     public aggregates for the web dashboard
-  shared/        scheduled-job runner: DB connection, healthchecks.io pings
+  agent/         «Запитай ринок»: plan → SQL tools → guarded answer; ask.ts is the CLI
+  shared/        scheduled-job runner, healthchecks.io pings, number guard
   <module>/tests/  *.test.ts (unit), *.itest.ts (integration)
 web/             the dashboard: React + Vite (ADR 0014)
   src/           app → pages → widgets → features → entities → shared
