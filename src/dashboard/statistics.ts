@@ -54,6 +54,8 @@ export type StaleReason = 'quota' | 'backlog' | 'failing' | 'never';
 
 /** Below this many vacancies a statistic is not shown: "даних замало" (owner's rule). */
 export const MIN_N = 10;
+/** Vacancies seen in the feeds within this window count as current (dashboard and agent). */
+export const WINDOW_DAYS = 30;
 /** ADR 0007: the banner shows when the queue is longer than one run can take… */
 const STALE_BACKLOG = 300;
 /** …or when the last successful extraction run is older than this. */

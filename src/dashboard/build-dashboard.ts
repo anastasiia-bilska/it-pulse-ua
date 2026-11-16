@@ -15,6 +15,7 @@ import {
   type PipelineStatus,
   type SalaryRow,
   type Share,
+  WINDOW_DAYS,
 } from './statistics.ts';
 import { fetchUsdRates, rateParameters, usdMonthSalarySql, type UsdRates } from './usd-rates.ts';
 
@@ -30,8 +31,6 @@ interface PipelineStatusRow {
 
 // ---- constants ---------------------------------------------------------------------------------
 
-/** Vacancies seen in the feeds within this window count as current. */
-const WINDOW_DAYS = 30;
 const TOP_SKILLS = 30;
 const OUTPUT_DIRECTORY = new URL('../../dist/site/', import.meta.url);
 
