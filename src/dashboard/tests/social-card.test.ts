@@ -30,6 +30,7 @@ function aggregatesWith(overrides: Partial<Aggregates>): Aggregates {
     ],
     salaryUsdMonthByRole: [],
     salaryUsdMonthBySeniority: [],
+    salaryRatesDate: null,
     digest: null,
     ...overrides,
   };

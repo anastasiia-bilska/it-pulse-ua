@@ -11,3 +11,4 @@ export type {
   Share,
   StaleReason,
 } from './statistics.ts';
+export { fetchUsdRates, rateParameters, usdMonthSalarySql, type UsdRates } from './usd-rates.ts';
