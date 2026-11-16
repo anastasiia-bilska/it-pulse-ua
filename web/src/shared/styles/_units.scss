@@ -1,6 +1,6 @@
-// Sizes are written in the design's px and compiled to rem, so text and spacing follow the
-// reader's browser font size. Hairlines (borders, rings, under 4px) stay in px on purpose: they
-// should stay crisp, not grow.
+// Every size, hairlines included, is written in the design's px through rem() and compiles to
+// rem, so the whole page scales with the reader's browser font size (ADR 0022). A guard test
+// fails on any raw px in a stylesheet.
 @use 'sass:math';
 
 $root-font-size: 16px;

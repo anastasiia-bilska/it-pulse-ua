@@ -1,7 +1,7 @@
 @use '../../shared/styles/units' as *;
 
 .footer {
-  border-top: 1px solid var(--color-rule);
+  border-top: rem(1px) solid var(--color-rule);
 }
 
 .inner {

@@ -1,4 +1,4 @@
-// Sticky header: brand, section links, the agent teaser, language and GitHub. On phones the links
+// Sticky header: brand, section links, the «Запитай ринок» button, language and GitHub. On phones the links
 // collapse into the burger menu.
 import type { ReactElement } from 'react';
 import { AskMarket } from '../../features/ask-market/index.ts';

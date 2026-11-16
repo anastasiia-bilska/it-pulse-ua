@@ -26,3 +26,23 @@ test('play starts the audio and turns the button into pause', async ({ page }) =
     .poll(() => audio.evaluate((element: HTMLAudioElement) => element.currentTime))
     .toBeGreaterThan(0);
 });
+
+test('the wave seeks and the speed button changes the playback rate', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
+  const audio = page.locator('audio');
+  const seek = page.getByRole('slider', { name: 'Seek the episode' });
+  await expect
+    .poll(() => audio.evaluate((element: HTMLAudioElement) => element.duration))
+    .toBeGreaterThan(0);
+
+  await seek.focus();
+  await page.keyboard.press('End');
+  await page.getByRole('button', { name: 'Speed 1×' }).click();
+
+  await expect
+    .poll(() => audio.evaluate((element: HTMLAudioElement) => element.currentTime))
+    .toBeGreaterThan(0);
+  await expect(page.getByRole('button', { name: 'Speed 1.25×' })).toBeVisible();
+  expect(await audio.evaluate((element: HTMLAudioElement) => element.playbackRate)).toBe(1.25);
+});

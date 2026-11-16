@@ -32,7 +32,7 @@
 
 .primary:active {
   background: var(--color-pulse-pressed);
-  transform: translateY(1px);
+  transform: translateY(rem(1px));
 }
 
 .primary:disabled {
@@ -44,7 +44,7 @@
 .icon {
   background: transparent;
   color: var(--color-text);
-  border: 1px solid var(--color-border-strong);
+  border: rem(1px) solid var(--color-border-strong);
 }
 
 .secondary:hover,
@@ -76,7 +76,7 @@
   font-size: rem(14px);
   background: transparent;
   color: var(--color-error-title);
-  border: 1px solid var(--color-error-action);
+  border: rem(1px) solid var(--color-error-action);
 }
 
 .danger:hover {

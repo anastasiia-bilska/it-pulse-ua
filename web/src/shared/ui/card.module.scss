@@ -7,7 +7,7 @@
   gap: rem(18px);
   padding: clamp(rem(16px), 2.4vw, rem(24px));
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: rem(1px) solid var(--color-border);
   border-radius: var(--radius-card);
 }
 

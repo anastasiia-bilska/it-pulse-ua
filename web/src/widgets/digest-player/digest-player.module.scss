@@ -68,8 +68,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-pulse);
-    outline-offset: 3px;
+    outline: rem(2px) solid var(--color-pulse);
+    outline-offset: rem(3px);
   }
 
   &:disabled {
@@ -87,7 +87,15 @@
   gap: var(--space-2);
 }
 
+.trackHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .trackTitle {
+  min-width: 0;
   font-size: rem(14px);
   font-weight: 600;
   color: var(--color-faint);
@@ -106,14 +114,62 @@
 .bars {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: rem(3px);
   height: 100%;
 }
 
 .bars span {
   flex: 1;
-  border-radius: 2px;
+  border-radius: rem(2px);
   background: var(--color-surface-3);
+}
+
+/* A native range stretched over the wave and made invisible: the bars are its look, the input
+   is its behaviour. The focus ring goes on the wave, since the input itself can't be seen. */
+.seek {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.wave:has(.seek:focus-visible) {
+  outline: rem(2px) solid var(--color-pulse);
+  outline-offset: rem(4px);
+  border-radius: rem(4px);
+}
+
+.speed {
+  flex: none;
+  min-width: rem(52px);
+  padding: rem(4px) rem(10px);
+  border: rem(1px) solid var(--color-surface-3);
+  border-radius: rem(999px);
+  background: transparent;
+  color: var(--color-text);
+  font: 600 rem(13px) / 1 var(--font-mono);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-pulse);
+  }
+
+  &:focus-visible {
+    outline: rem(2px) solid var(--color-pulse);
+    outline-offset: rem(2px);
+  }
+
+  &:disabled {
+    color: var(--color-disabled);
+    cursor: not-allowed;
+  }
 }
 
 /* The same bars in the accent, cut at the played fraction. The edge moves smoothly through a bar
@@ -136,12 +192,12 @@
     cursor: pointer;
     font-weight: 600;
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: rem(3px);
   }
 
   summary:focus-visible {
-    outline: 2px solid var(--color-ink);
-    outline-offset: 2px;
+    outline: rem(2px) solid var(--color-ink);
+    outline-offset: rem(2px);
   }
 
   p {
@@ -178,6 +234,6 @@
   }
 
   .bars {
-    gap: 2px;
+    gap: rem(2px);
   }
 }
