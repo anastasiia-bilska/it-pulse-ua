@@ -20,8 +20,7 @@ export async function runScheduledJob(
   work: (db: pg.Client) => Promise<string[]>,
 ): Promise<void> {
   const pingUrl = healthchecksUrlFromEnvironment();
-  const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
-  await db.connect();
+  const db = await connectOrAlert(jobName, pingUrl);
   try {
     const problems = await work(db);
     for (const problem of problems) {
@@ -33,6 +32,23 @@ export async function runScheduledJob(
     throw error;
   } finally {
     await db.end();
+  }
+}
+
+/**
+ * A database that is down must alert at once too, not only show as a missing heartbeat. Kept out
+ * of the main `try`: `end()` on a client that never connected is not safe to await.
+ */
+async function connectOrAlert(jobName: string, pingUrl: string | undefined): Promise<pg.Client> {
+  const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  try {
+    await db.connect();
+    return db;
+  } catch (error) {
+    await pingHealthchecks(pingUrl, [
+      `${jobName} could not connect to the database: ${String(error)}`,
+    ]);
+    throw error;
   }
 }
 

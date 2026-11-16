@@ -3,6 +3,8 @@ import { runScheduledJob } from '../shared/index.ts';
 import { findProblems } from './checks.ts';
 import { collectAll, type Feed, type Summary } from './ingest.ts';
 
+// ---- constants ---------------------------------------------------------------------------------
+
 // From the category <select> on jobs.dou.ua/vacancies/. Recheck occasionally.
 const DOU_CATEGORIES = [
   '.NET',
@@ -66,23 +68,24 @@ const DOU_CATEGORIES = [
   'Військова справа',
 ];
 
+// Order matters: Djinni's single feed goes first, so a slow, failing DOU can't starve it.
 const FEEDS: Feed[] = [
+  // The general Djinni feed carries <category> tags.
+  // Switch to ?primary_keyword=X feeds if fetch_log shows gaps.
+  { source: 'djinni', feed: 'djinni:all', url: 'https://djinni.co/jobs/rss/' },
   ...DOU_CATEGORIES.map((category) => ({
     source: 'dou' as const,
     feed: `dou:${category}`,
     url: `https://jobs.dou.ua/vacancies/feeds/?category=${encodeURIComponent(category)}`,
   })),
-  // The general Djinni feed carries <category> tags.
-  // Switch to ?primary_keyword=X feeds if fetch_log shows gaps.
-  { source: 'djinni', feed: 'djinni:all', url: 'https://djinni.co/jobs/rss/' },
 ];
-
-// ---- constants ---------------------------------------------------------------------------------
 
 const POLITE_DELAY_MS = 1000;
 const RETRY_BASE_MS = 5000;
 /** The run itself fails (and GitHub emails) only when most feeds are down. */
 const MAX_FAILED_SHARE = 0.5;
+
+// ---- functions ---------------------------------------------------------------------------------
 
 async function collect(db: pg.Client): Promise<string[]> {
   const summary = await collectAll(db, FEEDS, {
@@ -107,5 +110,7 @@ function summaryLine(summary: Summary): string {
     `gaps=${summary.gapFeeds.length}`,
   ].join(' ');
 }
+
+// ---- entry point -------------------------------------------------------------------------------
 
 await runScheduledJob('collector', collect);

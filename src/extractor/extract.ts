@@ -12,7 +12,7 @@ import {
 } from './extract-pending.ts';
 import { GEMINI_BASE_URL } from './gemini.ts';
 import { MODEL } from './prompt.ts';
-import { recordJobRun } from './repository.ts';
+import { recordJobRun, type JobRunRecord } from './repository.ts';
 
 // ---- constants ---------------------------------------------------------------------------------
 
@@ -40,13 +40,20 @@ async function extract(db: pg.Client): Promise<string[]> {
   const unknownSkills = await resolveSkills(db);
   await recordJobRun(db, {
     startedAt,
-    status: report.stoppedByQuota ? 'quota_exhausted' : 'ok',
+    status: jobStatus(report),
     processed: report.processed,
     failed: report.failed,
     backlog: report.backlog,
   });
   console.log(`${summaryLine(report)} unknown_skills=${unknownSkills}`);
   return findRunProblems(db, report);
+}
+
+function jobStatus(report: RunReport): JobRunRecord['status'] {
+  if (report.stoppedByOutage) {
+    return 'error';
+  }
+  return report.stoppedByQuota ? 'quota_exhausted' : 'ok';
 }
 
 function requiredEnvironment(name: string): string {
@@ -75,6 +82,7 @@ function summaryLine(report: RunReport): string {
     `processed=${report.processed}`,
     `failed=${report.failed}`,
     `quota_stop=${report.stoppedByQuota}`,
+    `outage_stop=${report.stoppedByOutage}`,
     `backlog=${report.backlog}`,
     `hallucination_dropped=${dropped}`,
   ].join(' ');

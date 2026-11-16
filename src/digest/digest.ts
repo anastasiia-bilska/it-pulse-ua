@@ -1,7 +1,7 @@
 // CLI entry point of the weekly audio digest (GitHub Actions, Mondays; ADR 0013).
 import type pg from 'pg';
 import { fetchUsdRates } from '../dashboard/index.ts';
-import { GEMINI_BASE_URL, MODEL } from '../extractor/index.ts';
+import { GEMINI_BASE_URL } from '../extractor/index.ts';
 import { tracerFromEnvironment } from '../observability/index.ts';
 import { runScheduledJob } from '../shared/index.ts';
 import { ELEVENLABS_BASE_URL } from './elevenlabs.ts';
@@ -12,6 +12,11 @@ import { produceDigest } from './produce-digest.ts';
 
 /** "Daniel", a premade library voice for both languages, chosen by the owner from samples. */
 const VOICE_ID = 'onwK4e9ZLuTAKqWW03F9';
+/**
+ * Pinned on its own, not borrowed from the extractor: an extraction model change passes the
+ * extraction eval gate, which says nothing about the digest's scripts.
+ */
+const SCRIPT_MODEL = 'gemini-3.5-flash-lite';
 const OUTPUT_DIRECTORY = new URL('../../dist/digest/', import.meta.url);
 
 // ---- functions ---------------------------------------------------------------------------------
@@ -23,7 +28,7 @@ async function digest(db: pg.Client): Promise<string[]> {
       week: weekToReport(),
       gemini: {
         apiKey: requiredEnvironment('GEMINI_API_KEY'),
-        model: MODEL,
+        model: SCRIPT_MODEL,
         baseUrl: process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL,
       },
       elevenLabs: {

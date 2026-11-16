@@ -27,6 +27,7 @@ const NAMED_ENTITIES: Record<string, string> = {
 const BLOCK_TAG = /<\/?(?:p|div|br|li|ul|ol|h[1-6]|tr|table|section)\b[^>]*>/gi;
 const ANY_TAG = /<[^>]*>/g;
 const ENTITY = /&(#x[\da-f]+|#\d+|[a-z]+);/gi;
+const MAX_CODE_POINT = 0x10_ff_ff;
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -51,10 +52,15 @@ export function htmlToText(html: string): string {
 
 function decodeEntity(code: string): string | undefined {
   if (code.startsWith('#x') || code.startsWith('#X')) {
-    return String.fromCodePoint(Number.parseInt(code.slice(2), 16));
+    return codePointToText(Number.parseInt(code.slice(2), 16));
   }
   if (code.startsWith('#')) {
-    return String.fromCodePoint(Number(code.slice(1)));
+    return codePointToText(Number(code.slice(1)));
   }
   return NAMED_ENTITIES[code.toLowerCase()];
+}
+
+/** `&#99999999;` is no character: keep it as text instead of failing the whole vacancy. */
+function codePointToText(codePoint: number): string | undefined {
+  return codePoint <= MAX_CODE_POINT ? String.fromCodePoint(codePoint) : undefined;
 }
