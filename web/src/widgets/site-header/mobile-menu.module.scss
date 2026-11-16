@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: rem(10px) rem(16px);
-  border-bottom: 1px solid var(--color-rule);
+  border-bottom: rem(1px) solid var(--color-rule);
 }
 
 .nav {
@@ -44,7 +44,7 @@
   align-items: center;
   gap: rem(14px);
   padding: rem(14px) 0;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: rem(1px) solid var(--color-divider);
   color: var(--color-text);
   text-decoration: none;
 }
@@ -86,7 +86,7 @@
   padding: rem(14px) rem(16px);
   border-radius: rem(16px);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: rem(1px) solid var(--color-border);
   font-weight: 600;
 }
 
@@ -100,5 +100,5 @@
   align-items: center;
   justify-content: space-between;
   padding: rem(14px) rem(16px) rem(24px);
-  border-top: 1px solid var(--color-rule);
+  border-top: rem(1px) solid var(--color-rule);
 }

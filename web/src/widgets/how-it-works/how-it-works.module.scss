@@ -23,7 +23,7 @@
   gap: rem(10px);
   padding: var(--space-5);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: rem(1px) solid var(--color-border);
   border-radius: var(--radius-card);
 }
 
@@ -58,7 +58,7 @@
   gap: var(--space-2);
   padding: rem(10px) rem(16px);
   border-radius: var(--radius-pill);
-  border: 1px solid #2e3440;
+  border: rem(1px) solid #2e3440;
   font-size: rem(14px);
   color: var(--color-text-2);
 }
@@ -81,7 +81,7 @@
   }
 
   .stepText {
-    gap: 2px;
+    gap: rem(2px);
   }
 
   .stepBody {

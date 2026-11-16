@@ -40,7 +40,7 @@ modular frontend (features, shared and so on).
   - Sizes are written in the design's px through `rem()` (`shared/styles/_units.scss`) and
     compile to rem, so type and spacing follow the reader's browser font size.
   - Media queries are in em for the same reason.
-  - Hairlines under 4px (borders, focus ring) stay in px so they stay crisp. Design tokens are CSS custom properties in
+  - Hairlines go through `rem()` too, superseded by [ADR 0022](0022-rem-for-every-size.md). Design tokens are CSS custom properties in
     `app/styles/tokens.scss`. Dark theme only, as designed.
 - **Fonts, self-hosted** (Unbounded, Inter, JetBrains Mono; variable woff2 from
   `@fontsource-variable`).

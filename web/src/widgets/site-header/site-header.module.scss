@@ -6,8 +6,8 @@
   top: 0;
   z-index: 10;
   background: rgb(12 14 18 / 92%);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--color-rule);
+  backdrop-filter: blur(rem(8px));
+  border-bottom: rem(1px) solid var(--color-rule);
 }
 
 .inner {

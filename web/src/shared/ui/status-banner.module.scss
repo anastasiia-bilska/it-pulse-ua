@@ -7,13 +7,13 @@
   gap: var(--space-3) var(--space-4);
   padding: rem(16px) rem(20px);
   border-radius: var(--radius-banner);
-  border: 1px solid;
+  border: rem(1px) solid;
 }
 
 .icon {
   flex: none;
   display: flex;
-  margin-top: 1px;
+  margin-top: rem(1px);
 }
 
 .body {

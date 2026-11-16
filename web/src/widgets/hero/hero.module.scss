@@ -23,7 +23,7 @@ $sweep: 2.8s;
   height: rem(8px);
   border-radius: 50%;
   background: var(--color-pulse);
-  box-shadow: 0 0 0 4px var(--color-pulse-glow);
+  box-shadow: 0 0 0 rem(4px) var(--color-pulse-glow);
   // Same rate as the sweep of the pulse line.
   animation: ping $sweep ease-out infinite;
 }
@@ -55,7 +55,7 @@ $sweep: 2.8s;
   stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 4px var(--color-pulse));
+  filter: drop-shadow(0 0 rem(4px) var(--color-pulse));
   /* One tile per line width, repeated: the head is the tile's bright right edge; behind it the
      trace fades to a faint trail; the tile's first few percent are the erased gap ahead of the
      head, over the previous sweep. Sliding the tile one width is one sweep. */
@@ -93,7 +93,7 @@ $sweep: 2.8s;
 
   60%,
   100% {
-    box-shadow: 0 0 0 8px transparent;
+    box-shadow: 0 0 0 rem(8px) transparent;
   }
 }
 
