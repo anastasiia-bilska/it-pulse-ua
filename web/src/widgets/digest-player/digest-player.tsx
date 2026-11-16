@@ -164,7 +164,7 @@ function Scrubber({
         className={styles.seek}
         min={0}
         max={0}
-        step={1}
+        step="any"
         defaultValue={0}
         disabled={isDisabled}
         aria-label={messages.digest.seek}

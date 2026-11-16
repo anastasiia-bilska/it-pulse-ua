@@ -46,3 +46,23 @@ test('the wave seeks and the speed button changes the playback rate', async ({ p
   await expect(page.getByRole('button', { name: 'Speed 1.25×' })).toBeVisible();
   expect(await audio.evaluate((element: HTMLAudioElement) => element.playbackRate)).toBe(1.25);
 });
+
+test('a click on the wave seeks to that spot, not to the nearest whole second', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const audio = page.locator('audio');
+  const seek = page.getByRole('slider');
+  await expect
+    .poll(() => audio.evaluate((element: HTMLAudioElement) => element.duration))
+    .toBeGreaterThan(0);
+  const box = await seek.boundingBox();
+  const duration = await audio.evaluate((element: HTMLAudioElement) => element.duration);
+
+  await seek.click({ position: { x: (box?.width ?? 0) * 0.9, y: (box?.height ?? 0) / 2 } });
+
+  const time = await audio.evaluate((element: HTMLAudioElement) => element.currentTime);
+  // The thumb's width insets the track a little, so allow a margin. A whole-second step would land on 4.
+  expect(time).toBeGreaterThan(duration * 0.8);
+  expect(time).toBeLessThan(duration * 0.95);
+});
