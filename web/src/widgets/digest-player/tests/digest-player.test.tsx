@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 import type { DigestEpisode } from '../../../entities/aggregates/index.ts';
 import { LanguageSwitch } from '../../../features/switch-language/index.ts';
@@ -26,6 +26,14 @@ function fakePlayback(): void {
     this.dispatchEvent(new Event('play'));
     return Promise.resolve();
   });
+}
+
+function audio(): HTMLAudioElement {
+  const element = document.querySelector('audio');
+  if (!element) {
+    throw new Error('no audio element');
+  }
+  return element;
 }
 
 function audioSource(): string | null {
@@ -80,4 +88,35 @@ test('the trailer, which has no week, is named as the trailer', () => {
   renderWithLanguage(<DigestPlayer episode={{ ...EPISODE, week: null }} />);
 
   expect(screen.getByText('Трейлер · перший випуск у понеділок')).toBeInTheDocument();
+});
+
+test('the speed button cycles faster, then slower, then back to normal', async () => {
+  const { user } = renderWithLanguage(<DigestPlayer episode={EPISODE} />);
+  const speed = screen.getByRole('button', { name: 'Швидкість 1×' });
+
+  await user.click(speed);
+  await user.click(speed);
+
+  expect(screen.getByRole('button', { name: 'Швидкість 1,5×' })).toBeEnabled();
+  expect(audio().playbackRate).toBe(1.5);
+});
+
+test('moving the slider over the wave seeks the audio', () => {
+  renderWithLanguage(<DigestPlayer episode={EPISODE} />);
+  Object.defineProperty(audio(), 'duration', { value: 120 });
+  fireEvent.durationChange(audio());
+
+  fireEvent.change(screen.getByRole('slider', { name: 'Перемотати випуск' }), {
+    target: { value: '30' },
+  });
+
+  expect(audio().currentTime).toBe(30);
+  expect(screen.getByRole('slider')).toHaveAttribute('aria-valuetext', '0:30 / 2:00');
+});
+
+test('before the first episode there is nothing to seek or speed up', () => {
+  renderWithLanguage(<DigestPlayer episode={null} />);
+
+  expect(screen.getByRole('slider')).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Швидкість 1×' })).toBeDisabled();
 });
