@@ -55,6 +55,12 @@ from CI (ADR 0018).
   refused question is not recorded. Over a cap the reply is a fixed "limit reached" text (HTTP 429);
   a spent Gemini quota is a fixed "busy" text (503). The check-then-insert can let a burst go one or
   two over a cap, which is harmless; a strict cap would need a lock.
+- **What the page draws:** next to the text the endpoint returns n, the window and, for a
+  distribution or top skills, the five leading values with their n and percent. They are the tool's
+  own facts, aggregates only like the dashboard (ADR 0011), and the page draws them with the
+  dashboard's bars. Salary and a single skill's demand are one figure, so the text alone says them.
+  The SQL itself is not shown: it is parameterised, and the n next to every answer is what lets a
+  reader judge it.
 - **Secrets** (`DATABASE_URL` as the `agent` role, `GEMINI_API_KEY` from its own Google Cloud
   project (see Consequences), `ASK_CLIENT_SALT`, optional
   Langfuse keys) are uploaded to the Pages project by `dashboard.yml` before each deploy. The smoke

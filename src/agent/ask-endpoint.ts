@@ -2,7 +2,7 @@
 // Function next to the dashboard, so the page calls it on its own origin. Order matters: the
 // question is validated and the caps are claimed before anything spends Gemini quota.
 import pg from 'pg';
-import { fetchUsdRates } from '../dashboard/index.ts';
+import { fetchUsdRates, MIN_N } from '../dashboard/index.ts';
 import { GEMINI_BASE_URL, MODEL, QuotaExhaustedError } from '../extractor/index.ts';
 import {
   createLangfuseTracer,
@@ -11,8 +11,9 @@ import {
   type Tracer,
 } from '../observability/index.ts';
 import { askMarket, isValidQuestion, type MarketAnswer } from './ask-market.ts';
-import { LANGUAGES, type Language } from './plan.ts';
+import { LANGUAGES, type Dimension, type Language } from './plan.ts';
 import { claimQuestion, hashClient, type QuotaVerdict } from './quota.ts';
+import type { Facts, Part } from './tools.ts';
 
 // ---- types -------------------------------------------------------------------------------------
 
@@ -35,10 +36,25 @@ export interface AskContext {
   waitUntil: (promise: Promise<unknown>) => void;
 }
 
-/** What the page receives: the kind drives the styling, the text is shown as is. */
+/**
+ * What the page receives: the kind drives the styling, the text is shown as is. The numbers next to
+ * it are the tool's own facts, aggregates only (ADR 0011), so the page can draw them as bars.
+ */
 export interface AskResponse {
   kind: MarketAnswer['kind'] | 'limit' | 'busy' | 'invalid' | 'error';
   text: string;
+  /** How many vacancies the numbers rest on: answered and insufficient replies only. */
+  n?: number;
+  /** The «даних замало» threshold n is short of: insufficient replies only. */
+  minN?: number;
+  windowDays?: number;
+  chart?: AskChart;
+}
+
+/** A distribution (its dimension's codes) or top skills (dimension null: names as they are). */
+export interface AskChart {
+  dimension: Dimension | null;
+  bars: Part[];
 }
 
 interface AskBody {
@@ -47,6 +63,9 @@ interface AskBody {
 }
 
 // ---- constants ---------------------------------------------------------------------------------
+
+/** The widget shows the leaders; the model's text may mention a few more. */
+const CHART_BARS = 5;
 
 const HTTP_OK = 200;
 const HTTP_BAD_REQUEST = 400;
@@ -117,7 +136,38 @@ async function answer(
     loadUsdRates: () => fetchUsdRates(),
     now: new Date(),
   });
-  return reply(HTTP_OK, { kind: marketAnswer.kind, text: marketAnswer.text });
+  return reply(HTTP_OK, toResponse(marketAnswer));
+}
+
+function toResponse(answer: MarketAnswer): AskResponse {
+  if (answer.kind === 'insufficient') {
+    return { kind: answer.kind, text: answer.text, n: answer.n, minN: MIN_N };
+  }
+  if (answer.kind !== 'answered') {
+    return { kind: answer.kind, text: answer.text };
+  }
+  const { facts } = answer;
+  const n = facts.tool === 'salary' ? facts.n : facts.analysed;
+  const chart = chartOf(facts);
+  return {
+    kind: answer.kind,
+    text: answer.text,
+    n,
+    windowDays: facts.windowDays,
+    ...(chart && { chart }),
+  };
+}
+
+/** Salary and a single skill's demand are one figure each: the text says it, no bars. */
+function chartOf(facts: Facts): AskChart | undefined {
+  if (facts.tool === 'distribution') {
+    return { dimension: facts.dimension, bars: facts.parts.slice(0, CHART_BARS) };
+  }
+  // Vacancies with no resolved skill yet: nothing to draw.
+  if (facts.tool === 'top_skills' && facts.skills.length > 0) {
+    return { dimension: null, bars: facts.skills.slice(0, CHART_BARS) };
+  }
+  return undefined;
 }
 
 /** Malformed input is a refusal, never an exception: the boundary validates. */

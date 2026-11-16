@@ -7,9 +7,15 @@ import { AskMarket } from '../index.ts';
 
 // ---- functions ---------------------------------------------------------------------------------
 
-/** The endpoint answers with this {kind, text} and HTTP status. */
-function stubEndpoint(kind: string, text: string, status = 200): ReturnType<typeof vi.fn> {
-  const endpoint = vi.fn(() => Promise.resolve(Response.json({ kind, text }, { status })));
+/** The endpoint answers with this {kind, text, …numbers} and HTTP status. */
+function stubEndpoint(
+  kind: string,
+  text: string,
+  { status = 200, ...numbers }: Record<string, unknown> = {},
+): ReturnType<typeof vi.fn> {
+  const endpoint = vi.fn(() =>
+    Promise.resolve(Response.json({ kind, text, ...numbers }, { status: Number(status) })),
+  );
   vi.stubGlobal('fetch', endpoint);
   return endpoint;
 }
@@ -52,8 +58,48 @@ test('an example question is asked in one click and fills the field', async () =
   expect(endpoint).toHaveBeenCalledOnce();
 });
 
+test('an answer shows its numbers as bars, with n and the window', async () => {
+  stubEndpoint('answered', 'Віддалено — 42,9% з 259 вакансій.', {
+    n: 259,
+    windowDays: 30,
+    chart: {
+      dimension: 'work_format',
+      bars: [
+        { value: 'remote', n: 111, percent: 42.9 },
+        { value: 'not_stated', n: 76, percent: 29.3 },
+      ],
+    },
+  });
+  const user = await openDialog();
+
+  await user.click(
+    screen.getByRole('button', { name: 'Яка частка вакансій з віддаленою роботою?' }),
+  );
+
+  expect(await screen.findByText('Віддалено')).toBeVisible();
+  expect(screen.getByText('42,9%')).toBeVisible();
+  expect(screen.getByText('Не вказано')).toBeVisible();
+  expect(screen.getByText('n = 259')).toBeVisible();
+  expect(screen.getByText('за 30 днів')).toBeVisible();
+});
+
+test('a thin sample is told in the agent’s words, with no numbers drawn', async () => {
+  stubEndpoint('insufficient', 'Даних замало: вакансій — 4, а потрібно щонайменше 10.', {
+    n: 4,
+    minN: 10,
+  });
+  const user = await openDialog();
+
+  await user.click(screen.getByRole('button', { name: 'Яка медіанна зарплата Middle?' }));
+
+  expect(await screen.findByText(/^Даних замало/)).toBeVisible();
+  expect(screen.queryByText(/^n = /)).not.toBeInTheDocument();
+});
+
 test('a refusal from the server (the daily limit) is shown in its own words', async () => {
-  stubEndpoint('limit', 'На сьогодні ліміт питань до агента вичерпано. Спробуй завтра.', 429);
+  stubEndpoint('limit', 'На сьогодні ліміт питань до агента вичерпано. Спробуй завтра.', {
+    status: 429,
+  });
   const user = await openDialog();
 
   await user.click(screen.getByRole('button', { name: 'Які навички найпотрібніші?' }));

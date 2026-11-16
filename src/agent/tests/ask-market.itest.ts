@@ -199,7 +199,7 @@ test('a sample below 10 gets «даних замало» (UAH salaries counted) 
 
   const answer = await ask(plan, ['Медіана 1000.']);
 
-  assert.equal(answer.kind, 'insufficient');
+  assert.deepEqual(answer.kind === 'insufficient' && answer.n, 3);
   assert.match(answer.text, /^Даних замало: .* вакансій — 3, а потрібно щонайменше 10\.$/);
   assert.equal(answerCalls, 0);
 });

@@ -1,4 +1,5 @@
 @use '../../shared/styles/units' as *;
+@use '../../shared/styles/breakpoints' as *;
 
 .trigger {
   display: flex;
@@ -67,71 +68,326 @@
   font-weight: 400;
 }
 
-/* The popup: centred, as wide as a comfortable line, scrolling inside on short screens. */
+/* The popup, laid out as the design's agent page. Wide: intro, examples and the note on the left,
+   the chat with its field on the right. Phones: the whole screen, examples as a strip over the field. */
 .dialog {
   width: calc(100% - 2 * var(--space-4));
-  max-width: rem(560px);
-  max-height: calc(100% - 2 * var(--space-4));
+  max-width: rem(1100px);
+  height: min(rem(760px), calc(100% - 2 * var(--space-4)));
+  max-height: none;
   padding: 0;
   border: rem(1px) solid var(--color-border);
   border-radius: rem(22px);
-  background: var(--color-surface);
+  background: var(--color-ink);
   color: var(--color-text);
+
+  @include tablet {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
 }
 
 .dialog::backdrop {
   background: rgb(0 0 0 / 60%);
 }
 
-.dialogBody {
+.layout {
+  display: grid;
+  grid-template-areas:
+    'intro chat'
+    'examples chat'
+    'thin form';
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 0 var(--space-6);
+  height: 100%;
+  padding: clamp(rem(20px), 3vw, rem(32px));
+
+  @include tablet {
+    grid-template-areas:
+      'intro'
+      'chat'
+      'examples'
+      'form';
+    grid-template-rows: auto 1fr auto auto;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+  }
+}
+
+.intro {
+  display: flex;
+  grid-area: intro;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  @include tablet {
+    align-items: center;
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+    border-bottom: rem(1px) solid var(--color-rule);
+  }
+}
+
+.introText {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: clamp(rem(20px), 4vw, rem(32px));
-}
 
-.dialogTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  @include tablet {
+    gap: 0;
+  }
 }
 
 .dialogTitle {
-  font: 700 clamp(rem(26px), 4vw, rem(36px)) / 1.05 var(--font-display);
+  font: 700 clamp(rem(26px), 3.4vw, rem(40px)) / 1.05 var(--font-display);
   letter-spacing: -0.03em;
+
+  @include tablet {
+    font-size: rem(16px);
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+}
+
+.subtitle {
+  display: none;
+  font-size: rem(12px);
+  color: var(--color-muted);
+
+  @include tablet {
+    display: block;
+  }
 }
 
 .lead {
   font-size: rem(17px);
   color: var(--color-text-2);
+
+  @include tablet {
+    display: none;
+  }
+}
+
+/* The chat card: the exchange scrolls, the form stays at the bottom of the same card. */
+.chat {
+  display: flex;
+  grid-area: chat;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(rem(20px), 3vw, rem(32px));
+  border: rem(1px) solid var(--color-border);
+  border-bottom: 0;
+  border-radius: rem(22px) rem(22px) 0 0;
+  background: var(--color-surface);
+
+  @include tablet {
+    gap: var(--space-4);
+    padding: rem(18px) var(--space-4);
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+}
+
+.empty {
+  margin: auto;
+  max-width: rem(320px);
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.question {
+  align-self: flex-end;
+  max-width: 80%;
+  padding: rem(14px) rem(18px);
+  border-radius: rem(18px) rem(18px) rem(4px) rem(18px);
+  background: var(--color-border);
+  font-size: rem(16px);
+  overflow-wrap: anywhere;
+
+  @include tablet {
+    max-width: 85%;
+    padding: var(--space-3) var(--space-4);
+    font-size: rem(15px);
+  }
+}
+
+.agentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: rem(14px);
+
+  @include tablet {
+    gap: rem(10px);
+  }
+}
+
+.avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: rem(36px);
+  height: rem(36px);
+  border-radius: rem(10px);
+  background: var(--color-pulse);
+  color: var(--color-ink);
+
+  @include tablet {
+    width: rem(30px);
+    height: rem(30px);
+    border-radius: rem(9px);
+  }
+}
+
+.agentBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+
+  @include tablet {
+    gap: var(--space-3);
+  }
+}
+
+.answer,
+.notice,
+.asking {
+  white-space: pre-line; /* the stale-data note comes after a blank line */
+}
+
+.answer {
+  font-size: rem(18px);
+  line-height: 1.45;
+
+  @include tablet {
+    font-size: rem(16px);
+  }
+}
+
+.asking {
+  color: var(--color-muted);
+}
+
+.notice,
+.thinReply {
+  padding: rem(18px) rem(20px);
+  border: rem(1px) solid var(--color-warning-border);
+  border-radius: rem(14px);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+
+  @include tablet {
+    padding: rem(14px) var(--space-4);
+  }
+}
+
+.thinReply {
+  display: flex;
+  flex-direction: column;
+  gap: rem(10px);
+}
+
+.chart {
+  padding: rem(18px) rem(20px);
+  border-radius: rem(14px);
+  background: var(--color-surface-2);
+
+  @include tablet {
+    padding: rem(14px);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: rem(6px) rem(10px);
+    border: rem(1px) solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    font: 500 rem(12px) / 1.3 var(--font-mono);
+    color: var(--color-text-2);
+  }
+}
+
+.examples {
+  display: flex;
+  grid-area: examples;
+  flex-direction: column;
+  gap: rem(10px);
+  padding-top: var(--space-5);
+
+  @include tablet {
+    padding: rem(10px) 0 0;
+    border-top: rem(1px) solid var(--color-rule);
+  }
 }
 
 .examplesTitle {
   font-size: rem(14px);
   color: var(--color-muted);
+
+  @include tablet {
+    display: none;
+  }
 }
 
-.examples {
+.exampleList {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: calc(-1 * var(--space-2)) 0 0;
+  flex-direction: column;
+  gap: rem(10px);
+  margin: 0;
   padding: 0;
   list-style: none;
 
+  @include tablet {
+    flex-direction: row;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding: 0 var(--space-4);
+  }
+
+  li {
+    display: flex;
+
+    @include tablet {
+      flex: none;
+    }
+  }
+
   button {
-    min-height: rem(44px);
-    padding: rem(8px) rem(14px);
+    width: 100%;
+    min-height: rem(48px);
+    padding: var(--space-3) var(--space-4);
     border: rem(1px) solid var(--color-border);
-    border-radius: var(--radius-pill);
-    background: var(--color-ink);
+    border-radius: rem(12px);
+    background: var(--color-surface);
     color: var(--color-text-2);
-    font: inherit;
-    font-size: rem(14px);
-    font-weight: 500;
+    font: 500 rem(15px) / 1.3 var(--font-body);
     text-align: left;
     cursor: pointer;
+
+    @include tablet {
+      max-width: rem(230px);
+      min-height: rem(44px);
+      padding: var(--space-2) rem(14px);
+      border-radius: rem(14px);
+      font-size: rem(14px);
+    }
 
     &:hover:not(:disabled) {
       border-color: var(--color-border-hover);
@@ -151,32 +407,48 @@
 
 .form {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  grid-area: form;
+  align-items: center;
+  gap: rem(10px);
+  padding: var(--space-4);
+  border: rem(1px) solid var(--color-border);
+  border-radius: 0 0 rem(22px) rem(22px);
+  background: var(--color-surface);
+
+  @include tablet {
+    gap: var(--space-2);
+    padding: rem(10px) var(--space-4) rem(20px);
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
 }
 
-.label {
-  font-size: rem(14px);
-  color: var(--color-muted);
-}
-
-/* Field and button side by side; the button drops below on narrow phones. */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+.visuallyHidden {
+  position: absolute;
+  width: rem(1px);
+  height: rem(1px);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .input {
-  flex: 1 1 rem(220px);
+  flex: 1;
+  min-width: 0;
   min-height: rem(48px);
-  padding: 0 rem(16px);
+  padding: 0 var(--space-4);
   border: rem(1px) solid var(--color-border-strong);
   border-radius: rem(12px);
   background: var(--color-ink);
   color: var(--color-text);
   font: inherit;
   font-size: rem(16px); /* 16 px or more keeps iOS Safari from zooming into the field */
+
+  @include tablet {
+    border-radius: rem(14px);
+    background: var(--color-surface);
+  }
 
   &::placeholder {
     color: var(--color-faint);
@@ -188,44 +460,27 @@
   }
 }
 
-.reply:empty {
-  display: none;
-}
-
-.answer,
-.notice,
-.asking {
-  padding: rem(16px);
-  border-radius: rem(14px);
-  font-size: rem(16px);
-  white-space: pre-line; /* the stale-data note comes after a blank line */
-}
-
-.answer {
-  border: rem(1px) solid var(--color-pulse);
-  background: var(--color-surface-2);
-  color: var(--color-text);
-}
-
-.notice {
-  border: rem(1px) solid var(--color-warning-border);
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-}
-
-.asking {
-  border: rem(1px) dashed var(--color-border-strong);
-  color: var(--color-muted);
+.send {
+  flex: none;
+  width: rem(48px);
+  min-height: rem(48px);
+  padding: 0;
 }
 
 .thin {
   display: flex;
-  gap: rem(12px);
-  padding: rem(16px);
+  grid-area: thin;
+  align-self: end;
+  gap: var(--space-3);
+  padding: var(--space-4);
   border: rem(1px) dashed var(--color-border-strong);
   border-radius: rem(14px);
   font-size: rem(14px);
   color: var(--color-muted);
+
+  @include tablet {
+    display: none;
+  }
 
   svg {
     flex: none;
