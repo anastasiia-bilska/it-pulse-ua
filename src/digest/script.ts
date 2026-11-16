@@ -85,7 +85,7 @@ async function attemptScripts(
 
 /** Pure: the model's raw answer in, a verdict out. */
 export function judgeScripts(answer: string, facts: WeeklyFacts): ScriptResult {
-  const parsed = scriptsSchema.safeParse(JSON.parse(answer));
+  const parsed = scriptsSchema.safeParse(parseJsonOrUndefined(answer));
   if (!parsed.success) {
     return { kind: 'rejected', reason: 'answer breaks the contract' };
   }
@@ -95,6 +95,15 @@ export function judgeScripts(answer: string, facts: WeeklyFacts): ScriptResult {
   return problems.length > 0
     ? { kind: 'rejected', reason: problems.join('; ') }
     : { kind: 'accepted', scripts: parsed.data };
+}
+
+/** A truncated answer is a rejected attempt, not a crash: the next attempt may be whole. */
+function parseJsonOrUndefined(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
 }
 
 function scriptProblems(language: string, script: string, facts: WeeklyFacts): string[] {

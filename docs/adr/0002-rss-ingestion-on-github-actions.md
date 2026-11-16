@@ -14,7 +14,10 @@
 ## Decision
 
 - Poll all 59 DOU category feeds and the Djinni general feed **every 2 hours** from a GitHub Actions cron job, sequentially, waiting 1s between requests. The User-Agent names the project repository.
-- Retry with backoff on 429 and 5xx, honoring `Retry-After`.
+- Retry with backoff on 429 and 5xx, honoring `Retry-After` up to 30 s.
+- After 3 failed feeds in a row, a source counts as down and its other feeds are skipped (and
+  reported as failed), so one down source can't run the job into its timeout. Djinni is fetched
+  first (amended 2026-11-14).
 - Log coverage to `fetch_log`. A fetch counts as a **gap** when its oldest entry was never seen before, meaning the feed moved past us between runs. The poll interval is tuned from this data, not from a one-off snapshot.
 - Publish only extracted facts and links, never full vacancy texts. Raw texts stay in Postgres and never go into the repository or the Actions logs, which are public.
 - Ask DOU and Djinni for consent. The repository owner decides whether to run the schedule before they reply.

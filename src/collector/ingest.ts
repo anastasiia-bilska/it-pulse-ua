@@ -63,6 +63,14 @@ const HTTP_TOO_MANY_REQUESTS = 429;
 const HTTP_SERVER_ERROR = 500;
 const MAX_ATTEMPTS = 4;
 const REQUEST_TIMEOUT_MS = 20_000;
+/** A server may ask for a long pause; honoring it in full would eat the run's time budget. */
+const MAX_RETRY_AFTER_MS = 30_000;
+/**
+ * After this many failed feeds in a row, the source counts as down and its remaining feeds are
+ * skipped. Each failed feed costs up to ~2 min of retries, so a down source would otherwise run
+ * the job into its timeout and starve the sources after it.
+ */
+const SOURCE_DOWN_AFTER_FAILURES = 3;
 
 const rssParser = new XMLParser({
   ignoreAttributes: true,
@@ -80,15 +88,28 @@ export async function collectAll(db: pg.Client, feeds: Feed[], options: Options)
     failedFeeds: [],
     gapFeeds: [],
   };
+  const failureStreaks = new Map<Source, number>();
   for (const [index, feed] of feeds.entries()) {
+    if ((failureStreaks.get(feed.source) ?? 0) >= SOURCE_DOWN_AFTER_FAILURES) {
+      skipFeed(summary, feed.feed, options);
+      continue;
+    }
     if (index > 0) {
       await sleep(options.delayMs);
     }
     const outcome = await collectFeedSafely(db, feed, options);
     addToSummary(summary, feed.feed, outcome);
+    const streak = isFailure(outcome) ? (failureStreaks.get(feed.source) ?? 0) + 1 : 0;
+    failureStreaks.set(feed.source, streak);
     options.log?.(describe(feed.feed, outcome));
   }
   return summary;
+}
+
+/** Not fetched, so no fetch_log row; it still counts as failed and alerts. */
+function skipFeed(summary: Summary, feedName: string, options: Options): void {
+  summary.failedFeeds.push(feedName);
+  options.log?.(`${feedName}\tSKIPPED\tsource down`);
 }
 
 /** One broken feed must never stop the others, so its error becomes its outcome. */
@@ -105,7 +126,7 @@ async function collectFeedSafely(
 }
 
 function addToSummary(summary: Summary, feedName: string, outcome: FeedOutcome | Error): void {
-  if (outcome instanceof Error || !isSuccessful(outcome.status)) {
+  if (isFailure(outcome)) {
     summary.failedFeeds.push(feedName);
   }
   if (outcome instanceof Error) {
@@ -125,6 +146,10 @@ function describe(feedName: string, outcome: FeedOutcome | Error): string {
   }
   const gapMarker = outcome.gap ? '\tGAP' : '';
   return `${feedName}\t${outcome.status}\titems=${outcome.items}\tnew=${outcome.newItems}${gapMarker}`;
+}
+
+function isFailure(outcome: FeedOutcome | Error): boolean {
+  return outcome instanceof Error || !isSuccessful(outcome.status);
 }
 
 function isSuccessful(status: number): boolean {
@@ -210,11 +235,11 @@ function isRetryable(status: number): boolean {
   return status === HTTP_TOO_MANY_REQUESTS || status >= HTTP_SERVER_ERROR;
 }
 
-/** Exponential backoff, but never sooner than the server's Retry-After (in seconds). */
+/** Exponential backoff, but never sooner than the server's Retry-After (in seconds), up to a cap. */
 function backoffMs(attempt: number, retryBaseMs: number, response?: Response): number {
   const exponentialMs = 2 ** (attempt - 1) * retryBaseMs;
   const retryAfterMs = (Number(response?.headers.get('retry-after')) || 0) * 1000;
-  return Math.max(exponentialMs, retryAfterMs);
+  return Math.max(exponentialMs, Math.min(retryAfterMs, MAX_RETRY_AFTER_MS));
 }
 
 // ---- RSS parsing -------------------------------------------------------------------------------

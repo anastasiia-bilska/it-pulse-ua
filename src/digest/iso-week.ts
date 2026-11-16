@@ -30,6 +30,10 @@ export function parseIsoWeek(label: string): IsoWeek {
     throw new Error(`week must look like 2026-W46, got "${label}"`);
   }
   const start = new Date(mondayOfWeekOne(Number(match[1])).getTime() + (week - 1) * WEEK_MS);
+  // Most years have 52 weeks: "2027-W53" would silently become 2028-W01.
+  if (labelOf(start) !== label) {
+    throw new Error(`${label} does not exist (week must look like 2026-W46)`);
+  }
   return { label, start, lastDay: isoDate(new Date(start.getTime() + 6 * DAY_MS)) };
 }
 

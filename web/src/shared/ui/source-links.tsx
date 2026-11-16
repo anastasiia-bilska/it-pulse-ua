@@ -14,7 +14,14 @@ export function WithSourceLinks({ text }: { text: string }): ReactElement {
     <>
       {text.split(SOURCE_NAME).map((part, index) =>
         isSource(part) ? (
-          <a key={index} href={SOURCE_URLS[part]} target="_blank" rel="noopener noreferrer">
+          <a
+            key={index}
+            href={SOURCE_URLS[part]}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-umami-event="outbound-source"
+            data-umami-event-source={part}
+          >
             {part}
           </a>
         ) : (
