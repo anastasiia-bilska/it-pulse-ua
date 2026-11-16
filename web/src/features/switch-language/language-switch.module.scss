@@ -3,8 +3,8 @@
 .group {
   display: flex;
   flex: none;
-  padding: 3px;
-  border: 1px solid #2e3440;
+  padding: rem(3px);
+  border: rem(1px) solid #2e3440;
   border-radius: var(--radius-pill);
 }
 

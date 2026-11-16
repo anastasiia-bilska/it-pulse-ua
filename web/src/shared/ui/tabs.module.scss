@@ -15,7 +15,7 @@
 .segmented {
   padding: rem(4px);
   background: var(--color-ink);
-  border: 1px solid var(--color-border);
+  border: rem(1px) solid var(--color-border);
   border-radius: var(--radius-button);
 }
 
@@ -47,7 +47,7 @@
   font-weight: 500;
   background: transparent;
   color: var(--color-text-2);
-  border: 1px solid var(--color-border-strong);
+  border: rem(1px) solid var(--color-border-strong);
 }
 
 .chips .tab:hover {

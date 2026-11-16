@@ -68,8 +68,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-pulse);
-    outline-offset: 3px;
+    outline: rem(2px) solid var(--color-pulse);
+    outline-offset: rem(3px);
   }
 
   &:disabled {
@@ -114,13 +114,13 @@
 .bars {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: rem(3px);
   height: 100%;
 }
 
 .bars span {
   flex: 1;
-  border-radius: 2px;
+  border-radius: rem(2px);
   background: var(--color-surface-3);
 }
 
@@ -192,12 +192,12 @@
     cursor: pointer;
     font-weight: 600;
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: rem(3px);
   }
 
   summary:focus-visible {
-    outline: 2px solid var(--color-ink);
-    outline-offset: 2px;
+    outline: rem(2px) solid var(--color-ink);
+    outline-offset: rem(2px);
   }
 
   p {
@@ -234,6 +234,6 @@
   }
 
   .bars {
-    gap: 2px;
+    gap: rem(2px);
   }
 }

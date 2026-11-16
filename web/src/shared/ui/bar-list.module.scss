@@ -86,7 +86,7 @@
     '. track track';
   gap: rem(4px) rem(12px);
   padding: rem(6px) 0;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: rem(1px) solid var(--color-divider);
   border-radius: 0;
 }
 
@@ -101,7 +101,7 @@
 
 .slim .track {
   height: rem(4px);
-  border-radius: 2px;
+  border-radius: rem(2px);
 }
 
 @include bp.phone {
