@@ -3,6 +3,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import type pg from 'pg';
 import { QuotaExhaustedError, type GeminiConfig } from '../extractor/index.ts';
+import type { UsdRates } from '../dashboard/index.ts';
 import type { Tracer } from '../observability/index.ts';
 import { readUsage, synthesize, type ElevenLabsConfig } from './elevenlabs.ts';
 import type { IsoWeek } from './iso-week.ts';
@@ -17,6 +18,8 @@ export interface DigestOptions {
   elevenLabs: ElevenLabsConfig;
   tracer: Tracer;
   outputDirectory: URL;
+  /** For EUR and UAH salaries; null means USD salaries only. */
+  usdRates: UsdRates | null;
   /** A rehearsal: facts and scripts only, written to rehearsal.json; no speech, no episode. */
   isDryRun: boolean;
 }
@@ -30,7 +33,7 @@ const PERCENT = 100;
 // ---- functions ---------------------------------------------------------------------------------
 
 export async function produceDigest(db: pg.Client, options: DigestOptions): Promise<string[]> {
-  const facts = await loadWeeklyFacts(db, options.week);
+  const facts = await loadWeeklyFacts(db, options.week, options.usdRates);
   console.log(
     `week=${facts.week} vacancies=${facts.newVacancies.thisWeek} analysed=${facts.analysedPercent}%`,
   );

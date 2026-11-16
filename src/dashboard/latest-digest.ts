@@ -28,9 +28,11 @@ export async function readLatestDigest(): Promise<DigestEpisode | null> {
 
 /** A broken file must not stop the dashboard: the player then shows "coming soon". */
 export function parseDigestEpisode(text: string): DigestEpisode | null {
-  const parsed = episodeSchema.safeParse(JSON.parse(text));
+  const parsed = episodeSchema.safeParse(parseJsonOrUndefined(text));
   if (!parsed.success) {
-    console.log('PROBLEM\tdigest.json of the latest release has an unexpected shape');
+    console.log(
+      'PROBLEM\tdigest.json of the latest release is not valid JSON of the expected shape',
+    );
     return null;
   }
   const { facts, scripts } = parsed.data;
@@ -38,4 +40,12 @@ export function parseDigestEpisode(text: string): DigestEpisode | null {
     week: facts && { label: facts.week, firstDay: facts.firstDay, lastDay: facts.lastDay },
     scripts,
   };
+}
+
+function parseJsonOrUndefined(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
 }

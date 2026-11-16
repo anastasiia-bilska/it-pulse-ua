@@ -240,6 +240,21 @@ test('429 is retried, persistent 500 and broken XML fail only their feed', async
   assert.ok(await hasProblem(summary, 'failed feeds (2)'));
 });
 
+test('a source with 3 failed feeds in a row is skipped; other sources still run', async () => {
+  routes.set('/dj', ok(rss([djinniItem(900, ['Java'])])));
+  const downFeeds: Feed[] = ['d1', 'd2', 'd3', 'd4'].map((name) => ({
+    source: 'dou',
+    feed: `dou:${name}`,
+    url: `${baseUrl}/${name}`, // no route: 404
+  }));
+
+  const summary = await collectAll(collector, [...downFeeds, feeds()[2]!], TEST_OPTIONS);
+
+  assert.equal(hits.get('/d4'), undefined, 'the 4th feed of a down source is not fetched');
+  assert.deepEqual(summary.failedFeeds, ['dou:d1', 'dou:d2', 'dou:d3', 'dou:d4']);
+  assert.equal(summary.items, 1, 'the next source is still collected');
+});
+
 test('collector role cannot destroy or rewrite history', async () => {
   const destructiveStatements = [
     'delete from raw_item',

@@ -79,6 +79,7 @@ async function run(isDryRun = false): Promise<{ problems: string[]; directory: U
     elevenLabs: { apiKey: 'test-key', voiceId: 'test-voice', baseUrl },
     tracer: NO_TRACING,
     outputDirectory: directory,
+    usdRates: null,
     isDryRun,
   });
   return { problems, directory };

@@ -35,6 +35,10 @@ const TEXT = 'Senior Backend Engineer\nЗарплата: $4000 – 5000\nEnglish
 
 // ---- vacancy text ------------------------------------------------------------------------------
 
+test('htmlToText keeps an entity beyond Unicode as text instead of throwing', () => {
+  assert.equal(htmlToText('a &#99999999; b &#x110000; c'), 'a &#99999999; b &#x110000; c');
+});
+
 test('htmlToText keeps paragraphs, drops tags and decodes entities', () => {
   const html = '<p>Stack:&nbsp;<b>Node.js</b> &amp; Postgres</p><ul><li>3+ роки</li></ul>';
 

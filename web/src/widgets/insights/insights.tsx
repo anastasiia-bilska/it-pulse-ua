@@ -28,7 +28,7 @@ export function Insights({ aggregates }: { aggregates: Aggregates }): ReactEleme
   }
   const total = formatNumber(aggregates.totals.extracted, language);
   return (
-    <section aria-labelledby="insights-title" className={styles.section}>
+    <section data-block="insights" aria-labelledby="insights-title" className={styles.section}>
       <div className={styles.heading}>
         <h2 id="insights-title" className="text-section">
           {messages.insights.title}

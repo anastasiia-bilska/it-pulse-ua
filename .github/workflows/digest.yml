@@ -1,7 +1,9 @@
 name: digest
 
 # The weekly audio digest (ADR 0013). Mondays 08:05 UTC: just after the Gemini daily quota resets
-# and before the 08:17 collect triggers extraction, which would use it up.
+# and before the 08:17 collect triggers extraction, which would use it up. The Cloudflare Worker
+# dispatches it (ADR 0018); this schedule is a backup. A second run of the same week finds the
+# release and skips, so the two clocks never publish or pay twice.
 on:
   schedule:
     - cron: '5 8 * * 1'

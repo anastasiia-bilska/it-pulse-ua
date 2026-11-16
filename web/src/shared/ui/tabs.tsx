@@ -82,6 +82,8 @@ function TabButton({
       role="tab"
       aria-selected={isSelected}
       aria-controls={tabPanelId(name, tab.id)}
+      data-umami-event={`tab-${name}`}
+      data-umami-event-tab={tab.id}
       tabIndex={isSelected ? 0 : -1}
       className={styles.tab}
       onClick={() => {

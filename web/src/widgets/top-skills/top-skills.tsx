@@ -21,7 +21,7 @@ export function TopSkills({ aggregates }: { aggregates: Aggregates }): ReactElem
   const [isExpanded, setExpanded] = useState(false);
   const skills = aggregates.topSkills;
   return (
-    <Card id="skills" aria-labelledby="skills-title" className={styles.card}>
+    <Card id="skills" data-block="skills" aria-labelledby="skills-title" className={styles.card}>
       <div className={styles.heading}>
         <h2 id="skills-title" className="text-section">
           {messages.skills.title}
@@ -38,6 +38,7 @@ export function TopSkills({ aggregates }: { aggregates: Aggregates }): ReactElem
           className={styles.toggle}
           aria-expanded={isExpanded}
           aria-controls={LIST_ID}
+          data-umami-event={isExpanded ? 'skills-collapse' : 'skills-expand'}
           onClick={() => {
             setExpanded(!isExpanded);
           }}

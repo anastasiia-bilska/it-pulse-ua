@@ -14,6 +14,8 @@ export interface Aggregates {
   topSkills: Count[];
   salaryUsdMonthByRole: SalaryRow[];
   salaryUsdMonthBySeniority: SalaryRow[];
+  /** NBU date of the rates EUR and UAH salaries were converted at; null means USD salaries only. */
+  salaryRatesDate: string | null;
   /** The latest audio digest episode, or null before the first one (ADR 0013). */
   digest: DigestEpisode | null;
 }

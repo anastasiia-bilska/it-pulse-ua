@@ -1,4 +1,4 @@
-// Salaries in USD per month: quartile boxes by level, and progress to the n threshold by role.
+// Salaries in USD per month (EUR and UAH converted at the NBU rate): quartile boxes by level, and progress to the n threshold by role.
 // Below the threshold no number is shown, only how far the group is from it (ADR 0011).
 import type { ReactElement } from 'react';
 import { salaryScale, seniorityRows, type Aggregates } from '../../entities/aggregates/index.ts';
@@ -19,7 +19,12 @@ export function SalaryOverview({ aggregates }: { aggregates: Aggregates }): Reac
   const { messages } = useLanguage();
   const copy = messages.salary;
   return (
-    <section id="salary" aria-label={messages.nav.salary} className={styles.section}>
+    <section
+      id="salary"
+      data-block="salary"
+      aria-label={messages.nav.salary}
+      className={styles.section}
+    >
       <Card aria-labelledby="salary-level-title">
         <SalaryHeading id="salary-level-title" title={copy.title} note={copy.note} />
         <SeniorityPlot aggregates={aggregates} />
