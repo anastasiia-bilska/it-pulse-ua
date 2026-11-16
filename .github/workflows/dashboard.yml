@@ -78,7 +78,9 @@ jobs:
       - name: Agent secrets
         env:
           DATABASE_URL_AGENT: ${{ secrets.DATABASE_URL_AGENT }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # A key from its own Google Cloud project: free-tier quota is per project, and extraction
+          # spends all of the shared one every day.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_AGENT }}
           ASK_CLIENT_SALT: ${{ secrets.ASK_CLIENT_SALT }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}

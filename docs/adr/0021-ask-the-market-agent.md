@@ -9,7 +9,7 @@
 The agent answers questions about the Ukrainian IT job market in plain language. Its promises are
 already on record: it reads only `vacancy_current` (ADR 0007), says «даних замало» when n < 10
 (ADR 0011), warns when the data is stale (ADR 0007) and never states a number SQL didn't produce
-(ADR 0005). It runs on the Gemini free tier that extraction also uses.
+(ADR 0005). It runs on the Gemini free tier, like extraction.
 
 Two other plans were considered and dropped. A Python AI service (embeddings, hybrid search, RAG
 citations) would bring a second language, the one ADR 0003 rejected, along with a second host. Its
@@ -55,7 +55,8 @@ from CI (ADR 0018).
   refused question is not recorded. Over a cap the reply is a fixed "limit reached" text (HTTP 429);
   a spent Gemini quota is a fixed "busy" text (503). The check-then-insert can let a burst go one or
   two over a cap, which is harmless; a strict cap would need a lock.
-- **Secrets** (`DATABASE_URL` as the `agent` role, `GEMINI_API_KEY`, `ASK_CLIENT_SALT`, optional
+- **Secrets** (`DATABASE_URL` as the `agent` role, `GEMINI_API_KEY` from its own Google Cloud
+  project (see Consequences), `ASK_CLIENT_SALT`, optional
   Langfuse keys) are uploaded to the Pages project by `dashboard.yml` before each deploy. The smoke
   check posts a malformed question and expects 400, which costs no quota.
 
@@ -63,8 +64,10 @@ from CI (ADR 0018).
 
 - The agent answers fewer questions than free-form text-to-SQL would, and every number it gives
   is traceable to one of four queries. A new kind of question means a new tool and new eval cases.
-- Each answered question costs 2 Gemini calls (3 with a retry) from the extraction quota. The caps
-  in the endpoint are what keep the two from competing.
+- Each answered question costs 2 Gemini calls (3 with a retry). The agent uses a key from its own
+  Google Cloud project, because free-tier quota is per project and extraction works through its
+  backlog until the shared quota runs out: on the shared key the agent answered "busy" for most of
+  the day. The caps keep the agent's own quota for its readers.
 - Rejected:
   - the model writing SQL: more flexible, but the number guard can't vouch for a query it never saw;
   - multi-turn tool calling: one routing step covers every question the four tools can answer;
