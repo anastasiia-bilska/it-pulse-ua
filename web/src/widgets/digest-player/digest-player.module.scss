@@ -141,17 +141,17 @@
 }
 
 .wave:has(.seek:focus-visible) {
-  outline: 2px solid var(--color-pulse);
-  outline-offset: 4px;
-  border-radius: 4px;
+  outline: rem(2px) solid var(--color-pulse);
+  outline-offset: rem(4px);
+  border-radius: rem(4px);
 }
 
 .speed {
   flex: none;
   min-width: rem(52px);
   padding: rem(4px) rem(10px);
-  border: 1px solid var(--color-surface-3);
-  border-radius: 999px;
+  border: rem(1px) solid var(--color-surface-3);
+  border-radius: rem(999px);
   background: transparent;
   color: var(--color-text);
   font: 600 rem(13px) / 1 var(--font-mono);
@@ -162,8 +162,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-pulse);
-    outline-offset: 2px;
+    outline: rem(2px) solid var(--color-pulse);
+    outline-offset: rem(2px);
   }
 
   &:disabled {
