@@ -28,7 +28,12 @@ export function SiteHeader(): ReactElement {
           ))}
           <AskMarketTeaser look="pill" />
           <LanguageSwitch />
-          <a href={REPOSITORY_URL} aria-label="GitHub" className={styles.github}>
+          <a
+            href={REPOSITORY_URL}
+            aria-label="GitHub"
+            className={styles.github}
+            data-umami-event="outbound-github"
+          >
             <Icon name="github" size={22} />
           </a>
         </nav>

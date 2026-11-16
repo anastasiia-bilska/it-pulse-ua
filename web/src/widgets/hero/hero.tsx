@@ -15,7 +15,7 @@ const PULSE_POINTS =
 export function Hero(): ReactElement {
   const { messages } = useLanguage();
   return (
-    <section className={styles.hero} aria-labelledby="hero-title">
+    <section data-block="hero" className={styles.hero} aria-labelledby="hero-title">
       <p className={`text-eyebrow ${styles.eyebrow}`}>
         <span className={styles.dot} aria-hidden="true" />
         {messages.hero.eyebrow}

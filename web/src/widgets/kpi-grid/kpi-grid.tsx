@@ -23,7 +23,7 @@ export function KpiGrid({ aggregates }: { aggregates: Aggregates }): ReactElemen
     return `n = ${number(n)} / ${number(numbers.extracted)}`;
   }
   return (
-    <section aria-label={copy.label} className={styles.grid}>
+    <section data-block="kpis" aria-label={copy.label} className={styles.grid}>
       <KpiCard
         label={copy.vacancies(aggregates.windowDays)}
         value={number(numbers.vacancies)}

@@ -39,6 +39,12 @@ check_page() {
   [ -n "$script" ] || fail "index.html loads no script bundle"
   expect_type "$script" 'text/javascript|application/javascript'
   expect_type 'favicon.svg' 'image/svg\+xml'
+  # The Ukrainian page (ADR 0019): a missing uk.html would fall back to the English one.
+  expect_type 'uk' 'text/html'
+  curl -fsS "$site/uk" | grep -q '<html lang="uk"' || fail "/uk is not the Ukrainian page"
+  # A missing file would fall back to index.html, served as text/html.
+  expect_type 'robots.txt' 'text/plain'
+  expect_type 'sitemap.xml' 'application/xml|text/xml'
 }
 
 check_aggregates() {

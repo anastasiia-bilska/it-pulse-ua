@@ -9,6 +9,8 @@ export type Messages = typeof UK;
 // ---- constants ---------------------------------------------------------------------------------
 
 const UK = {
+  /** The same text as <title> in uk.html, which crawlers read. */
+  pageTitle: 'IT Pulse UA — ринок IT-вакансій України: навички, ролі, зарплати',
   skipToContent: 'Перейти до змісту',
   nav: {
     label: 'Розділи',
@@ -56,7 +58,11 @@ const UK = {
     },
     queued: (count: string): string =>
       `У черзі на аналіз: ${count}. Цифри нижче — лише по вже оброблених.`,
-    lastRun: (date: string): string => `останній успішний запуск: ${date}`,
+    lastOk: (date: string): string => `останній успішний запуск: ${date}`,
+    lastRun: (date: string): string => `останній запуск: ${date}`,
+    lastRunStopped: (date: string, processed: string): string =>
+      `останній запуск: ${date}, оброблено ${processed}, далі ліміт`,
+    lastRunFailed: (date: string): string => `останній запуск: ${date}, з помилкою`,
   },
   states: {
     loading: 'Завантажуємо статистику…',
@@ -73,7 +79,7 @@ const UK = {
     extracted: 'Проаналізовано LLM',
     extractedNote: (share: string): string => `${share} від усіх`,
     remote: 'Віддалена робота',
-    salaries: 'Із зарплатою в USD',
+    salaries: 'Із зарплатою',
     salariesNote: 'база для зарплатних цифр',
   },
   insights: {
@@ -112,13 +118,13 @@ const UK = {
   },
   salary: {
     title: 'Зарплата за рівнем',
-    note: 'USD на місяць, середина вилки · медіана та квартилі',
+    note: 'USD на місяць, середина вилки; EUR і UAH за курсом НБУ · медіана та квартилі',
     median: 'медіана',
     thin: 'даних замало',
-    none: 'Поки немає вакансій із вилкою в USD',
+    none: 'Поки немає вакансій із вилкою',
     roleTitle: 'Зарплата за роллю',
     roleNote: (minN: number): string =>
-      `Медіану показуємо, щойно в групі набереться ${minN} вакансій із вилкою в USD.`,
+      `Медіану показуємо, щойно в групі набереться ${minN} вакансій із вилкою.`,
   },
   digest: {
     title: 'Голосовий дайджест тижня',
@@ -164,6 +170,8 @@ const UK = {
 };
 
 const EN: Messages = {
+  /** The same text as <title> in index.html, which crawlers read. */
+  pageTitle: 'IT Pulse UA — Ukraine’s IT job market: skills, roles, salaries',
   skipToContent: 'Skip to content',
   nav: {
     label: 'Sections',
@@ -211,7 +219,11 @@ const EN: Messages = {
     },
     queued: (count: string): string =>
       `Queued for analysis: ${count}. The numbers below cover processed ones only.`,
-    lastRun: (date: string): string => `last successful run: ${date}`,
+    lastOk: (date: string): string => `last successful run: ${date}`,
+    lastRun: (date: string): string => `last run: ${date}`,
+    lastRunStopped: (date: string, processed: string): string =>
+      `last run: ${date}, ${processed} processed, then the daily limit`,
+    lastRunFailed: (date: string): string => `last run: ${date}, failed`,
   },
   states: {
     loading: 'Loading the numbers…',
@@ -228,7 +240,7 @@ const EN: Messages = {
     extracted: 'Analysed by LLM',
     extractedNote: (share: string): string => `${share} of all`,
     remote: 'Remote work',
-    salaries: 'With a USD salary',
+    salaries: 'With a salary',
     salariesNote: 'the base of every salary number',
   },
   insights: {
@@ -267,13 +279,13 @@ const EN: Messages = {
   },
   salary: {
     title: 'Salary by level',
-    note: 'USD per month, range midpoint · median and quartiles',
+    note: 'USD per month, range midpoint; EUR and UAH at the NBU rate · median and quartiles',
     median: 'median',
     thin: 'not enough data',
-    none: 'No vacancies with a USD range yet',
+    none: 'No vacancies with a salary range yet',
     roleTitle: 'Salary by role',
     roleNote: (minN: number): string =>
-      `A median shows once a group has ${minN} vacancies with a USD range.`,
+      `A median shows once a group has ${minN} vacancies with a salary range.`,
   },
   digest: {
     title: 'Weekly voice digest',

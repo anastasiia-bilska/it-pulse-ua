@@ -62,6 +62,13 @@ jobs:
             echo "no digest episode yet"
           fi
       - run: npm run dashboard
+      # The og:image cards (one per language) with this build's numbers. A card that fails to render must not stop the
+      # deploy: the page is what readers come for, the preview only falls back to no image.
+      - name: Social card
+        continue-on-error: true
+        run: |
+          npx playwright install --with-deps chromium
+          npm run social-card
       # dist/site carries web/public/_headers, the cache rules Cloudflare Pages applies.
       - uses: cloudflare/wrangler-action@v4
         with:

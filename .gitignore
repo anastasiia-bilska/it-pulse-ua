@@ -1,6 +1,8 @@
 node_modules/
 .env
 *.xml
+# The one XML file that is ours, not a downloaded feed (ADR 0019).
+!web/public/sitemap.xml
 .neon
 dist/
 test-results/

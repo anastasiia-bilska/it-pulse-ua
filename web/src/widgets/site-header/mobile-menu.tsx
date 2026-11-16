@@ -21,6 +21,7 @@ export function MobileMenu(): ReactElement {
       <Button
         variant="icon"
         aria-label={messages.nav.openMenu}
+        data-umami-event="mobile-menu-open"
         aria-haspopup="dialog"
         onClick={() => dialog.current?.showModal()}
       >

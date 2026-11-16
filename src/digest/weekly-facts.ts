@@ -1,7 +1,13 @@
 // The facts of one week, compared with the week before. Every number the script may say comes
 // from here (ADR 0013): the model never does arithmetic.
 import type pg from 'pg';
-import { MIN_N, salaryRow } from '../dashboard/index.ts';
+import {
+  MIN_N,
+  rateParameters,
+  salaryRow,
+  usdMonthSalarySql,
+  type UsdRates,
+} from '../dashboard/index.ts';
 import type { IsoWeek } from './iso-week.ts';
 
 // ---- types -------------------------------------------------------------------------------------
@@ -88,22 +94,33 @@ const SKILLS_SQL = `
   where ${TWO_WEEKS} and resolved.skill_name is not null
   group by resolved.skill_name`;
 
-// One salary per vacancy: the midpoint of the range, or the bound that is given.
+// One salary per vacancy, in USD per month, the dashboard's rule; $2 and $3 are the EUR and UAH
+// rates.
 const SALARIES_SQL = `
-  select (coalesce(salary_min, salary_max) + coalesce(salary_max, salary_min))::float8 / 2 as salary
-  from vacancy_current
-  where ${THIS_WEEK} and first_seen < $1::timestamptz + interval '7 days'
-    and salary_currency = 'USD' and salary_period = 'month'`;
+  select salary
+  from (
+    select ${usdMonthSalarySql(2)} as salary
+    from vacancy_current
+    where ${THIS_WEEK} and first_seen < $1::timestamptz + interval '7 days'
+  ) as converted
+  where salary is not null`;
 
 // ---- functions ---------------------------------------------------------------------------------
 
-export async function loadWeeklyFacts(db: pg.Client, week: IsoWeek): Promise<WeeklyFacts> {
+export async function loadWeeklyFacts(
+  db: pg.Client,
+  week: IsoWeek,
+  rates: UsdRates | null,
+): Promise<WeeklyFacts> {
   const parameters = [week.start];
   // One client runs one query at a time, so these go in sequence.
   const totals = await db.query<TotalsRow>(TOTALS_SQL, parameters);
   const roles = await db.query<WeekCountRow>(ROLES_SQL, parameters);
   const skills = await db.query<WeekCountRow>(SKILLS_SQL, parameters);
-  const salaries = await db.query<{ salary: number }>(SALARIES_SQL, parameters);
+  const salaries = await db.query<{ salary: number }>(SALARIES_SQL, [
+    ...parameters,
+    ...rateParameters(rates),
+  ]);
   const rows: WeekRows = {
     totals: totals.rows[0] ?? { this_week: 0, previous_week: 0, analysed: 0 },
     roles: roles.rows,

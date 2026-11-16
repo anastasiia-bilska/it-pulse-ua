@@ -21,7 +21,12 @@ export function MarketOverview({ aggregates }: { aggregates: Aggregates }): Reac
     { id: 'domain' as const, title: copy.domainsTitle },
   ];
   return (
-    <section id="market" aria-label={messages.nav.market} className={styles.section}>
+    <section
+      id="market"
+      data-block="market"
+      aria-label={messages.nav.market}
+      className={styles.section}
+    >
       <div className={styles.tabs}>
         <Tabs
           label={messages.nav.market}
@@ -34,21 +39,42 @@ export function MarketOverview({ aggregates }: { aggregates: Aggregates }): Reac
         />
       </div>
       {cards.map(({ id, title }) => (
-        <div
+        <MarketPanel
           key={id}
-          id={tabPanelId(TABS_NAME, id)}
-          role="tabpanel"
-          aria-labelledby={tabId(TABS_NAME, id)}
-          className={id === selected ? styles.panel : `${styles.panel} ${styles.hiddenOnPhone}`}
-        >
-          <DistributionCard
-            title={title}
-            dimension={id}
-            shares={aggregates.distributions[id]}
-            total={aggregates.totals.extracted}
-          />
-        </div>
+          dimension={id}
+          title={title}
+          isSelected={id === selected}
+          aggregates={aggregates}
+        />
       ))}
     </section>
+  );
+}
+
+function MarketPanel({
+  dimension,
+  title,
+  isSelected,
+  aggregates,
+}: {
+  dimension: 'role' | 'domain';
+  title: string;
+  isSelected: boolean;
+  aggregates: Aggregates;
+}): ReactElement {
+  return (
+    <div
+      id={tabPanelId(TABS_NAME, dimension)}
+      role="tabpanel"
+      aria-labelledby={tabId(TABS_NAME, dimension)}
+      className={isSelected ? styles.panel : `${styles.panel} ${styles.hiddenOnPhone}`}
+    >
+      <DistributionCard
+        title={title}
+        dimension={dimension}
+        shares={aggregates.distributions[dimension]}
+        total={aggregates.totals.extracted}
+      />
+    </div>
   );
 }

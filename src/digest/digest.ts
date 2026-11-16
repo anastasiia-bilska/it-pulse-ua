@@ -1,5 +1,6 @@
 // CLI entry point of the weekly audio digest (GitHub Actions, Mondays; ADR 0013).
 import type pg from 'pg';
+import { fetchUsdRates } from '../dashboard/index.ts';
 import { GEMINI_BASE_URL } from '../extractor/index.ts';
 import { tracerFromEnvironment } from '../observability/index.ts';
 import { runScheduledJob } from '../shared/index.ts';
@@ -37,6 +38,7 @@ async function digest(db: pg.Client): Promise<string[]> {
       },
       tracer,
       outputDirectory: OUTPUT_DIRECTORY,
+      usdRates: await fetchUsdRates(),
       isDryRun: process.env.DIGEST_DRY_RUN === 'true',
     });
   } finally {
