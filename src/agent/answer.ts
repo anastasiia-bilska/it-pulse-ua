@@ -1,4 +1,4 @@
-// Step 3 of an answer (ADR 0020): the model turns the tool's facts into a short answer, and the code
+// Step 3 of an answer (ADR 0021): the model turns the tool's facts into a short answer, and the code
 // rejects any answer with a number the facts don't contain (the digest's number guard).
 import { z } from 'zod';
 import {
@@ -46,6 +46,7 @@ Rules:
 - "percent" is a share of the analysed vacancies. "not_stated" means the vacancy doesn't say.
 - Salaries are in USD per month over the vacancies that state one. Say the median, and that the
   middle half of them pay from p25 to p75; never write the labels "p25" or "p75" themselves.
+  If includesEurUah is true, say that EUR and UAH salaries are converted at the NBU rate.
 - Codes are names: say them naturally (ml_ai → "ML/AI", data_engineering → "data engineering").
 - If the facts don't answer the question exactly, say what they do show.
 - Plain text, 2–4 sentences, no markdown, no lists, no links, no advice.

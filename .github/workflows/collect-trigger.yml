@@ -1,6 +1,7 @@
 name: collect-trigger
 
-# Deploys the Cloudflare Worker that dispatches collect.yml every 2 hours (ADR 0018).
+# Deploys the Cloudflare Worker that dispatches collect.yml every 2 hours and digest.yml weekly
+# (ADR 0018).
 on:
   push:
     branches: [main]

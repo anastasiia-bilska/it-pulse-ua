@@ -1,4 +1,4 @@
-// The planner eval (ADR 0020): questions with the plan they must get. The planner is the only step
+// The planner eval (ADR 0021): questions with the plan they must get. The planner is the only step
 // where the model decides what is computed, so it is the step worth scoring. Synthetic questions.
 import { isDeepStrictEqual } from 'node:util';
 import type { Plan } from './plan.ts';

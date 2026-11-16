@@ -278,6 +278,33 @@ test('a quota error that persists stops the run and leaves the rest queued', asy
   assert.equal(report.backlog, 2);
 });
 
+test('a Gemini outage stops the run, counts no attempt and alerts', async () => {
+  behaviours.set('case-outage', { status: 503 });
+  const rawItemId = await seedVacancy('7', 'case-outage');
+
+  const report = await run();
+
+  assert.equal(report.stoppedByOutage, true);
+  assert.equal(report.processed + report.failed, 0, 'an outage is not the vacancy failing');
+  const failures = await admin.query('select 1 from extraction_error where raw_item_id = $1', [
+    rawItemId,
+  ]);
+  assert.equal(failures.rowCount, 0);
+  const problems = await findRunProblems(extractor, report);
+  assert.ok(problems.some((problem) => problem.startsWith('Gemini unavailable')));
+});
+
+test('an unreachable Gemini is an outage too', async () => {
+  const report = await extractPending(extractor, {
+    ...FAST,
+    gemini: { apiKey: 'test-key', model: 'gemini-test', baseUrl: 'http://127.0.0.1:1' },
+    tracer: recordingTracer(),
+  });
+
+  assert.equal(report.stoppedByOutage, true);
+  assert.equal(report.failed, 0);
+});
+
 test('a backlog that grows 3 runs in a row is a problem', async () => {
   const startedAt = new Date();
   for (const backlog of [10, 20, 30, 40]) {

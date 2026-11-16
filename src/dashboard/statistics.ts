@@ -26,6 +26,16 @@ export interface PipelineStatus {
   lastStatus: string | null;
   lastOkAt: Date | null;
   backlog: number;
+  /** The newest run whatever its outcome; absent before the first one. */
+  lastRun?: { at: Date; processed: number };
+}
+
+/** The newest extraction run, as the banner states it: when, how many, and how it ended. */
+export interface LastRun {
+  at: string;
+  processed: number;
+  /** ok, quota_exhausted (stopped at the model's daily limit) or error. */
+  status: string;
 }
 
 export interface Freshness {
@@ -33,6 +43,7 @@ export interface Freshness {
   /** Why the banner shows, as a code the page translates; null when fresh. */
   reason: StaleReason | null;
   lastOkAt: string | null;
+  lastRun: LastRun | null;
   backlog: number;
 }
 
@@ -87,7 +98,14 @@ function quantile(sorted: number[], q: number): number {
 export function judgeFreshness(status: PipelineStatus, now: Date): Freshness {
   const lastOkAt = status.lastOkAt?.toISOString() ?? null;
   const reason = staleReason(status, now);
-  return { isStale: reason !== null, reason, lastOkAt, backlog: status.backlog };
+  const lastRun = status.lastRun
+    ? {
+        at: status.lastRun.at.toISOString(),
+        processed: status.lastRun.processed,
+        status: status.lastStatus ?? 'ok',
+      }
+    : null;
+  return { isStale: reason !== null, reason, lastOkAt, lastRun, backlog: status.backlog };
 }
 
 function staleReason(status: PipelineStatus, now: Date): StaleReason | null {

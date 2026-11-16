@@ -16,6 +16,7 @@ const SALARY_FACTS: Facts = {
   tool: 'salary',
   currency: 'USD',
   period: 'month',
+  includesEurUah: false,
   n: 120,
   p25: 4000,
   median: 5000,

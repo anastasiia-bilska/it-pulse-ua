@@ -25,7 +25,7 @@ export interface ExtractionRecord {
 
 export interface JobRunRecord {
   startedAt: Date;
-  status: 'ok' | 'quota_exhausted';
+  status: 'ok' | 'quota_exhausted' | 'error';
   processed: number;
   failed: number;
   backlog: number;

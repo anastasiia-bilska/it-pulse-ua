@@ -1,4 +1,4 @@
-// CLI: runs the planner eval against the live model and prints the score (ADR 0020). It spends
+// CLI: runs the planner eval against the live model and prints the score (ADR 0021). It spends
 // about 20 Gemini calls of the shared free-tier quota, so it runs on demand, not on every PR.
 // Logs hold only synthetic eval questions and plans, never vacancy text.
 import { GEMINI_BASE_URL, MODEL } from '../extractor/index.ts';

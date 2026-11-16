@@ -1,4 +1,4 @@
-// Step 1 of an answer (ADR 0020): the model reads the question and picks one fixed SQL tool and its
+// Step 1 of an answer (ADR 0021): the model reads the question and picks one fixed SQL tool and its
 // filters. It never writes SQL, and it never sees a number at this step.
 import { z } from 'zod';
 import {

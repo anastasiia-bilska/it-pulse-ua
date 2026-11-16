@@ -1,8 +1,16 @@
-// Step 2 of an answer (ADR 0020): fixed, parameterised SQL over vacancy_current. These are the only
+// Step 2 of an answer (ADR 0021): fixed, parameterised SQL over vacancy_current. These are the only
 // source of numbers the agent may state. The window, the n < 10 rule and the salary rule are the
 // dashboard's (ADR 0011), so both always say the same.
 import type pg from 'pg';
-import { MIN_N, salaryRow, WINDOW_DAYS, type Count } from '../dashboard/index.ts';
+import {
+  MIN_N,
+  rateParameters,
+  salaryRow,
+  usdMonthSalarySql,
+  WINDOW_DAYS,
+  type Count,
+  type UsdRates,
+} from '../dashboard/index.ts';
 import type { Dimension, Filters, Plan } from './plan.ts';
 
 // ---- types -------------------------------------------------------------------------------------
@@ -21,6 +29,8 @@ export type Facts = { filters: Filters; windowDays: number } & (
       tool: 'salary';
       currency: 'USD';
       period: 'month';
+      /** True when EUR and UAH salaries are counted too, at the NBU rate. */
+      includesEurUah: boolean;
       n: number;
       p25: number;
       median: number;
@@ -51,11 +61,12 @@ const FILTERED = `
 
 const ANALYSED_SQL = `select count(*)::int as n from vacancy_current where ${FILTERED}`;
 
-// One salary per vacancy: the midpoint of the range, or the bound that is given (ADR 0011).
+// One salary per vacancy in USD per month, EUR and UAH at the NBU rate (the dashboard's rule);
+// $4 and $5 are the EUR and UAH rates.
 const SALARIES_SQL = `
-  select (coalesce(salary_min, salary_max) + coalesce(salary_max, salary_min))::float8 / 2 as salary
-  from vacancy_current
-  where ${FILTERED} and salary_currency = 'USD' and salary_period = 'month'`;
+  select salary
+  from (select ${usdMonthSalarySql(4)} as salary from vacancy_current where ${FILTERED}) as converted
+  where salary is not null`;
 
 const TOP_SKILLS_SQL = `
   select resolved.skill_name as value, count(distinct vacancy_current.raw_item_id)::int as n
@@ -84,10 +95,15 @@ const SKILL_DEMAND_SQL = `
 
 // ---- functions ---------------------------------------------------------------------------------
 
-export async function runTool(db: pg.Client, plan: ToolPlan): Promise<ToolResult> {
+/** `usdRates` null (NBU unreachable) leaves USD salaries only, and the facts say so. */
+export async function runTool(
+  db: pg.Client,
+  plan: ToolPlan,
+  usdRates: UsdRates | null,
+): Promise<ToolResult> {
   switch (plan.tool) {
     case 'salary': {
-      return salary(db, plan.filters);
+      return salary(db, plan.filters, usdRates);
     }
     case 'top_skills': {
       return topSkills(db, plan.filters);
@@ -101,8 +117,15 @@ export async function runTool(db: pg.Client, plan: ToolPlan): Promise<ToolResult
   }
 }
 
-async function salary(db: pg.Client, filters: Filters): Promise<ToolResult> {
-  const { rows } = await db.query<{ salary: number }>(SALARIES_SQL, filterParameters(filters));
+async function salary(
+  db: pg.Client,
+  filters: Filters,
+  usdRates: UsdRates | null,
+): Promise<ToolResult> {
+  const { rows } = await db.query<{ salary: number }>(SALARIES_SQL, [
+    ...filterParameters(filters),
+    ...rateParameters(usdRates),
+  ]);
   const row = salaryRow(
     'all',
     rows.map((row) => row.salary),
@@ -118,6 +141,7 @@ async function salary(db: pg.Client, filters: Filters): Promise<ToolResult> {
       tool: 'salary',
       currency: 'USD',
       period: 'month',
+      includesEurUah: usdRates !== null,
       n,
       p25,
       median,

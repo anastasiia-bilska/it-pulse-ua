@@ -1,7 +1,13 @@
-// «Запитай ринок» (ADR 0020): question → plan (model) → facts (SQL) → answer (model, number-guarded).
+// «Запитай ринок» (ADR 0021): question → plan (model) → facts (SQL) → answer (model, number-guarded).
 // Every answer that is not about numbers is a fixed text, so the model can't get it wrong.
 import type pg from 'pg';
-import { judgeFreshness, MIN_N, WINDOW_DAYS, type PipelineStatus } from '../dashboard/index.ts';
+import {
+  judgeFreshness,
+  MIN_N,
+  WINDOW_DAYS,
+  type PipelineStatus,
+  type UsdRates,
+} from '../dashboard/index.ts';
 import type { GeminiConfig } from '../extractor/index.ts';
 import type { Tracer } from '../observability/index.ts';
 import { writeAnswer } from './answer.ts';
@@ -13,6 +19,8 @@ import { runTool, type Facts } from './tools.ts';
 export interface AgentContext {
   gemini: GeminiConfig;
   tracer: Tracer;
+  /** Today's NBU rates; null (unreachable) leaves USD salaries only. */
+  usdRates: UsdRates | null;
   now: Date;
 }
 
@@ -66,7 +74,7 @@ export async function askMarket(
   if (plan.tool === 'unsupported') {
     return { kind: 'unsupported', text: MESSAGES.unsupported[language] };
   }
-  const result = await runTool(db, plan);
+  const result = await runTool(db, plan, context.usdRates);
   if (result.kind === 'insufficient') {
     return { kind: 'insufficient', text: MESSAGES.insufficient[language](result.n) };
   }

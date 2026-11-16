@@ -40,6 +40,11 @@ test('a malformed week from a manual run is refused', () => {
   assert.throws(() => parseIsoWeek('2026-W54'), /2026-W46/);
 });
 
+test('week 53 of a 52-week year is refused, not moved into the next year', () => {
+  assert.throws(() => parseIsoWeek('2027-W53'), /does not exist/);
+  assert.equal(parseIsoWeek('2026-W53').lastDay, '2027-01-03');
+});
+
 // ---- facts -------------------------------------------------------------------------------------
 
 test('changes are whole percents; small samples and the catch-all role are never passed on', () => {
@@ -88,6 +93,12 @@ test('clean scripts in both languages are accepted', () => {
   const answer = JSON.stringify({ uk: 'Вакансій 412.', en: 'There were 412 vacancies.' });
 
   assert.equal(judgeScripts(answer, FACTS).kind, 'accepted');
+});
+
+test('a truncated answer is a rejected attempt, not a crash', () => {
+  const result = judgeScripts('{"uk": "Вакансій', FACTS);
+
+  assert.deepEqual(result, { kind: 'rejected', reason: 'answer breaks the contract' });
 });
 
 test('one bad language rejects the whole episode and says why', () => {

@@ -1,6 +1,7 @@
-// CLI: asks the market one question and prints the answer (ADR 0020).
+// CLI: asks the market one question and prints the answer (ADR 0021).
 // Usage: npm run ask -- "Скільки платять senior backend?"
 import pg from 'pg';
+import { fetchUsdRates } from '../dashboard/index.ts';
 import { GEMINI_BASE_URL, MODEL } from '../extractor/index.ts';
 import { tracerFromEnvironment } from '../observability/index.ts';
 import { askMarket, isValidQuestion, MAX_QUESTION_CHARS } from './ask-market.ts';
@@ -22,6 +23,7 @@ async function ask(question: string): Promise<void> {
         baseUrl: process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL,
       },
       tracer,
+      usdRates: await fetchUsdRates(),
       now: new Date(),
     });
     console.log(`[${answer.kind}] ${answer.text}`);

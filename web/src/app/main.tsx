@@ -6,6 +6,7 @@ import './styles/typography.scss';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DashboardPage } from '../pages/dashboard/index.ts';
+import { startAnalytics } from '../shared/analytics/index.ts';
 import { LanguageProvider } from '../shared/i18n/index.ts';
 import { LANGUAGES } from '../shared/lib/index.ts';
 
@@ -18,6 +19,8 @@ if (!root) {
 
 // index.html is English, uk.html Ukrainian: the page the reader opened sets the language.
 const pageLanguage = LANGUAGES.find((language) => language === document.documentElement.lang);
+
+startAnalytics();
 
 createRoot(root).render(
   <StrictMode>

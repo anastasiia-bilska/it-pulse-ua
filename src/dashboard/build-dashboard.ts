@@ -12,10 +12,22 @@ import {
   toShares,
   type Count,
   type Freshness,
+  type PipelineStatus,
   type SalaryRow,
   type Share,
   WINDOW_DAYS,
 } from './statistics.ts';
+import { fetchUsdRates, rateParameters, usdMonthSalarySql, type UsdRates } from './usd-rates.ts';
+
+// ---- types -------------------------------------------------------------------------------------
+
+interface PipelineStatusRow {
+  last_status: string | null;
+  last_ok_at: Date | null;
+  last_run_at: Date | null;
+  backlog: number;
+  last_processed: number | null;
+}
 
 // ---- constants ---------------------------------------------------------------------------------
 
@@ -37,15 +49,23 @@ const TOP_SKILLS_SQL = `
   order by n desc, value
   limit $2`;
 
-// One salary per vacancy: the midpoint of the range, or the bound that is given.
+// One salary per vacancy, in USD per month (usd-rates.ts); $2 and $3 are the EUR and UAH rates.
 const USD_MONTH_SALARIES_SQL = `
-  select coalesce(role, 'not_stated') as role, coalesce(seniority, 'not_stated') as seniority,
-         (coalesce(salary_min, salary_max) + coalesce(salary_max, salary_min))::float8 / 2 as salary
-  from vacancy_current
-  where ${IN_WINDOW} and salary_currency = 'USD' and salary_period = 'month'`;
+  select role, seniority, salary
+  from (
+    select coalesce(role, 'not_stated') as role, coalesce(seniority, 'not_stated') as seniority,
+           ${usdMonthSalarySql(2)} as salary
+    from vacancy_current
+    where ${IN_WINDOW}
+  ) as converted
+  where salary is not null`;
 
+// The newest run's processed count is not in the view, so it is read from job_run itself.
 const PIPELINE_STATUS_SQL = `
-  select last_status, last_ok_at, backlog from pipeline_status where job = 'extract'`;
+  select status.last_status, status.last_ok_at, status.last_run_at, status.backlog,
+         (select processed from job_run where job = 'extract' order by id desc limit 1)
+           as last_processed
+  from pipeline_status status where status.job = 'extract'`;
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -66,7 +86,8 @@ async function buildDashboard(): Promise<void> {
 }
 
 async function computeAggregates(db: pg.Client): Promise<Aggregates> {
-  const salaries = await usdMonthSalaries(db);
+  const rates = await fetchUsdRates();
+  const salaries = await usdMonthSalaries(db, rates);
   return {
     generatedAt: new Date().toISOString(),
     windowDays: WINDOW_DAYS,
@@ -77,6 +98,7 @@ async function computeAggregates(db: pg.Client): Promise<Aggregates> {
     topSkills: await topSkills(db),
     salaryUsdMonthByRole: salaryTable(salaries, 'role'),
     salaryUsdMonthBySeniority: salaryTable(salaries, 'seniority'),
+    salaryRatesDate: rates?.date ?? null,
     digest: await readLatestDigest(),
   };
 }
@@ -112,10 +134,11 @@ async function topSkills(db: pg.Client): Promise<Count[]> {
 
 async function usdMonthSalaries(
   db: pg.Client,
+  rates: UsdRates | null,
 ): Promise<{ role: string; seniority: string; salary: number }[]> {
   const { rows } = await db.query<{ role: string; seniority: string; salary: number }>(
     USD_MONTH_SALARIES_SQL,
-    [WINDOW_DAYS],
+    [WINDOW_DAYS, ...rateParameters(rates)],
   );
   return rows;
 }
@@ -136,20 +159,23 @@ function salaryTable(
 }
 
 async function freshness(db: pg.Client): Promise<Freshness> {
-  const { rows } = await db.query<{
-    last_status: string | null;
-    last_ok_at: Date | null;
-    backlog: number;
-  }>(PIPELINE_STATUS_SQL);
-  const status = rows[0];
-  return judgeFreshness(
-    {
-      lastStatus: status?.last_status ?? null,
-      lastOkAt: status?.last_ok_at ?? null,
-      backlog: status?.backlog ?? 0,
-    },
-    new Date(),
-  );
+  const { rows } = await db.query<PipelineStatusRow>(PIPELINE_STATUS_SQL);
+  return judgeFreshness(toPipelineStatus(rows[0]), new Date());
+}
+
+/** No row means extraction has never run. */
+function toPipelineStatus(row: PipelineStatusRow | undefined): PipelineStatus {
+  if (!row) {
+    return { lastStatus: null, lastOkAt: null, backlog: 0 };
+  }
+  const status: PipelineStatus = {
+    lastStatus: row.last_status,
+    lastOkAt: row.last_ok_at,
+    backlog: row.backlog,
+  };
+  return row.last_run_at
+    ? { ...status, lastRun: { at: row.last_run_at, processed: row.last_processed ?? 0 } }
+    : status;
 }
 
 await buildDashboard();

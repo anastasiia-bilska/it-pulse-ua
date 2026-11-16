@@ -1,4 +1,4 @@
-# 0020. «Запитай ринок»: a router over fixed SQL tools, served from a Cloudflare Worker
+# 0021. «Запитай ринок»: a router over fixed SQL tools, served from a Cloudflare Worker
 
 - Status: accepted; supersedes the "planned backend is NestJS" note in
   [ADR 0003](0003-typescript-without-build-step.md) and [ADR 0011](0011-public-dashboard.md)

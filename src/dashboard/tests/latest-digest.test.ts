@@ -30,3 +30,7 @@ test('the trailer has no week', () => {
 test('a file of another shape gives no episode instead of breaking the dashboard', () => {
   assert.equal(parseDigestEpisode(JSON.stringify({ scripts: { uk: '' } })), null);
 });
+
+test('a truncated file gives no episode instead of breaking the dashboard', () => {
+  assert.equal(parseDigestEpisode('{"facts": null, "scripts": {"uk"'), null);
+});

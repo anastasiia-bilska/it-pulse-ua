@@ -4,7 +4,13 @@ import type pg from 'pg';
 import type { Tracer } from '../observability/index.ts';
 import { checkEvidence, type CheckedFields, type RiskyField } from './evidence.ts';
 import { extractedFieldsSchema, type ExtractedFields } from './fields.ts';
-import { generateJson, QuotaExhaustedError, type GeminiConfig, type Generation } from './gemini.ts';
+import {
+  GeminiUnavailableError,
+  generateJson,
+  QuotaExhaustedError,
+  type GeminiConfig,
+  type Generation,
+} from './gemini.ts';
 import { EXTRACTOR_VERSION, PROMPT_HASH, RESPONSE_SCHEMA, SYSTEM_INSTRUCTION } from './prompt.ts';
 import {
   countBacklog,
@@ -36,13 +42,16 @@ export interface RunReport {
   /** Risky fields nulled by the evidence check, per field. */
   dropped: Record<RiskyField, number>;
   stoppedByQuota: boolean;
+  /** Gemini itself failed (5xx, network, auth): the run stopped and the queue waits. */
+  stoppedByOutage: boolean;
   backlog: number;
 }
 
 type Outcome =
   | { kind: 'saved'; dropped: RiskyField[]; generation: Generation }
   | { kind: 'failed'; reason: string }
-  | { kind: 'quota' };
+  | { kind: 'quota' }
+  | { kind: 'unavailable' };
 
 interface Attempt {
   vacancy: PendingVacancy;
@@ -84,7 +93,7 @@ export async function extractPending(
     }
     const outcome = await extractOne(db, vacancy, options);
     addToReport(report, outcome);
-    if (outcome.kind === 'quota') {
+    if (outcome.kind === 'quota' || outcome.kind === 'unavailable') {
       break;
     }
   }
@@ -98,6 +107,7 @@ function emptyReport(): RunReport {
     failed: 0,
     dropped: { salary: 0, english: 0, experience: 0, domain: 0 },
     stoppedByQuota: false,
+    stoppedByOutage: false,
     backlog: 0,
   };
 }
@@ -113,7 +123,10 @@ async function extractOne(
   return outcome;
 }
 
-/** Never throws for one vacancy: its failure is recorded, and the run moves on. */
+/**
+ * Never throws for one vacancy. A failure of this vacancy's answer is recorded and the run moves
+ * on; a quota or outage error is no fault of the vacancy, so it stays queued untouched.
+ */
 async function tryExtract(
   db: pg.Client,
   vacancy: PendingVacancy,
@@ -135,15 +148,18 @@ async function tryExtract(
     if (error instanceof QuotaExhaustedError) {
       return { kind: 'quota' };
     }
+    if (error instanceof GeminiUnavailableError) {
+      return { kind: 'unavailable' };
+    }
     const reason = error instanceof Error ? error.message : String(error);
     await recordFailure(db, { rawItemId: vacancy.rawItemId, version: EXTRACTOR_VERSION }, reason);
     return { kind: 'failed', reason };
   }
 }
 
-/** A quota stop is not traced: no answer came back, and the vacancy stays queued. */
+/** A quota or outage stop is not traced: no answer came back, and the vacancy stays queued. */
 function traceAttempt(tracer: Tracer, attempt: Attempt, outcome: Outcome): void {
-  if (outcome.kind === 'quota') {
+  if (outcome.kind === 'quota' || outcome.kind === 'unavailable') {
     return;
   }
   const generation = outcome.kind === 'saved' ? outcome.generation : undefined;
@@ -232,6 +248,10 @@ function addToReport(report: RunReport, outcome: Outcome): void {
     }
     case 'quota': {
       report.stoppedByQuota = true;
+      break;
+    }
+    case 'unavailable': {
+      report.stoppedByOutage = true;
       break;
     }
   }

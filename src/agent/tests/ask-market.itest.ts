@@ -16,7 +16,8 @@ interface SeedVacancy {
   count: number;
   role: string;
   seniority: string;
-  salaryUsdMonth?: number;
+  /** A monthly salary and its currency. */
+  salary?: { amount: number; currency: 'USD' | 'UAH' };
   skill?: string;
 }
 
@@ -30,6 +31,8 @@ const NO_TRACING: Tracer = {
   flush: () => Promise.resolve(),
 };
 const ANY = { role: null, seniority: null, skill: null, dimension: null };
+/** 1 EUR = 1.2 USD, 1 UAH = 0.025 USD: round numbers keep the quartiles easy to check. */
+const USD_RATES = { date: '16.11.2026', eur: 1.2, uah: 0.025 };
 
 // ---- shared state (set up in before()) ---------------------------------------------------------
 
@@ -73,6 +76,7 @@ async function ask(plan: object, answers: string[] = []): Promise<MarketAnswer> 
   return askMarket(extractor, 'синтетичне питання', {
     gemini: { apiKey: 'test-key', model: 'gemini-test', baseUrl },
     tracer: NO_TRACING,
+    usdRates: USD_RATES,
     now: new Date(),
   });
 }
@@ -101,9 +105,9 @@ async function seedVacancies(seed: SeedVacancy): Promise<void> {
         rows[0]!.id,
         seed.role,
         seed.seniority,
-        seed.salaryUsdMonth ?? null,
-        seed.salaryUsdMonth ? 'USD' : null,
-        seed.salaryUsdMonth ? 'month' : null,
+        seed.salary?.amount ?? null,
+        seed.salary?.currency ?? null,
+        seed.salary ? 'month' : null,
       ],
     );
     if (seed.skill) {
@@ -138,7 +142,7 @@ before(async () => {
     count: 4,
     role: 'backend',
     seniority: 'senior',
-    salaryUsdMonth: 5000,
+    salary: { amount: 5000, currency: 'USD' },
     skill: 'golang',
   });
   await seedVacancies({
@@ -146,14 +150,15 @@ before(async () => {
     count: 8,
     role: 'backend',
     seniority: 'senior',
-    salaryUsdMonth: 4000,
+    salary: { amount: 4000, currency: 'USD' },
   });
   await seedVacancies({
     prefix: 'qa',
     count: 3,
     role: 'qa',
     seniority: 'junior',
-    salaryUsdMonth: 1000,
+    // 40 000 UAH = 1000 USD at the test rate: counted only if converted.
+    salary: { amount: 40_000, currency: 'UAH' },
   });
   await admin.query(
     `insert into job_run (job, started_at, status, backlog) values ('extract', now(), 'ok', 0)`,
@@ -181,6 +186,7 @@ test('a salary question is answered from SQL quartiles, and the facts travel wit
     tool: 'salary',
     currency: 'USD',
     period: 'month',
+    includesEurUah: true,
     n: 12,
     p25: 4000,
     median: 4000,
@@ -188,7 +194,7 @@ test('a salary question is answered from SQL quartiles, and the facts travel wit
   });
 });
 
-test('a sample below 10 gets «даних замало» and never reaches the writer', async () => {
+test('a sample below 10 gets «даних замало» (UAH salaries counted) and never reaches the writer', async () => {
   const plan = { ...ANY, language: 'uk', tool: 'salary', role: 'qa', seniority: 'junior' };
 
   const answer = await ask(plan, ['Медіана 1000.']);
