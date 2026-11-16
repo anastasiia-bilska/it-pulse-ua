@@ -1,4 +1,4 @@
-# The collector's clock (ADR 0018): a Cron Trigger that dispatches collect.yml every 2 hours.
+# The pipeline's clock (ADR 0018): Cron Triggers that dispatch collect.yml and digest.yml.
 name = "it-pulse-collect-trigger"
 main = "collect-trigger.ts"
 compatibility_date = "2026-11-01"
@@ -6,5 +6,5 @@ compatibility_date = "2026-11-01"
 workers_dev = false
 
 [triggers]
-# UTC, the same slots the GitHub schedule used.
-crons = ["17 */2 * * *"]
+# UTC, the same slots the GitHub schedules use. Each cron maps to a workflow in WORKFLOW_BY_CRON.
+crons = ["17 */2 * * *", "5 8 * * 1"]

@@ -27,6 +27,12 @@ fire. A longer healthchecks grace would only hide it.
 - healthchecks.io keeps watching the outcome either way: a dead Worker or an expired token shows as
   a missing ping.
 
+- **The weekly digest** (amended 2026-11-14) uses the same Worker: a second Cron Trigger
+  (`5 8 * * 1`) dispatches `digest.yml`, and `WORKFLOW_BY_CRON` maps each cron to its workflow.
+  The digest runs once a week, so one dropped GitHub slot would cost a whole episode. Its GitHub
+  schedule stays as a permanent backup: the job skips a week whose release already exists, so a
+  second run neither publishes nor pays for speech twice.
+
 ## Consequences
 
 - One more moving part with a secret that expires: the token is set for a year; renewing it is a
