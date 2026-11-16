@@ -10,6 +10,10 @@ on:
     paths:
       - 'web/**'
       - 'src/dashboard/**'
+      # The /api/ask Pages Function (ADR 0021) ships with the page.
+      - 'src/agent/**'
+      - 'functions/**'
+      - 'wrangler.toml'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/dashboard.yml'
@@ -69,6 +73,27 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npm run social-card
+      # The /api/ask function's secrets (ADR 0021). It connects as the read-only `agent` role, never
+      # as the extractor. Langfuse keys are optional: an empty one is left out, tracing stays off.
+      - name: Agent secrets
+        env:
+          DATABASE_URL_AGENT: ${{ secrets.DATABASE_URL_AGENT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ASK_CLIENT_SALT: ${{ secrets.ASK_CLIENT_SALT }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        run: |
+          jq -n '{DATABASE_URL: env.DATABASE_URL_AGENT, GEMINI_API_KEY: env.GEMINI_API_KEY,
+                  ASK_CLIENT_SALT: env.ASK_CLIENT_SALT, LANGFUSE_PUBLIC_KEY: env.LANGFUSE_PUBLIC_KEY,
+                  LANGFUSE_SECRET_KEY: env.LANGFUSE_SECRET_KEY} | with_entries(select(.value != ""))' \
+            > "$RUNNER_TEMP/ask-secrets.json"
+      # Secrets apply to the next deployment, so they go up before it.
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.162.0'
+          command: pages secret bulk ${{ runner.temp }}/ask-secrets.json --project-name=it-pulse-ua
       # dist/site carries web/public/_headers, the cache rules Cloudflare Pages applies.
       - uses: cloudflare/wrangler-action@v4
         with:

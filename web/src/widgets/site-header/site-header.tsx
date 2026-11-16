@@ -1,7 +1,7 @@
 // Sticky header: brand, section links, the agent teaser, language and GitHub. On phones the links
 // collapse into the burger menu.
 import type { ReactElement } from 'react';
-import { AskMarketTeaser } from '../../features/ask-market/index.ts';
+import { AskMarket } from '../../features/ask-market/index.ts';
 import { LanguageSwitch } from '../../features/switch-language/index.ts';
 import { REPOSITORY_URL } from '../../shared/config/index.ts';
 import { useLanguage } from '../../shared/i18n/index.ts';
@@ -26,7 +26,7 @@ export function SiteHeader(): ReactElement {
               {messages.nav[section]}
             </a>
           ))}
-          <AskMarketTeaser look="pill" />
+          <AskMarket look="pill" />
           <LanguageSwitch />
           <a
             href={REPOSITORY_URL}

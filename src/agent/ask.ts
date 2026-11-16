@@ -23,7 +23,7 @@ async function ask(question: string): Promise<void> {
         baseUrl: process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL,
       },
       tracer,
-      usdRates: await fetchUsdRates(),
+      loadUsdRates: () => fetchUsdRates(),
       now: new Date(),
     });
     console.log(`[${answer.kind}] ${answer.text}`);

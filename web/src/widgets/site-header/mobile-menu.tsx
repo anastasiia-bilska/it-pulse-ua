@@ -1,7 +1,7 @@
 // The burger menu, a modal <dialog>: the browser traps focus, closes it on Esc and makes the page
 // behind it inert, so no focus-trap code is needed.
 import { useRef, type ReactElement } from 'react';
-import { AskMarketTeaser } from '../../features/ask-market/index.ts';
+import { AskMarket } from '../../features/ask-market/index.ts';
 import { LanguageSwitch } from '../../features/switch-language/index.ts';
 import { useLanguage } from '../../shared/i18n/index.ts';
 import { Badge, Button, Icon, Logo } from '../../shared/ui/index.ts';
@@ -59,7 +59,7 @@ function MenuLinks({ onNavigate }: { onNavigate: () => void }): ReactElement {
         </a>
       ))}
       <div className={styles.teasers}>
-        <AskMarketTeaser look="card" />
+        <AskMarket look="card" />
         <p className={styles.digest}>
           <Icon name="headphones" size={18} />
           <span className={styles.linkText}>{messages.digest.title}</span>

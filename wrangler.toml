@@ -1,0 +1,7 @@
+# Cloudflare Pages project (ADR 0015, ADR 0021): the dashboard in dist/site and the «Запитай ринок»
+# function in functions/. Secrets are set by dashboard.yml, never written here.
+name = "it-pulse-ua"
+pages_build_output_dir = "dist/site"
+compatibility_date = "2026-11-01"
+# pg reaches Neon over TCP sockets through node:net and node:tls.
+compatibility_flags = ["nodejs_compat"]

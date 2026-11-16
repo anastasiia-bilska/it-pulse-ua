@@ -3,6 +3,7 @@ export {
   createLangfuseTracer,
   LANGFUSE_EU_URL,
   langfuseCredentialsFromEnvironment,
+  NO_TRACING,
   tracerFromEnvironment,
   type GenerationTrace,
   type Tracer,

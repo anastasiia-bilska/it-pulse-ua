@@ -50,7 +50,9 @@ function webLayerRules(layer: string): Linter.RulesRecord {
 
 // Engineering rules behind this config: CLAUDE.md. Why these tools: ADR 0006.
 export default defineConfig(
-  { ignores: ['node_modules/', 'dist/', '**/test-results/', '**/playwright-report/'] },
+  {
+    ignores: ['node_modules/', 'dist/', '.wrangler/', '**/test-results/', '**/playwright-report/'],
+  },
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,

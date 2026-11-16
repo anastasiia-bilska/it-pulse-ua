@@ -19,8 +19,8 @@ import { runTool, type Facts } from './tools.ts';
 export interface AgentContext {
   gemini: GeminiConfig;
   tracer: Tracer;
-  /** Today's NBU rates; null (unreachable) leaves USD salaries only. */
-  usdRates: UsdRates | null;
+  /** Called only for salary questions: today's NBU rates, null when unreachable (USD only). */
+  loadUsdRates: () => Promise<UsdRates | null>;
   now: Date;
 }
 
@@ -74,7 +74,7 @@ export async function askMarket(
   if (plan.tool === 'unsupported') {
     return { kind: 'unsupported', text: MESSAGES.unsupported[language] };
   }
-  const result = await runTool(db, plan, context.usdRates);
+  const result = await runTool(db, plan, context.loadUsdRates);
   if (result.kind === 'insufficient') {
     return { kind: 'insufficient', text: MESSAGES.insufficient[language](result.n) };
   }

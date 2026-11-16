@@ -57,7 +57,8 @@ const NANOS_PER_MILLI = 1_000_000n;
 const TRACE_ID_BYTES = 16;
 const SPAN_ID_BYTES = 8;
 
-const NO_TRACING: Tracer = {
+/** Tracing switched off: local runs, tests, and a deploy without Langfuse keys. */
+export const NO_TRACING: Tracer = {
   recordGeneration: () => {
     // tracing is off: nothing to record
   },

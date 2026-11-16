@@ -1,6 +1,6 @@
 @use '../../shared/styles/units' as *;
 
-.teaser {
+.trigger {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -24,11 +24,6 @@
     outline: 2px solid var(--color-pulse);
     outline-offset: 3px;
   }
-}
-
-.teaser > span:last-child {
-  padding: 1px rem(7px);
-  font-size: rem(10px);
 }
 
 .text {
@@ -99,6 +94,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .dialogTitle {
@@ -118,20 +114,108 @@
 
 .examples {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin: calc(-1 * var(--space-2)) 0 0;
   padding: 0;
   list-style: none;
 
-  li {
-    padding: rem(12px) rem(16px);
+  button {
+    min-height: rem(44px);
+    padding: rem(8px) rem(14px);
     border: 1px solid var(--color-border);
-    border-radius: rem(12px);
+    border-radius: var(--radius-pill);
     background: var(--color-ink);
     color: var(--color-text-2);
+    font: inherit;
+    font-size: rem(14px);
     font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-border-hover);
+    }
+
+    &:disabled {
+      cursor: progress;
+      opacity: 0.6;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-pulse);
+      outline-offset: 2px;
+    }
   }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: rem(14px);
+  color: var(--color-muted);
+}
+
+/* Field and button side by side; the button drops below on narrow phones. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.input {
+  flex: 1 1 rem(220px);
+  min-height: rem(48px);
+  padding: 0 rem(16px);
+  border: 1px solid var(--color-border-strong);
+  border-radius: rem(12px);
+  background: var(--color-ink);
+  color: var(--color-text);
+  font: inherit;
+  font-size: rem(16px); /* 16px keeps iOS Safari from zooming into the field */
+
+  &::placeholder {
+    color: var(--color-faint);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pulse);
+    outline-offset: 1px;
+  }
+}
+
+.reply:empty {
+  display: none;
+}
+
+.answer,
+.notice,
+.asking {
+  padding: rem(16px);
+  border-radius: rem(14px);
+  font-size: rem(16px);
+  white-space: pre-line; /* the stale-data note comes after a blank line */
+}
+
+.answer {
+  border: 1px solid var(--color-pulse);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.notice {
+  border: 1px solid var(--color-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.asking {
+  border: 1px dashed var(--color-border-strong);
+  color: var(--color-muted);
 }
 
 .thin {

@@ -3,8 +3,8 @@ import pg from 'pg';
 import { migrate } from './migrate.ts';
 
 /** Pipeline roles. Production creates them with `neon roles create --access read_only`. */
-export type PipelineRole = 'collector' | 'extractor';
-const PIPELINE_ROLES: PipelineRole[] = ['collector', 'extractor'];
+export type PipelineRole = 'collector' | 'extractor' | 'agent';
+const PIPELINE_ROLES: PipelineRole[] = ['collector', 'extractor', 'agent'];
 
 export function testDatabaseUrl(): string {
   const url = process.env.TEST_DATABASE_URL;

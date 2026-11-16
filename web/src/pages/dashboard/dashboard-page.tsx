@@ -2,7 +2,7 @@
 // replace only the data blocks; the header, hero and method stay readable either way.
 import type { ReactElement } from 'react';
 import type { Aggregates } from '../../entities/aggregates/index.ts';
-import { AskMarketTeaser } from '../../features/ask-market/index.ts';
+import { AskMarket } from '../../features/ask-market/index.ts';
 import { useLanguage } from '../../shared/i18n/index.ts';
 import { Button, EmptyState, StatusBanner } from '../../shared/ui/index.ts';
 import { DigestPlayer } from '../../widgets/digest-player/index.ts';
@@ -48,7 +48,7 @@ export function DashboardPage(): ReactElement {
         />
         {/* On narrow screens the header has no room for the agent pill, so it closes the page. */}
         <div className={styles.ask} data-block="ask-market">
-          <AskMarketTeaser look="block" />
+          <AskMarket look="block" />
         </div>
       </main>
       <SiteFooter {...(aggregates && { generatedAt: aggregates.generatedAt })} />
