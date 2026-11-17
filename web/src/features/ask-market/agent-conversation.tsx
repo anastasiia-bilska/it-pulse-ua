@@ -42,10 +42,12 @@ export function AgentConversation(): ReactElement {
   const [question, setQuestion] = useState('');
   const { state, ask } = useAgent();
   const isAsking = state.status === 'asking';
-  function askAbout(text: string): void {
-    setQuestion(text);
+  // The asked question moves into the chat bubble: the field empties for the next one.
+  function askAndClear(text: string): void {
+    setQuestion('');
     ask(text);
   }
+  const askedQuestion = state.status === 'idle' ? undefined : state.question;
   return (
     <>
       {/* A polite live region: a screen reader hears "counting…" and then the reply. */}
@@ -56,14 +58,21 @@ export function AgentConversation(): ReactElement {
           <Exchange state={state} />
         )}
       </section>
-      <ExampleQuestions isAsking={isAsking} onAsk={askAbout} />
-      <QuestionForm question={question} isAsking={isAsking} onChange={setQuestion} onAsk={ask} />
+      <ExampleQuestions isAsking={isAsking} askedQuestion={askedQuestion} onAsk={askAndClear} />
+      <QuestionForm
+        question={question}
+        isAsking={isAsking}
+        onChange={setQuestion}
+        onAsk={askAndClear}
+      />
     </>
   );
 }
 
+/** The example just asked is already in the chat, so it leaves the list until another is asked. */
 function ExampleQuestions(properties: {
   isAsking: boolean;
+  askedQuestion: string | undefined;
   onAsk: (question: string) => void;
 }): ReactElement {
   const copy = useLanguage().messages.ask;
@@ -71,19 +80,21 @@ function ExampleQuestions(properties: {
     <div className={styles.examples}>
       <p className={styles.examplesTitle}>{copy.examplesTitle}</p>
       <ul className={styles.exampleList}>
-        {copy.examples.map((example) => (
-          <li key={example}>
-            <button
-              type="button"
-              disabled={properties.isAsking}
-              onClick={() => {
-                properties.onAsk(example);
-              }}
-            >
-              {example}
-            </button>
-          </li>
-        ))}
+        {copy.examples
+          .filter((example) => example !== properties.askedQuestion)
+          .map((example) => (
+            <li key={example}>
+              <button
+                type="button"
+                disabled={properties.isAsking}
+                onClick={() => {
+                  properties.onAsk(example);
+                }}
+              >
+                {example}
+              </button>
+            </li>
+          ))}
       </ul>
     </div>
   );

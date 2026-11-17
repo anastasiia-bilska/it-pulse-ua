@@ -40,6 +40,7 @@ test('a typed question is sent with the page language and the answer is shown', 
   await user.click(screen.getByRole('button', { name: 'Запитати' }));
 
   expect(await screen.findByText('Медіана 3000 USD на місяць за 40 вакансіями.')).toBeVisible();
+  expect(screen.getByLabelText('Твоє питання')).toHaveValue('');
   expect(endpoint).toHaveBeenCalledWith('/api/ask', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -47,14 +48,18 @@ test('a typed question is sent with the page language and the answer is shown', 
   });
 });
 
-test('an example question is asked in one click and fills the field', async () => {
+test('an example question is asked in one click and leaves the list and the field', async () => {
   const endpoint = stubEndpoint('answered', 'Відповідь.');
   const user = await openDialog();
 
   await user.click(screen.getByRole('button', { name: 'Які навички найпотрібніші?' }));
 
   expect(await screen.findByText('Відповідь.')).toBeVisible();
-  expect(screen.getByLabelText('Твоє питання')).toHaveValue('Які навички найпотрібніші?');
+  expect(screen.getByLabelText('Твоє питання')).toHaveValue('');
+  expect(
+    screen.queryByRole('button', { name: 'Які навички найпотрібніші?' }),
+  ).not.toBeInTheDocument();
+  expect(screen.getByText('Які навички найпотрібніші?')).toBeVisible();
   expect(endpoint).toHaveBeenCalledOnce();
 });
 
