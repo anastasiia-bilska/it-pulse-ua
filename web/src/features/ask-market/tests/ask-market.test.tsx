@@ -96,6 +96,24 @@ test('a thin sample is told in the agent’s words, with no numbers drawn', asyn
   expect(screen.queryByText(/^n = /)).not.toBeInTheDocument();
 });
 
+test('while the agent counts, the reply says so', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      () =>
+        new Promise<Response>(() => {
+          // Never settles: the agent is still counting.
+        }),
+    ),
+  );
+  const user = await openDialog();
+
+  await user.click(screen.getByRole('button', { name: 'Які навички найпотрібніші?' }));
+
+  expect(screen.getByText('Рахую')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Запитати' })).toBeDisabled();
+});
+
 test('a refusal from the server (the daily limit) is shown in its own words', async () => {
   stubEndpoint('limit', 'На сьогодні ліміт питань до агента вичерпано. Спробуй завтра.', {
     status: 429,

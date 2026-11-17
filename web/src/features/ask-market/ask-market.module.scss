@@ -275,7 +275,74 @@
 }
 
 .asking {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: rem(36px); /* the avatar's height: the row doesn't jump when the answer comes */
   color: var(--color-muted);
+}
+
+/* Three dots that rise in turn, as in a messenger while the other side types. */
+.typing {
+  display: inline-flex;
+  gap: rem(5px);
+
+  span {
+    width: rem(7px);
+    height: rem(7px);
+    border-radius: 50%;
+    background: var(--color-pulse);
+    animation: typing 1.2s ease-in-out infinite;
+  }
+
+  span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+/* The avatar's pulse beats while the agent works. */
+.thinking svg {
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(rem(-5px));
+  }
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  20% {
+    transform: scale(1.18);
+  }
+
+  40% {
+    transform: scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing span,
+  .thinking svg {
+    animation: none;
+  }
 }
 
 .notice,
