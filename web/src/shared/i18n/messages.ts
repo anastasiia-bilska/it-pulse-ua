@@ -39,6 +39,9 @@ const UK = {
     asking: 'Рахую…',
     offline: 'Не вдалося з’єднатися з агентом. Перевір інтернет і спробуй ще раз.',
     examplesTitle: 'Або спробуй:',
+    empty: 'Постав питання або вибери приклад, і відповідь з’явиться тут.',
+    sample: (n: string): string => `n = ${n}`,
+    window: (days: string): string => `за ${days} днів`,
     examples: [
       'Яка частка вакансій з віддаленою роботою?',
       'Яка медіанна зарплата Middle?',
@@ -207,6 +210,9 @@ const EN: Messages = {
     asking: 'Counting…',
     offline: 'Could not reach the agent. Check your connection and try again.',
     examplesTitle: 'Or try:',
+    empty: 'Ask a question or pick an example, and the answer appears here.',
+    sample: (n: string): string => `n = ${n}`,
+    window: (days: string): string => `last ${days} days`,
     examples: [
       'What share of vacancies is remote?',
       'What is the median Middle salary?',

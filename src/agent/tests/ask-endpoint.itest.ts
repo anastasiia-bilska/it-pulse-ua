@@ -148,13 +148,16 @@ after(async () => {
 
 // ---- scenarios ---------------------------------------------------------------------------------
 
-test('a question is answered and counted against the quota, as the agent role', async () => {
+test('a question is answered with its numbers as bars, and counted against the quota', async () => {
   const response = await post({ question: 'Which roles hire the most?', language: 'en' });
 
   assert.equal(response.status, 200);
   assert.deepEqual(response.json, {
     kind: 'answered',
     text: 'All 12 analysed vacancies (100%) are backend.',
+    n: 12,
+    windowDays: 30,
+    chart: { dimension: 'role', bars: [{ value: 'backend', n: 12, percent: 100 }] },
   });
   assert.equal(await questionsToday(), 1);
 });

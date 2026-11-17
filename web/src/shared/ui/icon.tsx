@@ -46,6 +46,12 @@ const PATHS = {
     </>
   ),
   chevronRight: <polyline points="9 18 15 12 9 6" />,
+  arrowRight: (
+    <>
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </>
+  ),
   play: (
     <path
       d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"

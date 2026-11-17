@@ -26,7 +26,8 @@ export interface AgentContext {
 
 export type MarketAnswer =
   | { kind: 'answered'; text: string; facts: Facts; isStale: boolean }
-  | { kind: 'insufficient' | 'unsupported' | 'unknown_skill' | 'failed'; text: string };
+  | { kind: 'insufficient'; text: string; n: number }
+  | { kind: 'unsupported' | 'unknown_skill' | 'failed'; text: string };
 
 // ---- constants ---------------------------------------------------------------------------------
 
@@ -76,7 +77,7 @@ export async function askMarket(
   }
   const result = await runTool(db, plan, context.loadUsdRates);
   if (result.kind === 'insufficient') {
-    return { kind: 'insufficient', text: MESSAGES.insufficient[language](result.n) };
+    return { kind: 'insufficient', text: MESSAGES.insufficient[language](result.n), n: result.n };
   }
   if (result.kind === 'unknown_skill') {
     return { kind: 'unknown_skill', text: MESSAGES.unknownSkill[language] };
