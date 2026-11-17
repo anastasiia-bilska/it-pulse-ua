@@ -35,7 +35,8 @@
 
 .pill {
   min-height: rem(44px);
-  padding: 0 rem(10px) 0 rem(16px);
+  /* Text ends the pill, so its side gets a touch more room than the icon's. */
+  padding: 0 rem(18px) 0 rem(16px);
   border-radius: var(--radius-pill);
 }
 

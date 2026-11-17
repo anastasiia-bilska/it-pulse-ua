@@ -83,7 +83,10 @@
   background: var(--color-error-border);
 }
 
+/* A square that never shrinks: next to long text in a flex row it would squeeze into an oval. */
 .icon {
+  flex: none;
   width: rem(44px);
+  height: rem(44px);
   padding: 0;
 }
