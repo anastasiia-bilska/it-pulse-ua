@@ -94,7 +94,10 @@ function Exchange({ state }: { state: AskedState }): ReactElement {
     <>
       <p className={styles.question}>{state.question}</p>
       <div className={styles.agentRow}>
-        <span className={styles.avatar} aria-hidden="true">
+        <span
+          className={`${styles.avatar} ${state.status === 'asking' ? styles.thinking : ''}`}
+          aria-hidden="true"
+        >
           <Icon name="pulse" size={20} />
         </span>
         <div className={styles.agentBody}>
@@ -108,7 +111,17 @@ function Exchange({ state }: { state: AskedState }): ReactElement {
 function AgentReplyView({ state }: { state: AskedState }): ReactElement {
   const { messages } = useLanguage();
   if (state.status === 'asking') {
-    return <p className={styles.asking}>{messages.ask.asking}</p>;
+    // The dots move so a slow answer doesn't look frozen; a screen reader hears only the word.
+    return (
+      <p className={styles.asking}>
+        {messages.ask.asking}
+        <span className={styles.typing} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+      </p>
+    );
   }
   if (state.status === 'offline') {
     return <p className={styles.notice}>{messages.ask.offline}</p>;
