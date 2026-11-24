@@ -12,8 +12,8 @@ export {
 } from './fields.ts';
 export {
   extractFields,
-  QUOTA_WAIT_MS,
   REQUEST_INTERVAL_MS,
+  RETRY_WAIT_MS,
   type ModelCallOptions,
 } from './extract-pending.ts';
 export { extractedFieldsSchema } from './fields.ts';

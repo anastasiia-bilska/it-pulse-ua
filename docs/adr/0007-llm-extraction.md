@@ -89,6 +89,11 @@ We also rejected model-reported confidence, because it is poorly calibrated.
   model): the run stops with status `error`, nothing is recorded against the vacancy, and the run
   pings `/fail`. Counting an outage as attempts would dead-letter the freshest 300 vacancies of
   every run during a few hours of Gemini downtime (amended 2026-11-14).
+  Amended 2026-11-24: Gemini overloads come in bursts, and on 2026-11-24 a single 503 stopped
+  seven runs in a row after 0 to 17 vacancies while the queue doubled. Now the retry after a
+  service error waits 60 s, like a 429. A vacancy whose retry also fails stays queued and the run
+  moves on; the run stops only after 3 such vacancies, which also keeps it inside the workflow's
+  45 minutes. The alert names the last error (`Gemini HTTP 503`, never vacancy text).
 
 If more than 10% of a run errors, the run pings `/fail` on the `it-pulse-extract` check. A queue
 that grows three runs in a row also alerts.

@@ -25,7 +25,11 @@ import { recordJobRun } from '../repository.ts';
 // ---- types -------------------------------------------------------------------------------------
 
 /** What the fake model does for a vacancy whose title contains the case name. */
-type FakeBehaviour = { answer: Partial<ExtractedFields> } | { status: number } | { raw: string };
+/** `overloadedRequests`: the first requests get a 503, the next ones the answer. */
+type FakeBehaviour =
+  | { answer: Partial<ExtractedFields>; overloadedRequests?: number }
+  | { status: number }
+  | { raw: string };
 
 interface InteractionRequest {
   input: string;
@@ -67,7 +71,7 @@ const DESCRIPTION =
 const FAST: Omit<ExtractionOptions, 'gemini' | 'tracer'> = {
   limit: 50,
   requestIntervalMs: 0,
-  quotaWaitMs: 0,
+  retryWaitMs: 0,
 };
 
 // ---- shared state (set up in before()) ---------------------------------------------------------
@@ -90,6 +94,11 @@ function respond(request: IncomingMessage, response: ServerResponse): void {
     const interaction = JSON.parse(body) as InteractionRequest;
     requests.push(interaction);
     const behaviour = behaviourFor(interaction.input);
+    if ('answer' in behaviour && (behaviour.overloadedRequests ?? 0) > 0) {
+      behaviour.overloadedRequests = (behaviour.overloadedRequests ?? 0) - 1;
+      response.writeHead(503).end('{}');
+      return;
+    }
     if ('status' in behaviour) {
       response.writeHead(behaviour.status).end('{}');
       return;
@@ -278,9 +287,38 @@ test('a quota error that persists stops the run and leaves the rest queued', asy
   assert.equal(report.backlog, 2);
 });
 
-test('a Gemini outage stops the run, counts no attempt and alerts', async () => {
+test('a short Gemini overload is waited out and the vacancy is extracted', async () => {
+  behaviours.set('case-overloaded', { answer: {}, overloadedRequests: 1 });
+  const rawItemId = await seedVacancy('8', 'case-overloaded');
+
+  const report = await run();
+
+  assert.equal(report.outages, 0);
+  assert.equal(report.stoppedByOutage, false);
+  const saved = await admin.query('select 1 from extraction where raw_item_id = $1', [rawItemId]);
+  assert.equal(saved.rowCount, 1);
+});
+
+test('one outage leaves the vacancy queued and the run goes on', async () => {
+  behaviours.set('case-outage-once', { status: 503 });
+  behaviours.set('case-after-outage', { answer: {} });
+  const laterId = await seedVacancy('9', 'case-after-outage');
+  await seedVacancy('10', 'case-outage-once');
+
+  const report = await run();
+
+  assert.equal(report.outages, 1);
+  assert.equal(report.stoppedByOutage, false);
+  assert.equal(report.outageReason, 'Gemini HTTP 503');
+  const saved = await admin.query('select 1 from extraction where raw_item_id = $1', [laterId]);
+  assert.equal(saved.rowCount, 1, 'the run went past the outage');
+});
+
+test('a Gemini outage stops the run, counts no attempt and alerts with the status', async () => {
   behaviours.set('case-outage', { status: 503 });
   const rawItemId = await seedVacancy('7', 'case-outage');
+  await seedVacancy('11', 'case-outage');
+  await seedVacancy('12', 'case-outage');
 
   const report = await run();
 
@@ -291,7 +329,7 @@ test('a Gemini outage stops the run, counts no attempt and alerts', async () => 
   ]);
   assert.equal(failures.rowCount, 0);
   const problems = await findRunProblems(extractor, report);
-  assert.ok(problems.some((problem) => problem.startsWith('Gemini unavailable')));
+  assert.ok(problems.some((problem) => problem.startsWith('Gemini unavailable (Gemini HTTP 503)')));
 });
 
 test('an unreachable Gemini is an outage too', async () => {
