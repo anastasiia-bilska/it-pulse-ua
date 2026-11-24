@@ -6,8 +6,8 @@ import { resolveSkills } from '../taxonomy/index.ts';
 import { findRunProblems } from './checks.ts';
 import {
   extractPending,
-  QUOTA_WAIT_MS,
   REQUEST_INTERVAL_MS,
+  RETRY_WAIT_MS,
   type RunReport,
 } from './extract-pending.ts';
 import { GEMINI_BASE_URL } from './gemini.ts';
@@ -32,7 +32,7 @@ async function extract(db: pg.Client): Promise<string[]> {
     },
     limit: runLimit(),
     requestIntervalMs: REQUEST_INTERVAL_MS,
-    quotaWaitMs: QUOTA_WAIT_MS,
+    retryWaitMs: RETRY_WAIT_MS,
     tracer,
   });
   await tracer.flush();
@@ -82,6 +82,7 @@ function summaryLine(report: RunReport): string {
     `processed=${report.processed}`,
     `failed=${report.failed}`,
     `quota_stop=${report.stoppedByQuota}`,
+    `outages=${report.outages}`,
     `outage_stop=${report.stoppedByOutage}`,
     `backlog=${report.backlog}`,
     `hallucination_dropped=${dropped}`,

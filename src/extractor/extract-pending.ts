@@ -30,8 +30,8 @@ export interface ExtractionOptions {
   limit: number;
   /** Pause between model calls, to stay under the per-minute quota. */
   requestIntervalMs: number;
-  /** After a 429, wait this long and try once more before stopping the run. */
-  quotaWaitMs: number;
+  /** After a 429 or an outage, wait this long and try the vacancy once more. */
+  retryWaitMs: number;
   /** Every model call becomes a Langfuse generation (ADR 0010). */
   tracer: Tracer;
 }
@@ -42,8 +42,12 @@ export interface RunReport {
   /** Risky fields nulled by the evidence check, per field. */
   dropped: Record<RiskyField, number>;
   stoppedByQuota: boolean;
-  /** Gemini itself failed (5xx, network, auth): the run stopped and the queue waits. */
+  /** Vacancies left queued because Gemini itself failed (5xx, network, auth) twice in a row. */
+  outages: number;
+  /** The run hit MAX_OUTAGES_PER_RUN and stopped: the queue waits. */
   stoppedByOutage: boolean;
+  /** The last outage's error, an HTTP status or a network error name; never vacancy text. */
+  outageReason?: string;
   backlog: number;
 }
 
@@ -51,7 +55,7 @@ type Outcome =
   | { kind: 'saved'; dropped: RiskyField[]; generation: Generation }
   | { kind: 'failed'; reason: string }
   | { kind: 'quota' }
-  | { kind: 'unavailable' };
+  | { kind: 'unavailable'; reason: string };
 
 interface Attempt {
   vacancy: PendingVacancy;
@@ -69,15 +73,21 @@ interface CheckedAnswer {
   generation: Generation;
 }
 
-/** What one model call needs: the model, and how long to wait out a 429. */
-export type ModelCallOptions = Pick<ExtractionOptions, 'gemini' | 'quotaWaitMs'>;
+/** What one model call needs: the model, and how long to wait before the retry. */
+export type ModelCallOptions = Pick<ExtractionOptions, 'gemini' | 'retryWaitMs'>;
 
 // ---- constants ---------------------------------------------------------------------------------
 
 /** 4 s between calls keeps us at 15 requests per minute. */
 export const REQUEST_INTERVAL_MS = 4000;
-/** A per-minute quota window resets within a minute. */
-export const QUOTA_WAIT_MS = 60_000;
+/** A per-minute quota window resets within a minute, and a short overload often passes too. */
+export const RETRY_WAIT_MS = 60_000;
+/**
+ * Gemini overloads come in bursts: one 503 is no reason to stop, so the vacancy stays queued and
+ * the run moves on. Three mean a real outage. The cap also keeps a run, each outage costing up to
+ * two timeouts and a wait, well inside the workflow's 45 minutes.
+ */
+const MAX_OUTAGES_PER_RUN = 3;
 
 // ---- functions ---------------------------------------------------------------------------------
 
@@ -93,7 +103,7 @@ export async function extractPending(
     }
     const outcome = await extractOne(db, vacancy, options);
     addToReport(report, outcome);
-    if (outcome.kind === 'quota' || outcome.kind === 'unavailable') {
+    if (outcome.kind === 'quota' || report.stoppedByOutage) {
       break;
     }
   }
@@ -107,6 +117,7 @@ function emptyReport(): RunReport {
     failed: 0,
     dropped: { salary: 0, english: 0, experience: 0, domain: 0 },
     stoppedByQuota: false,
+    outages: 0,
     stoppedByOutage: false,
     backlog: 0,
   };
@@ -149,7 +160,7 @@ async function tryExtract(
       return { kind: 'quota' };
     }
     if (error instanceof GeminiUnavailableError) {
-      return { kind: 'unavailable' };
+      return { kind: 'unavailable', reason: error.message };
     }
     const reason = error instanceof Error ? error.message : String(error);
     await recordFailure(db, { rawItemId: vacancy.rawItemId, version: EXTRACTOR_VERSION }, reason);
@@ -202,13 +213,16 @@ async function askAndCheck(text: string, options: ModelCallOptions): Promise<Che
   return { checked: checkEvidence(tidyFields(answer.fields), text), generation: answer.generation };
 }
 
-/** A 429 waits out the per-minute window first; any other error is retried at once. */
+/**
+ * A 429 or an outage waits first, so the quota window resets or the overload passes. A bad answer
+ * is retried at once.
+ */
 async function askModelWithOneRetry(text: string, options: ModelCallOptions): Promise<ModelAnswer> {
   try {
     return await askModel(text, options.gemini);
   } catch (error) {
-    if (error instanceof QuotaExhaustedError) {
-      await sleep(options.quotaWaitMs);
+    if (error instanceof QuotaExhaustedError || error instanceof GeminiUnavailableError) {
+      await sleep(options.retryWaitMs);
     }
     return askModel(text, options.gemini);
   }
@@ -251,7 +265,9 @@ function addToReport(report: RunReport, outcome: Outcome): void {
       break;
     }
     case 'unavailable': {
-      report.stoppedByOutage = true;
+      report.outages++;
+      report.outageReason = outcome.reason;
+      report.stoppedByOutage = report.outages >= MAX_OUTAGES_PER_RUN;
       break;
     }
   }

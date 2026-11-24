@@ -12,9 +12,9 @@ import {
   GEMINI_BASE_URL,
   MODEL,
   PROMPT_HASH,
-  QUOTA_WAIT_MS,
   QuotaExhaustedError,
   REQUEST_INTERVAL_MS,
+  RETRY_WAIT_MS,
   type ModelCallOptions,
 } from '../extractor/index.ts';
 import {
@@ -119,7 +119,7 @@ function modelOptions(): ModelCallOptions {
   }
   return {
     gemini: { apiKey, model: MODEL, baseUrl: process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL },
-    quotaWaitMs: QUOTA_WAIT_MS,
+    retryWaitMs: RETRY_WAIT_MS,
   };
 }
 

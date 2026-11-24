@@ -28,7 +28,8 @@ function outageProblem(report: RunReport): string | undefined {
   if (!report.stoppedByOutage) {
     return;
   }
-  return `Gemini unavailable: run stopped, ${report.backlog} vacancies wait in the queue`;
+  const reason = report.outageReason ?? 'unknown error';
+  return `Gemini unavailable (${reason}): run stopped, ${report.backlog} vacancies wait in the queue`;
 }
 
 function failureShareProblem(report: RunReport): string | undefined {
